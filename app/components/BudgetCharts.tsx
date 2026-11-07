@@ -15,7 +15,7 @@ import {
   Cell,
 } from "recharts";
 import { useDinheiro } from "@/lib/privacidade";
-import { statusGrupo, type Grupo, type Resumo } from "@/lib/calc";
+import type { Grupo } from "@/lib/calc";
 import type { Item } from "@/lib/types";
 
 const CORES = [
@@ -23,13 +23,13 @@ const CORES = [
   "#f97316", "#6366f1", "#06b6d4", "#d946ef", "#eab308", "#22c55e", "#f43f5e", "#3b82f6",
 ];
 
-const tooltipStyle = { borderRadius: 0, border: "1px solid #14110f", fontSize: 13, boxShadow: "3px 3px 0 0 #14110f" } as const;
+export const tooltipStyle = { borderRadius: 14, border: "1px solid rgba(20,17,15,0.12)", fontSize: 13, boxShadow: "0 12px 28px -12px rgba(20,17,15,0.35)" } as const;
 
-function corte(s: string, n: number) {
+export function corte(s: string, n: number) {
   return s.length > n ? s.slice(0, n - 1) + "…" : s;
 }
 
-function Painel({
+export function Painel({
   titulo,
   subtitulo,
   altura,
@@ -109,58 +109,6 @@ export function ChartAndamento({ grupos, titulo }: { grupos: Grupo[]; titulo: st
             <LabelList dataKey="total" position="right" formatter={(v) => compacto(Number(v))} style={{ fontSize: 11, fill: "#78716c" }} />
           </Bar>
         </BarChart>
-      </ResponsiveContainer>
-    </Painel>
-  );
-}
-
-/** Rosca: visão financeira geral (pago x a pagar). */
-export function ChartPagoApagar({ resumo }: { resumo: Resumo }) {
-  const { brl } = useDinheiro();
-  const dados = [
-    { name: "Pago", value: Math.round(resumo.pagoTotal), cor: "#10b981" },
-    { name: "A pagar", value: Math.max(0, Math.round(resumo.faltaPagar)), cor: "#e7e5e4" },
-  ];
-  return (
-    <Painel titulo="Pago × A pagar" subtitulo={`Projeção de custo: ${brl(resumo.previstoTotal)}`} altura={320}>
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Pie data={dados} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius="80%" innerRadius="55%" paddingAngle={2} label={rotuloPct} labelLine={false} style={{ fontSize: 13 }}>
-            {dados.map((d, i) => (
-              <Cell key={i} fill={d.cor} />
-            ))}
-          </Pie>
-          <Tooltip formatter={(v) => brl(Number(v))} contentStyle={tooltipStyle} />
-          <Legend wrapperStyle={{ fontSize: 12 }} />
-        </PieChart>
-      </ResponsiveContainer>
-    </Painel>
-  );
-}
-
-/** Rosca: quantas etapas estão pendentes / em progresso / concluídas. */
-export function ChartStatus({ grupos }: { grupos: Grupo[] }) {
-  if (grupos.length === 0) return null;
-  const contagem = { pendente: 0, progresso: 0, finalizado: 0 };
-  for (const g of grupos) contagem[statusGrupo(g)] += 1;
-  const dados = [
-    { name: "Pendente", value: contagem.pendente, cor: "#d6d3d1" },
-    { name: "Em progresso", value: contagem.progresso, cor: "#fbbf24" },
-    { name: "Concluído", value: contagem.finalizado, cor: "#10b981" },
-  ].filter((d) => d.value > 0);
-
-  return (
-    <Painel titulo="Status das etapas" subtitulo={`${grupos.length} etapas no total`} altura={320}>
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Pie data={dados} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius="80%" innerRadius="55%" paddingAngle={2} label={({ value }) => `${value}`} labelLine={false} style={{ fontSize: 13 }}>
-            {dados.map((d, i) => (
-              <Cell key={i} fill={d.cor} />
-            ))}
-          </Pie>
-          <Tooltip formatter={(v) => `${Number(v)} etapa(s)`} contentStyle={tooltipStyle} />
-          <Legend wrapperStyle={{ fontSize: 12 }} />
-        </PieChart>
       </ResponsiveContainer>
     </Painel>
   );

@@ -10,13 +10,8 @@ import { percentual } from "@/lib/format";
 import { agruparPor, calcularResumo, distintos, filtrarItens, ordenarPorStatus, resumoDeItens } from "@/lib/calc";
 import type { Agrupamento, Item } from "@/lib/types";
 import { ResumoTopo, SummaryCards } from "./SummaryCards";
-import {
-  ChartComposicao,
-  ChartAndamento,
-  ChartPagoApagar,
-  ChartStatus,
-  ChartTopItens,
-} from "./BudgetCharts";
+import { ChartComposicao } from "./BudgetCharts";
+import { AbaGraficos } from "./GraficosAba";
 import { ItemsList } from "./ItemsList";
 import { ItemDialog } from "./ItemDialog";
 import { ConfigDialog } from "./ConfigDialog";
@@ -87,7 +82,6 @@ export function Dashboard() {
   const gruposGrafico = useMemo(() => agruparPor(itens, agrupamento), [itens, agrupamento]);
   const gruposLista = useMemo(() => ordenarPorStatus(agruparPor(itensFiltrados, agrupamento)), [itensFiltrados, agrupamento]);
   const gruposEtapa = useMemo(() => agruparPor(itens, "etapa"), [itens]);
-  const gruposAmbiente = useMemo(() => agruparPor(itens, "ambiente"), [itens]);
   const etapas = useMemo(() => distintos(itens, "etapa"), [itens]);
   const ambientes = useMemo(() => distintos(itens, "ambiente"), [itens]);
 
@@ -285,13 +279,7 @@ export function Dashboard() {
             )}
           </>
         ) : (
-          <div className="space-y-4">
-            <ChartAndamento grupos={gruposEtapa} titulo="Andamento por etapa" />
-            <ChartPagoApagar resumo={resumo} />
-            <ChartStatus grupos={gruposEtapa} />
-            <ChartTopItens itens={itens} />
-            <ChartAndamento grupos={gruposAmbiente} titulo="Andamento por ambiente" />
-          </div>
+          <AbaGraficos itens={itens} config={config} />
         )}
       </main>
 

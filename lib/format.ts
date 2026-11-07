@@ -23,7 +23,7 @@ export function brlCompacto(valor: number): string {
       maximumFractionDigits: 1,
     })}k`;
   }
-  return brl(valor);
+  return brlInt(valor);
 }
 
 export function percentual(parte: number, total: number): number {
