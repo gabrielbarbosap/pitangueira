@@ -54,7 +54,8 @@ function CardObra({ obra, onGerenciar }: { obra: Obra; onGerenciar: () => void }
   async function copiar() {
     const link = `${window.location.origin}/obra/${obra.id}`;
     try {
-      await navigator.clipboard.writeText(`${link}\nCódigo: ${obra.accessCode}`);
+      // Só o link: a chave o arquiteto passa ao cliente à parte.
+      await navigator.clipboard.writeText(link);
       setCopiado(true);
       setTimeout(() => setCopiado(false), 1800);
     } catch {
@@ -116,7 +117,7 @@ function CardObra({ obra, onGerenciar }: { obra: Obra; onGerenciar: () => void }
         <div className="flex shrink-0 items-center gap-2">
           <button
             onClick={copiar}
-            title="Copia o link da obra junto com o código"
+            title="Copia só o link da obra (a chave você passa à parte)"
             className="btn btn-linha rounded-full px-3.5 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-wider"
           >
             {copiado ? "Copiado ✓" : "Copiar link"}
