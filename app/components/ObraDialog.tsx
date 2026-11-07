@@ -10,21 +10,45 @@ function geraCodigo() {
   return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
 }
 
+/** Opção de escolha única (círculo marcado = selecionada). */
+function Opcao({ ativa, onClick, titulo, dica }: { ativa: boolean; onClick: () => void; titulo: string; dica: string }) {
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={ativa}
+      onClick={onClick}
+      className={`clicavel flex w-full items-center gap-2.5 rounded-2xl border px-3.5 py-2.5 text-left transition-colors ${ativa ? "border-ink bg-ink/[0.04]" : "border-linha bg-white hover:border-ink/40"}`}
+    >
+      <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${ativa ? "border-pitanga" : "border-ink/30"}`}>
+        {ativa && <span className="h-2 w-2 rounded-full bg-pitanga" />}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-semibold text-ink">{titulo}</span>
+        <span className="block text-xs text-ink/55">{dica}</span>
+      </span>
+    </button>
+  );
+}
+
 export function ObraDialog({ aberto, onFechar }: { aberto: boolean; onFechar: () => void }) {
-  const { criarObra } = useObras();
+  const { criarObra, obras } = useObras();
   const router = useRouter();
   const [nome, setNome] = useState("");
   const [codigo, setCodigo] = useState("");
   const [teto, setTeto] = useState("");
-  const [exemplo, setExemplo] = useState(false);
+  // Projeto do próprio arquiteto usado como ponto de partida (null = do zero).
+  const [origem, setOrigem] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
+  const [erro, setErro] = useState("");
 
   useEffect(() => {
     if (aberto) {
       setNome("");
       setCodigo(geraCodigo());
       setTeto("");
-      setExemplo(false);
+      setOrigem(null);
+      setErro("");
     }
   }, [aberto]);
 
@@ -33,13 +57,16 @@ export function ObraDialog({ aberto, onFechar }: { aberto: boolean; onFechar: ()
   async function salvar() {
     if (!valido || salvando) return;
     setSalvando(true);
+    setErro("");
     try {
       const id = await criarObra(
         { nome: nome.trim(), accessCode: codigo.trim().toUpperCase(), orcamentoTotal: Number(teto) || 0 },
-        exemplo,
+        origem ?? undefined,
       );
       onFechar();
       router.push(`/obra/${id}`);
+    } catch {
+      setErro("Não consegui criar o projeto. Tente de novo.");
     } finally {
       setSalvando(false);
     }
@@ -73,13 +100,38 @@ export function ObraDialog({ aberto, onFechar }: { aberto: boolean; onFechar: ()
           <p className="mt-1 text-xs text-ink/50">O teto do projeto. Pode ser definido depois, em Ajustes.</p>
         </div>
 
-        <label className="flex cursor-pointer items-start gap-2.5 border border-linha p-3 text-sm text-ink/75 transition-colors hover:border-ink">
-          <input type="checkbox" checked={exemplo} onChange={(e) => setExemplo(e.target.checked)} className="mt-0.5 h-4 w-4 accent-[#d23a1f]" />
-          <span>
-            Começar com a planilha de exemplo
-            <span className="block text-xs text-ink/50">Casa Pitanga, 306 itens. Bom para conhecer o sistema.</span>
-          </span>
-        </label>
+        <div role="radiogroup" aria-label="Como começar">
+          <p className={rotulo}>Como começar</p>
+          <div className="space-y-2">
+            <Opcao ativa={origem === null} onClick={() => setOrigem(null)} titulo="Do zero" dica="Projeto vazio. Você monta o orçamento e o programa." />
+            {obras.length > 0 && (
+              <>
+                <p className="pt-1 text-xs text-ink/50">Ou parta de um projeto seu. Leva os itens do orçamento e o programa de necessidades, sem pagamentos, aprovação, cliente nem endereço.</p>
+                <ul className="max-h-52 space-y-2 overflow-y-auto pr-0.5">
+                  {obras.map((o) => {
+                    const n = o.resumo?.itens ?? 0;
+                    return (
+                      <li key={o.id}>
+                        <Opcao
+                          ativa={origem === o.id}
+                          onClick={() => setOrigem(o.id)}
+                          titulo={o.nome}
+                          dica={`${n} ${n === 1 ? "item" : "itens"}${o.arquivada ? " · arquivado" : ""}`}
+                        />
+                      </li>
+                    );
+                  })}
+                </ul>
+              </>
+            )}
+          </div>
+        </div>
+
+        {erro && (
+          <p role="alert" className="rounded-xl bg-pitanga/10 px-3 py-2 text-[13px] text-pitanga">
+            {erro}
+          </p>
+        )}
 
         <button onClick={salvar} disabled={!valido || salvando} className="btn btn-primario w-full px-4 py-3 text-sm">
           {salvando ? "Criando…" : "Criar projeto"}

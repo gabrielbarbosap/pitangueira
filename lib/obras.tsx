@@ -23,7 +23,7 @@ import {
 } from "firebase/firestore";
 import { db, isFirebaseConfigured } from "./firebase";
 import { useAuth } from "./auth";
-import type { Item, Obra, ObraInput } from "./types";
+import { PROJETO_VAZIO, type Item, type Obra, type ObraInput, type Programa, type Projeto } from "./types";
 import { SEED_ITENS } from "./seed";
 import { resumoDeItens } from "./calc";
 import { CASA_PITANGA_EMAILS, LS_OBRAS, lsItensKey } from "./demo";
@@ -31,7 +31,8 @@ import { CASA_PITANGA_EMAILS, LS_OBRAS, lsItensKey } from "./demo";
 interface ObrasContextValue {
   obras: Obra[];
   loading: boolean;
-  criarObra: (data: ObraInput, seedCasaPitanga?: boolean) => Promise<string>;
+  /** Cria do zero ou, com `origemId`, a partir de outro projeto do próprio arquiteto. */
+  criarObra: (data: ObraInput, origemId?: string) => Promise<string>;
   /** Cria (ou re-cria) a Casa Pitanga como obra compartilhada entre os 3 arquitetos. */
   recuperarCasaPitanga: () => Promise<string>;
   /** Arquivar guarda a obra fora da lista principal (reversível); restaurar a traz de volta. */
@@ -41,6 +42,56 @@ interface ObrasContextValue {
 }
 
 const ObrasContext = createContext<ObrasContextValue | null>(null);
+
+/** O que se leva de um projeto para o novo: estrutura pronta, sem andamento e sem dados do cliente. */
+interface Clone {
+  itens: Item[];
+  programa?: Programa;
+  projeto?: Projeto;
+}
+
+/**
+ * Copia a estrutura de um projeto: itens (sem feito/pago/valor real/fornecedor/observação), programa de
+ * necessidades (requisitos de volta a "pendente", vínculos refeitos para os itens novos) e a marca do arquiteto.
+ * Não leva cliente, endereço, aprovação do cliente nem pagamentos.
+ */
+function clonarProjeto(origem: Obra, itensOrigem: Item[]): Clone {
+  const novoId = new Map<string, string>();
+  const itens: Item[] = [...itensOrigem]
+    .sort((a, b) => a.ordem - b.ordem)
+    .map((i) => {
+      const id = crypto.randomUUID();
+      novoId.set(i.id, id);
+      return {
+        id,
+        etapaNum: i.etapaNum,
+        etapa: i.etapa,
+        ambiente: i.ambiente,
+        descricao: i.descricao,
+        ...(i.unidade ? { unidade: i.unidade } : {}),
+        quantidade: i.quantidade,
+        valorUnitario: i.valorUnitario,
+        valorOrcado: i.valorOrcado,
+        valorReal: 0,
+        feito: false,
+        pago: false,
+        ordem: i.ordem,
+      };
+    });
+  const programa: Programa | undefined = origem.programa
+    ? {
+        ambientes: origem.programa.ambientes.map((a) => ({ ...a, id: crypto.randomUUID() })),
+        requisitos: origem.programa.requisitos.map((r) => ({
+          ...r,
+          id: crypto.randomUUID(),
+          status: "pendente" as const,
+          itensIds: (r.itensIds ?? []).map((x) => novoId.get(x)).filter((x): x is string => Boolean(x)),
+        })),
+      }
+    : undefined;
+  const projeto: Projeto | undefined = origem.projeto ? { ...PROJETO_VAZIO, ...origem.projeto, cliente: "", endereco: "" } : undefined;
+  return { itens, programa, projeto };
+}
 
 function lerObrasDemo(): Obra[] {
   try {
@@ -128,8 +179,28 @@ export function ObrasProvider({ children }: { children: ReactNode }) {
     };
   }, [configured, user]);
 
-  async function criarObra(data: ObraInput, seedCasaPitanga = false): Promise<string> {
-    return criar({ ...data }, seedCasaPitanga, undefined);
+  /** Cria um projeto do zero, ou a partir de um projeto do próprio arquiteto (`origemId`). */
+  async function criarObra(data: ObraInput, origemId?: string): Promise<string> {
+    let clone: Clone | undefined;
+    if (origemId) {
+      const origem = obras.find((o) => o.id === origemId);
+      if (!origem) throw new Error("Projeto de origem não encontrado");
+      clone = clonarProjeto(origem, await lerItens(origemId));
+    }
+    return criar({ ...data }, false, undefined, clone);
+  }
+
+  /** Itens de um projeto (nuvem ou demo). */
+  async function lerItens(id: string): Promise<Item[]> {
+    if (configured && db) {
+      const snap = await getDocs(collection(db, "obras", id, "itens"));
+      return snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Item, "id">) }));
+    }
+    try {
+      return JSON.parse(localStorage.getItem(lsItensKey(id)) ?? "[]") as Item[];
+    } catch {
+      return [];
+    }
   }
 
   async function recuperarCasaPitanga(): Promise<string> {
@@ -140,11 +211,14 @@ export function ObrasProvider({ children }: { children: ReactNode }) {
     );
   }
 
-  async function criar(data: ObraInput, seed: boolean, ownerEmails?: string[]): Promise<string> {
+  async function criar(data: ObraInput, seed: boolean, ownerEmails?: string[], clone?: Clone): Promise<string> {
     if (!user) throw new Error("Sem usuário");
+    // Itens com que o projeto já nasce: os copiados de outro projeto, os de exemplo (só a Casa Pitanga) ou nenhum.
+    const iniciais: Item[] = clone ? clone.itens : seed ? SEED_ITENS : [];
     if (configured && db) {
-      const ref = doc(collection(db, "obras"));
-      // Cria a obra PRIMEIRO: as regras dos itens checam get(obra), que só existe após o commit.
+      const banco = db;
+      const ref = doc(collection(banco, "obras"));
+      // Cria o projeto PRIMEIRO: as regras dos itens checam get(obra), que só existe após o commit.
       await setDoc(ref, {
         ownerUid: user.uid,
         ownerEmail: user.email,
@@ -152,14 +226,15 @@ export function ObrasProvider({ children }: { children: ReactNode }) {
         nome: data.nome,
         accessCode: data.accessCode,
         orcamentoTotal: data.orcamentoTotal,
-        resumo: resumoDeItens(seed ? SEED_ITENS : []),
+        resumo: resumoDeItens(iniciais),
+        ...(clone?.programa ? { programa: clone.programa } : {}),
+        ...(clone?.projeto ? { projeto: clone.projeto } : {}),
         createdAt: Date.now(),
         updatedAt: Date.now(),
       });
-      if (seed) {
-        const banco = db;
+      for (let i = 0; i < iniciais.length; i += 400) {
         const batch = writeBatch(banco);
-        SEED_ITENS.forEach((it) => {
+        iniciais.slice(i, i + 400).forEach((it) => {
           const { id, ...resto } = it;
           batch.set(doc(collection(banco, "obras", ref.id, "itens"), id), { ...resto, createdAt: Date.now(), updatedAt: Date.now() });
         });
@@ -177,14 +252,16 @@ export function ObrasProvider({ children }: { children: ReactNode }) {
       nome: data.nome,
       accessCode: data.accessCode,
       orcamentoTotal: data.orcamentoTotal,
-      resumo: resumoDeItens(seed ? SEED_ITENS : []),
+      resumo: resumoDeItens(iniciais),
+      ...(clone?.programa ? { programa: clone.programa } : {}),
+      ...(clone?.projeto ? { projeto: clone.projeto } : {}),
       createdAt: Date.now(),
     };
     const todas = lerObrasDemo();
     todas.push(nova);
     salvarObrasDemo(todas);
     try {
-      localStorage.setItem(lsItensKey(id), JSON.stringify(seed ? SEED_ITENS : []));
+      localStorage.setItem(lsItensKey(id), JSON.stringify(iniciais));
     } catch {
       /* ignore */
     }
