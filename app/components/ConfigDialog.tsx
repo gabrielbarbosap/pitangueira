@@ -32,17 +32,17 @@ export function ConfigDialog({
     await saveConfig(
       ehCliente
         ? { orcamentoTotal: Number(teto) || 0 }
-        : { nomeObra: nomeObra.trim() || "Obra", orcamentoTotal: Number(teto) || 0 },
+        : { nomeObra: nomeObra.trim() || "Projeto", orcamentoTotal: Number(teto) || 0 },
     );
     onFechar();
   }
 
   return (
-    <Modal aberto={aberto} onFechar={onFechar} titulo="Ajustes da obra">
+    <Modal aberto={aberto} onFechar={onFechar} titulo="Ajustes do projeto">
       <div className="space-y-4">
         {!ehCliente && (
           <div>
-            <label className={rotulo}>Nome da obra</label>
+            <label className={rotulo}>Nome do projeto</label>
             <input className={campo} value={nomeObra} onChange={(e) => setNomeObra(e.target.value)} />
           </div>
         )}
@@ -56,16 +56,16 @@ export function ConfigDialog({
             value={teto}
             onChange={(e) => setTeto(e.target.value)}
           />
-          <p className="mt-1 text-xs text-ink/50">É o teto da obra: usado para calcular o saldo em caixa e avisar se a projeção estourar.</p>
+          <p className="mt-1 text-xs text-ink/50">É o teto do projeto: usado para calcular o saldo em caixa e avisar se a projeção estourar.</p>
         </div>
         <button onClick={salvar} className="btn btn-primario w-full px-4 py-3 text-sm">
           Salvar ajustes
         </button>
         {!ehCliente && onGerenciar && (
           <div className="border-t border-linha pt-4">
-            <p className="rotulo-tec text-ink/55">Encerrar esta obra</p>
+            <p className="rotulo-tec text-ink/55">Encerrar este projeto</p>
             <p className="mt-1 text-xs text-ink/60">
-              <strong className="font-semibold text-ink/80">Arquivar</strong> guarda a obra sem apagar nada.{" "}
+              <strong className="font-semibold text-ink/80">Arquivar</strong> guarda o projeto sem apagar nada.{" "}
               <strong className="font-semibold text-ink/80">Excluir</strong> apaga tudo de vez.
             </p>
             <button onClick={onGerenciar} className="btn btn-linha mt-2.5 w-full px-3 py-2.5 font-mono text-[11px] font-semibold uppercase tracking-wider">

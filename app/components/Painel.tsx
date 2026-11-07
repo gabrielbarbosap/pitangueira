@@ -59,7 +59,7 @@ function CardObra({ obra, onGerenciar }: { obra: Obra; onGerenciar: () => void }
       setCopiado(true);
       setTimeout(() => setCopiado(false), 1800);
     } catch {
-      window.prompt("Copie o link da obra:", link);
+      window.prompt("Copie o link do projeto:", link);
     }
   }
 
@@ -117,7 +117,7 @@ function CardObra({ obra, onGerenciar }: { obra: Obra; onGerenciar: () => void }
         <div className="flex shrink-0 items-center gap-2">
           <button
             onClick={copiar}
-            title="Copia só o link da obra (a chave você passa à parte)"
+            title="Copia só o link do projeto (a chave você passa à parte)"
             className="btn btn-linha rounded-full px-3.5 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-wider"
           >
             {copiado ? "Copiado ✓" : "Copiar link"}
@@ -147,7 +147,7 @@ function CardArquivada({ obra, onGerenciar }: { obra: Obra; onGerenciar: () => v
         <Link href={`/obra/${obra.id}`} className="clicavel block truncate font-semibold text-ink/80 hover:text-ink">
           {obra.nome}
         </Link>
-        <p className="text-xs text-ink/50">Arquivada{quando ? ` em ${quando}` : ""}</p>
+        <p className="text-xs text-ink/50">Arquivado{quando ? ` em ${quando}` : ""}</p>
       </div>
       <button onClick={onGerenciar} className="btn btn-linha shrink-0 rounded-full px-3.5 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-wider">
         Gerenciar
@@ -175,7 +175,7 @@ export function Painel() {
   const arquivadas = useMemo(() => obras.filter((o) => o.arquivada), [obras]);
   const obraGerenciada = obras.find((o) => o.id === gerenciarId) ?? null;
 
-  // Progresso geral: todas as obras ativas juntas (itens concluídos / itens totais), não a média das médias.
+  // Progresso geral: todos os projetos ativas juntas (itens concluídos / itens totais), não a média das médias.
   const geral = useMemo(() => {
     let itens = 0;
     let concluidos = 0;
@@ -235,10 +235,10 @@ export function Painel() {
           <h1 className="mt-1 text-4xl font-semibold leading-tight tracking-tight">Olá, {primeiroNome}.</h1>
           <p className="mt-1 text-sm text-white">
             {loading
-              ? "Carregando suas obras…"
+              ? "Carregando seus projetos…"
               : obras.length === 0
-                ? "Comece criando a sua primeira obra."
-                : `${ativas.length} ${ativas.length === 1 ? "obra sob sua gestão" : "obras sob sua gestão"}${arquivadas.length > 0 ? ` · ${arquivadas.length} arquivada${arquivadas.length > 1 ? "s" : ""}` : ""}.`}
+                ? "Comece criando o seu primeiro projeto."
+                : `${ativas.length} ${ativas.length === 1 ? "projeto sob sua gestão" : "projetos sob sua gestão"}${arquivadas.length > 0 ? ` · ${arquivadas.length} arquivado${arquivadas.length > 1 ? "s" : ""}` : ""}.`}
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <button
@@ -258,14 +258,14 @@ export function Painel() {
         {comCartoes && (
           <section aria-label="Resumo geral" className="relative z-10 grid grid-cols-2 gap-3">
             <Cartao
-              rotulo="Obras que você toca"
+              rotulo="Projetos que você toca"
               valor={String(ativas.length)}
-              sub={geral.emAndamento > 0 ? `${geral.emAndamento} em andamento` : "nenhuma em andamento"}
+              sub={geral.emAndamento > 0 ? `${geral.emAndamento} em andamento` : "nenhum em andamento"}
             />
             <Cartao
               rotulo="Progresso geral"
               valor={`${geral.pct}%`}
-              sub={`${geral.concluidos}/${geral.itens} itens, todas as obras`}
+              sub={`${geral.concluidos}/${geral.itens} itens, todos os projetos`}
               destaque
             />
           </section>
@@ -274,7 +274,7 @@ export function Painel() {
         {ehArqPitanga && !temCompartilhada && !loading && (
           <div className="flex flex-col gap-3 rounded-3xl border border-ink/80 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-ink">
-              A obra <strong>Casa Pitanga</strong> é compartilhada entre os 3 arquitetos. Traga-a para o seu painel.
+              O projeto <strong>Casa Pitanga</strong> é compartilhado entre os 3 arquitetos. Traga-o para o seu painel.
             </p>
             <button onClick={recuperar} disabled={recuperando} className="btn btn-primario shrink-0 px-4 py-2.5 text-sm">
               {recuperando ? "Criando…" : "Recuperar Casa Pitanga"}
@@ -282,9 +282,9 @@ export function Painel() {
           </div>
         )}
 
-        <section aria-label="Obras">
+        <section aria-label="Projetos">
           <div className="mb-3 flex items-center gap-3">
-            <h2 className="text-xl font-semibold text-ink">Suas obras</h2>
+            <h2 className="text-xl font-semibold text-ink">Seus projetos</h2>
             <span className="h-px flex-1 bg-linha" />
           </div>
 
@@ -293,15 +293,15 @@ export function Painel() {
           ) : obras.length === 0 ? (
             <div className="prancha px-6 py-14 text-center">
               <div className="flex justify-center"><LogoMark size={76} /></div>
-              <p className="mt-5 text-lg font-semibold text-ink">Nenhuma obra ainda</p>
+              <p className="mt-5 text-lg font-semibold text-ink">Nenhum projeto ainda</p>
               <p className="mx-auto mt-1 max-w-xs text-sm text-ink/60">
-                Crie a obra, cadastre os itens do orçamento e envie a chave para o seu cliente acompanhar.
+                Crie o projeto, cadastre os itens do orçamento e envie a chave para o seu cliente acompanhar.
               </p>
             </div>
           ) : ativas.length === 0 ? (
             <div className="prancha px-6 py-10 text-center">
-              <p className="text-lg font-semibold text-ink">Todas as suas obras estão arquivadas</p>
-              <p className="mx-auto mt-1 max-w-xs text-sm text-ink/60">Crie uma nova obra ou restaure uma das arquivadas, logo abaixo.</p>
+              <p className="text-lg font-semibold text-ink">Todos os seus projetos estão arquivados</p>
+              <p className="mx-auto mt-1 max-w-xs text-sm text-ink/60">Crie um novo projeto ou restaure um dos arquivados, logo abaixo.</p>
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
@@ -313,19 +313,19 @@ export function Painel() {
         </section>
 
         {arquivadas.length > 0 && !loading && (
-          <section aria-label="Obras arquivadas">
+          <section aria-label="Projetos arquivados">
             <button
               onClick={() => setVerArquivadas((v) => !v)}
               aria-expanded={verArquivadas}
               className="clicavel flex w-full items-center gap-3 rounded-xl py-1 text-left"
             >
-              <h2 className="text-base font-semibold text-ink/75">Arquivadas ({arquivadas.length})</h2>
+              <h2 className="text-base font-semibold text-ink/75">Arquivados ({arquivadas.length})</h2>
               <span className="h-px flex-1 bg-linha" />
               <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-ink/50">{verArquivadas ? "Ocultar" : "Mostrar"}</span>
             </button>
             {verArquivadas && (
               <div className="mt-3 space-y-2.5">
-                <p className="text-xs text-ink/50">Guardadas fora da lista principal. Nada foi apagado: use Gerenciar para restaurar ou excluir de vez.</p>
+                <p className="text-xs text-ink/50">Guardados fora da lista principal. Nada foi apagado: use Gerenciar para restaurar ou excluir de vez.</p>
                 {arquivadas.map((o) => (
                   <CardArquivada key={o.id} obra={o} onGerenciar={() => setGerenciarId(o.id)} />
                 ))}
@@ -341,7 +341,7 @@ export function Painel() {
           onClick={() => setDialog(true)}
           className="btn btn-primario pointer-events-auto gap-2 rounded-full px-7 py-4 text-base shadow-[0_14px_30px_-10px_rgba(210,58,31,0.7)]"
         >
-          <IconeMais size={20} /> Nova obra
+          <IconeMais size={20} /> Novo projeto
         </button>
       </div>
 

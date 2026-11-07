@@ -237,7 +237,7 @@ export function ItemDialog({
 
         <label className="flex cursor-pointer items-center gap-2.5 text-sm text-ink/80">
           <input type="checkbox" className="h-4 w-4 accent-[#d23a1f]" checked={guardar} onChange={(e) => setGuardar(e.target.checked)} />
-          Guardar no meu catálogo para usar em outras obras
+          Guardar no meu catálogo para usar em outros projetos
         </label>
 
         <button onClick={salvar} disabled={!valido || salvando} className="btn btn-primario w-full px-4 py-3 text-sm">

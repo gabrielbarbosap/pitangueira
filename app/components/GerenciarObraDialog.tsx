@@ -66,7 +66,7 @@ export function GerenciarObraDialog({
   }
 
   return (
-    <Modal aberto={obra !== null} onFechar={onFechar} titulo="Gerenciar obra">
+    <Modal aberto={obra !== null} onFechar={onFechar} titulo="Gerenciar projeto">
       <p className="-mt-2 mb-4 truncate text-sm text-ink/60">{obra.nome}</p>
 
       <div className="space-y-4">
@@ -78,20 +78,20 @@ export function GerenciarObraDialog({
             </span>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="font-semibold text-ink">{arquivada ? "Restaurar obra" : "Arquivar"}</h3>
+                <h3 className="font-semibold text-ink">{arquivada ? "Restaurar projeto" : "Arquivar"}</h3>
                 <span className="rounded-full bg-emerald-100 px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-emerald-800">
                   Reversível
                 </span>
               </div>
               <p className="mt-1 text-[13px] leading-snug text-ink/65">
                 {arquivada
-                  ? "Traz a obra de volta para a sua lista principal, do jeito que ela estava."
-                  : "Tira a obra da lista principal e a guarda em “Arquivadas”. Nada é apagado: itens, programa e aprovações continuam como estão, e você restaura quando quiser. O seu cliente continua acessando com o link e o código."}
+                  ? "Traz o projeto de volta para a sua lista principal, do jeito que ele estava."
+                  : "Tira o projeto da lista principal e o guarda em “Arquivados”. Nada é apagado: itens, programa e aprovações continuam como estão, e você restaura quando quiser. O seu cliente continua acessando com o link e o código."}
               </p>
             </div>
           </div>
           <button onClick={alternarArquivo} disabled={ocupado !== null} className="btn btn-solido mt-4 w-full px-4 py-3 text-sm">
-            {ocupado === "arquivar" ? "Aguarde…" : arquivada ? "Restaurar obra" : "Arquivar obra"}
+            {ocupado === "arquivar" ? "Aguarde…" : arquivada ? "Restaurar projeto" : "Arquivar projeto"}
           </button>
         </section>
 
@@ -109,7 +109,7 @@ export function GerenciarObraDialog({
                 </span>
               </div>
               <p className="mt-1 text-[13px] leading-snug text-ink/70">
-                Apaga a obra e tudo o que está dentro dela: itens do orçamento, programa de necessidades, aprovações e o acesso dos clientes.{" "}
+                Apaga o projeto e tudo o que está dentro dele: itens do orçamento, programa de necessidades, aprovações e o acesso dos clientes.{" "}
                 <strong className="font-semibold text-ink">Não há como recuperar.</strong>
                 {!arquivada && " Se só quer tirar da lista, use Arquivar."}
               </p>
@@ -117,7 +117,7 @@ export function GerenciarObraDialog({
           </div>
 
           <label className="rotulo-tec mb-1 mt-4 block text-ink/60" htmlFor="confirma-exclusao">
-            Digite o nome da obra para confirmar
+            Digite o nome do projeto para confirmar
           </label>
           <input
             id="confirma-exclusao"
@@ -128,7 +128,7 @@ export function GerenciarObraDialog({
             className="campo-pit w-full border border-ink/25 bg-white px-3 py-2.5 text-sm text-ink outline-none"
           />
           <button onClick={excluir} disabled={!nomeConfere || ocupado !== null} className="btn btn-primario mt-3 w-full px-4 py-3 text-sm">
-            {ocupado === "excluir" ? "Excluindo…" : "Excluir obra para sempre"}
+            {ocupado === "excluir" ? "Excluindo…" : "Excluir projeto para sempre"}
           </button>
         </section>
 

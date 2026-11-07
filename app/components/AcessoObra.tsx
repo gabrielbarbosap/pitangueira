@@ -56,7 +56,7 @@ export function AcessoObra({ obraId, onAcesso }: { obraId: string; onAcesso: () 
           });
         } catch {
           await logout();
-          setErro("Código incorreto para esta obra.");
+          setErro("Código incorreto para este projeto.");
           setEntrando(false);
           return;
         }
@@ -65,7 +65,7 @@ export function AcessoObra({ obraId, onAcesso }: { obraId: string; onAcesso: () 
         const obras = JSON.parse(localStorage.getItem(LS_OBRAS) ?? "[]") as { id: string; accessCode?: string }[];
         const o = obras.find((x) => x.id === obraId);
         if (!o || (o.accessCode ?? "").toUpperCase() !== codigo.trim().toUpperCase()) {
-          setErro("Código incorreto para esta obra.");
+          setErro("Código incorreto para este projeto.");
           setEntrando(false);
           return;
         }
@@ -95,8 +95,8 @@ export function AcessoObra({ obraId, onAcesso }: { obraId: string; onAcesso: () 
       <div className="prancha w-full max-w-sm p-7">
         <div className="mb-6">
           <Logo />
-          <p className="rotulo-tec mt-6 text-ink/50">Acompanhar obra</p>
-          <h1 className="mt-1 text-2xl font-semibold leading-tight text-ink">Entre com o código da obra</h1>
+          <p className="rotulo-tec mt-6 text-ink/50">Acompanhar projeto</p>
+          <h1 className="mt-1 text-2xl font-semibold leading-tight text-ink">Entre com o código do projeto</h1>
           <p className="mt-2 text-sm text-ink/60">Use o código que o arquiteto enviou junto com o link. Seu nome fica registrado nas marcações que você fizer.</p>
         </div>
 
@@ -123,7 +123,7 @@ export function AcessoObra({ obraId, onAcesso }: { obraId: string; onAcesso: () 
             />
           </div>
           <button onClick={entrar} disabled={entrando || !codigo.trim() || !nome.trim()} className="btn btn-primario w-full px-4 py-3.5 text-sm">
-            {entrando ? "Entrando…" : "Entrar na obra"}
+            {entrando ? "Entrando…" : "Entrar no projeto"}
           </button>
           {erro && (
             <p className="border border-pitanga bg-pitanga/[0.07] px-3 py-2 text-center text-sm font-medium text-pitanga-escuro" role="alert">

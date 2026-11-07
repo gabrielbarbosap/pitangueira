@@ -80,11 +80,11 @@ function LeituraRapida({ itens, config, gruposEtapa }: { itens: Item[]; config: 
         <CartaoFato
           rotulo="Projeção × teto"
           destaque={f.teto.folga >= 0 ? brlInt(f.teto.folga) : brlInt(abs(f.teto.folga))}
-          texto={f.teto.folga >= 0 ? "de folga no teto da obra" : "acima do teto da obra"}
+          texto={f.teto.folga >= 0 ? "de folga no teto do projeto" : "acima do teto do projeto"}
           tom={f.teto.folga >= 0 ? "bom" : "alerta"}
         />
       ) : (
-        <CartaoFato rotulo="Projeção × teto" destaque="Teto não definido" texto="defina o orçamento disponível em Ajustes da obra" tom="neutro" />
+        <CartaoFato rotulo="Projeção × teto" destaque="Teto não definido" texto="defina o orçamento disponível em Ajustes do projeto" tom="neutro" />
       )}
       <CartaoFato
         rotulo="Real × orçado"
@@ -150,7 +150,7 @@ function OrcamentoEmFoco({ itens, config }: { itens: Item[]; config: Config }) {
       </div>
       <p className="mt-4 text-xs leading-snug text-ink/50">
         {teto <= 0
-          ? "Defina o orçamento disponível em Ajustes da obra para ver o teto na escala."
+          ? "Defina o orçamento disponível em Ajustes do projeto para ver o teto na escala."
           : estourou
             ? "A projeção passou da linha do teto."
             : "A projeção cabe dentro do teto."}
@@ -170,7 +170,7 @@ function OndeEstaODinheiro({ itens }: { itens: Item[] }) {
 
   return (
     <div className="prancha p-5">
-      <div className="flex h-5 gap-0.5 overflow-hidden rounded-full" role="img" aria-label="Divisão do dinheiro da obra por situação">
+      <div className="flex h-5 gap-0.5 overflow-hidden rounded-full" role="img" aria-label="Divisão do dinheiro do projeto por situação">
         {fases
           .filter((f) => f.valor > 0)
           .map((f) => (
@@ -382,7 +382,7 @@ export function AbaGraficos({ itens, config }: { itens: Item[]; config: Config }
         <OrcamentoEmFoco itens={itens} config={config} />
       </Secao>
 
-      <Secao titulo="Onde está o dinheiro" texto="O valor da obra dividido pela situação de cada item.">
+      <Secao titulo="Onde está o dinheiro" texto="O valor do projeto dividido pela situação de cada item.">
         <OndeEstaODinheiro itens={itens} />
       </Secao>
 

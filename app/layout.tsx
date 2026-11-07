@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Pitangueira — gestão de obras",
-  description: "Orçamento, pagamentos e andamento da obra, do arquiteto ao cliente.",
+  title: "Pitangueira — gestão de projetos",
+  description: "Orçamento, pagamentos e andamento do projeto, do arquiteto ao cliente.",
 };
 
 export const viewport: Viewport = {

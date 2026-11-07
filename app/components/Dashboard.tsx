@@ -107,7 +107,7 @@ export function Dashboard() {
 
   const vazio = (
     <div className="prancha px-6 py-14 text-center">
-      <p className="text-lg font-semibold text-ink">Nenhum item nesta obra ainda</p>
+      <p className="text-lg font-semibold text-ink">Nenhum item neste projeto ainda</p>
       <p className="mx-auto mt-1 max-w-xs text-sm text-ink/60">
         {ehCliente ? "O arquiteto ainda não cadastrou o orçamento." : "Cadastre os itens do orçamento para acompanhar valores e andamento."}
       </p>
@@ -133,15 +133,15 @@ export function Dashboard() {
             <button
               onClick={voltar}
               className={botaoTopo}
-              aria-label={aba === "resumo" ? "Voltar ao painel" : "Voltar ao início da obra"}
-              title={aba === "resumo" ? "Voltar ao painel" : "Voltar ao início da obra"}
+              aria-label={aba === "resumo" ? "Voltar ao painel" : "Voltar ao início do projeto"}
+              title={aba === "resumo" ? "Voltar ao painel" : "Voltar ao início do projeto"}
             >
               <IconeVoltar />
             </button>
             <Logo claro />
             <div className="flex gap-2">
               <BotaoOlho className={botaoTopo} />
-              <button onClick={() => setConfigDialog(true)} className={botaoTopo} aria-label="Ajustes da obra" title="Ajustes da obra">
+              <button onClick={() => setConfigDialog(true)} className={botaoTopo} aria-label="Ajustes do projeto" title="Ajustes do projeto">
                 <IconeAjustes />
               </button>
               <button onClick={logout} className={botaoTopo} aria-label="Sair" title="Sair">
@@ -154,7 +154,7 @@ export function Dashboard() {
             {user?.nome ?? "Modo demo"}
             {ehCliente ? " · cliente" : ""}
           </p>
-          <h1 className="mt-1 text-3xl font-semibold leading-tight tracking-tight">{config.nomeObra || "Obra"}</h1>
+          <h1 className="mt-1 text-3xl font-semibold leading-tight tracking-tight">{config.nomeObra || "Projeto"}</h1>
           <p className="mt-1 text-sm text-white">
             {pct}% concluído · {agregado.concluidos} de {agregado.itens} itens
           </p>
@@ -284,7 +284,7 @@ export function Dashboard() {
       </main>
 
       {/* Menu em pílula: ao alcance do polegar */}
-      <nav aria-label="Seções da obra" className="pb-seguro pointer-events-none fixed inset-x-0 bottom-0 z-30 flex justify-center px-4">
+      <nav aria-label="Seções do projeto" className="pb-seguro pointer-events-none fixed inset-x-0 bottom-0 z-30 flex justify-center px-4">
         <div role="tablist" className="pointer-events-auto flex w-full max-w-md items-center justify-between gap-1 rounded-full bg-ink p-1.5 shadow-[0_14px_30px_-10px_rgba(20,17,15,0.55)]">
           {ABAS.map(({ id, rotulo, Icone }) => {
             const ativa = aba === id;

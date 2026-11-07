@@ -14,7 +14,7 @@ export function LoginScreen() {
             <LogoMark size={84} />
           </div>
           <p className="font-mono text-[13px] font-semibold uppercase tracking-[0.24em] text-ink">Pitangueira</p>
-          <h1 className="mt-3 text-xl font-semibold leading-tight text-ink">Gestão de obras, do arquiteto ao cliente</h1>
+          <h1 className="mt-3 text-xl font-semibold leading-tight text-ink">Gestão de projetos, do arquiteto ao cliente</h1>
           <p className="mt-2 text-sm text-ink/60">Orçamento, pagamentos e andamento em um só lugar.</p>
         </div>
 

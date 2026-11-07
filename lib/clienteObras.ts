@@ -20,7 +20,7 @@ export function lerObrasCliente(): ObraCliente[] {
 export function registrarObraCliente(id: string, nome: string) {
   try {
     const lista = lerObrasCliente().filter((o) => o.id !== id);
-    lista.push({ id, nome: nome || "Obra", visitadaEm: Date.now() });
+    lista.push({ id, nome: nome || "Projeto", visitadaEm: Date.now() });
     localStorage.setItem(KEY, JSON.stringify(lista));
   } catch {
     /* ignore */

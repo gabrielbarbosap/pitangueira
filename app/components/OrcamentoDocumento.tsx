@@ -139,7 +139,7 @@ export function OrcamentoDocumento({ onFechar, cfg }: { onFechar: () => void; cf
                 <dd className="mt-0.5 font-mono text-lg">{(separado ? [partes[i]] : partes).reduce((s, g) => s + g.total, 0)}</dd>
               </div>
               <div>
-                <dt className="rotulo-tec text-ink/50">Do orçamento da obra</dt>
+                <dt className="rotulo-tec text-ink/50">Do orçamento do projeto</dt>
                 <dd className="mt-0.5 font-mono text-lg">
                   {totalObra > 0 ? `${Math.round(((separado ? partes[i].previsto : totalSel) / totalObra) * 100)}%` : "—"}
                 </dd>

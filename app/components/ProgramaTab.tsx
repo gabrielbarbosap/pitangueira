@@ -32,7 +32,7 @@ const STATUS: Record<StatusRequisito, { rotulo: string; dica: string; classe: st
   },
   atendido: {
     rotulo: "Atendido",
-    dica: "Executado na obra",
+    dica: "Executado no projeto",
     classe: "border-emerald-500 bg-emerald-50 text-emerald-900",
     ponto: "bg-emerald-600",
   },
@@ -149,7 +149,7 @@ export function ProgramaTab({ gruposEtapa }: { gruposEtapa: Grupo[] }) {
       <section aria-label="Passo a passo">
         <p className="mb-3 text-[13px] leading-snug text-ink/65">
           O <strong className="font-semibold text-ink">programa de necessidades</strong> reúne o que o cliente precisa (espaços e requisitos) antes do projeto e do
-          orçamento. Preencha, envie o link da obra e o cliente aprova online.
+          orçamento. Preencha, envie o link do projeto e o cliente aprova online.
         </p>
         <ol className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-linha bg-linha sm:grid-cols-4">
           {passos.map((p, i) => (
@@ -187,7 +187,7 @@ export function ProgramaTab({ gruposEtapa }: { gruposEtapa: Grupo[] }) {
         </div>
       ) : !vazio ? (
         <p className="rounded-2xl border border-dashed border-ink/30 bg-white/70 px-3 py-2.5 text-[13px] leading-snug text-ink/70">
-          <strong className="font-semibold text-ink">Aguardando o cliente.</strong> Ele aprova pela aba Programa, usando o link e o código da obra. Qualquer
+          <strong className="font-semibold text-ink">Aguardando o cliente.</strong> Ele aprova pela aba Programa, usando o link e o código do projeto. Qualquer
           alteração nos ambientes ou requisitos pede nova aprovação.
         </p>
       ) : null}
@@ -239,7 +239,7 @@ export function ProgramaTab({ gruposEtapa }: { gruposEtapa: Grupo[] }) {
         <section>
           <Secao
             titulo="Ambientes"
-            descricao="Os espaços da obra e quantos de cada um. A área e a proximidade entre eles são opcionais."
+            descricao="Os espaços do projeto e quantos de cada um. A área e a proximidade entre eles são opcionais."
             contagem={programa.ambientes.length}
             acao={!ehCliente ? <button className="btn btn-linha rounded-full px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-wider" onClick={() => setAmb("novo")}>+ Ambiente</button> : undefined}
           />
@@ -271,7 +271,7 @@ export function ProgramaTab({ gruposEtapa }: { gruposEtapa: Grupo[] }) {
         <section>
           <Secao
             titulo="Requisitos específicos"
-            descricao="Necessidades de uso que viram itens de obra (ex.: carregador de carro elétrico, infraestrutura de wi-fi). Ligue cada uma à etapa do orçamento onde ela é atendida."
+            descricao="Necessidades de uso que viram itens do projeto (ex.: carregador de carro elétrico, infraestrutura de wi-fi). Ligue cada uma à etapa do orçamento onde ela é atendida."
             contagem={programa.requisitos.length}
             acao={!ehCliente ? <button className="btn btn-linha rounded-full px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-wider" onClick={() => setReq("novo")}>+ Requisito</button> : undefined}
           />
@@ -504,7 +504,7 @@ function ProjetoDialog({ aberto, onFechar, projeto, onSalvar }: { aberto: boolea
       <div className="space-y-4">
         <Campo nome="Cliente(s)" dica="Quem contrata o projeto."><input className={campo} value={f.cliente} onChange={set("cliente")} placeholder="Ex.: Gabriel e Mariana" /></Campo>
         <Campo nome="Tipo de projeto"><input className={campo} value={f.tipo} onChange={set("tipo")} placeholder="Ex.: Reforma residencial" /></Campo>
-        <Campo nome="Endereço da obra"><input className={campo} value={f.endereco} onChange={set("endereco")} placeholder="Rua, número, bairro, cidade" /></Campo>
+        <Campo nome="Endereço do projeto"><input className={campo} value={f.endereco} onChange={set("endereco")} placeholder="Rua, número, bairro, cidade" /></Campo>
         <Campo nome="Responsável técnico"><input className={campo} value={f.responsavel} onChange={set("responsavel")} placeholder="Nome do arquiteto" /></Campo>
         <Campo nome="Registro profissional" dica="CAU ou CREA, aparece abaixo da assinatura no PDF."><input className={campo} value={f.registro} onChange={set("registro")} placeholder="Ex.: CAU/BR A000000-0" /></Campo>
 
@@ -565,7 +565,7 @@ function ProjetoDialog({ aberto, onFechar, projeto, onSalvar }: { aberto: boolea
           </div>
           <label className="flex cursor-pointer items-center gap-2.5 text-[13px] text-ink/80">
             <input type="checkbox" className="h-4 w-4 accent-[#d23a1f]" checked={padrao} onChange={(e) => setPadrao(e.target.checked)} />
-            Guardar como minha marca padrão (para as próximas obras)
+            Guardar como minha marca padrão (para os próximos projetos)
           </label>
         </div>
 
@@ -660,9 +660,9 @@ function RequisitoDialog({ aberto, onFechar, requisito, ambientes, etapas, itens
         <Campo nome="Requisito" dica="Descreva a necessidade em uma frase.">
           <textarea className={`${campo} resize-none`} rows={3} value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Ex.: Pré-instalação de cabeamento de rede wi-fi" />
         </Campo>
-        <Campo nome="Ambiente" dica="Escolha “Geral” se vale para a obra toda.">
+        <Campo nome="Ambiente" dica="Escolha “Geral” se vale para o projeto todo.">
           <select className={campo} value={ambiente} onChange={(e) => setAmbiente(e.target.value)}>
-            <option value="">Geral (toda a obra)</option>
+            <option value="">Geral (todo o projeto)</option>
             {ambientes.map((a) => (
               <option key={a} value={a}>{a}</option>
             ))}

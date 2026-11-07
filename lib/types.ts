@@ -169,6 +169,6 @@ export interface Config {
 }
 
 export const CONFIG_PADRAO: Config = {
-  nomeObra: "Obra",
+  nomeObra: "Projeto",
   orcamentoTotal: 0,
 };

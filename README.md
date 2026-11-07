@@ -1,12 +1,12 @@
 # Pitangueira
 
-Gestão de obras do arquiteto ao cliente: orçamento por etapas, pagamentos, andamento e programa de necessidades,
+Gestão de projetos do arquiteto ao cliente: orçamento por etapas, pagamentos, andamento e programa de necessidades,
 com acesso do cliente por link e código (sem criar conta).
 
-- **Arquiteto** entra com Google, cria quantas obras quiser e vê só as dele.
-- **Cliente** abre o link da obra, digita o código e o nome, e acompanha. Pode marcar feito/pago, editar o orçamento
+- **Arquiteto** entra com Google, cria quantos projetos quiser e vê só as dele.
+- **Cliente** abre o link do projeto, digita o código e o nome, e acompanha. Pode marcar feito/pago, editar o orçamento
   disponível e aprovar o programa de necessidades; cada marcação registra quem fez.
-- Cada obra tem seus próprios dados (os itens vivem dentro da obra), então uma obra nunca enxerga outra.
+- Cada projeto tem seus próprios dados (os itens vivem dentro do projeto), então um projeto nunca enxerga outro.
 
 **Stack:** Next.js 16 (App Router) · TypeScript · Tailwind v4 · Firebase (Firestore + Auth) · Recharts
 
@@ -58,13 +58,13 @@ Mesmo assim, não versione o `.env.local`.
 ```
 app/
   page.tsx            home: login, painel do arquiteto ou home do cliente
-  obra/[id]/          tela da obra (arquiteto ou cliente, conforme o acesso)
+  obra/[id]/          tela do projeto (arquiteto ou cliente, conforme o acesso)
   components/         interface (painel, itens, gráficos, programa, diálogos)
 lib/
   firebase.ts         inicialização (e detecção do modo demo)
   auth.tsx            login Google (arquiteto) e anônimo (cliente)
-  obras.tsx           lista, criação, arquivamento e exclusão de obras
-  data.tsx            itens, orçamento e programa de uma obra
+  obras.tsx           lista, criação, arquivamento e exclusão de projetos
+  data.tsx            itens, orçamento e programa de um projeto
   calc.ts             cálculos de orçado, pago e andamento
 firestore.rules       regras de segurança multi-tenant
 docs/                 análise de concorrência e roadmap

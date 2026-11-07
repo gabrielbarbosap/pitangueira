@@ -114,7 +114,7 @@ export function DataProvider({ obraId, children }: { obraId: string; children: R
     const unsubObra = onSnapshot(doc(db, "obras", obraId), (d) => {
       if (d.exists()) {
         const o = d.data();
-        setConfig({ nomeObra: o.nome ?? "Obra", orcamentoTotal: o.orcamentoTotal ?? 0 });
+        setConfig({ nomeObra: o.nome ?? "Projeto", orcamentoTotal: o.orcamentoTotal ?? 0 });
         resumoSalvo.current = JSON.stringify(o.resumo ?? null);
         setProjeto({ ...PROJETO_VAZIO, ...(o.projeto ?? {}) });
         setPrograma(o.programa ?? PROGRAMA_VAZIO);

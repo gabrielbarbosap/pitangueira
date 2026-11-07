@@ -8,7 +8,7 @@ import type { Item } from "@/lib/types";
 import type { ConfigOrcamentoPdf, EscopoOrcamento, SaidaOrcamento } from "./OrcamentoDocumento";
 
 const ESCOPOS: { id: EscopoOrcamento; titulo: string; dica: string }[] = [
-  { id: "geral", titulo: "Orçamento geral", dica: "A obra toda, organizada por etapa, com o resumo financeiro." },
+  { id: "geral", titulo: "Orçamento geral", dica: "O projeto todo, organizado por etapa, com o resumo financeiro." },
   { id: "etapa", titulo: "Por etapa", dica: "Só as etapas que você escolher (ex.: Pintura, Elétrica)." },
   { id: "ambiente", titulo: "Por ambiente", dica: "Só os ambientes que você escolher (ex.: Cozinha, Suíte)." },
 ];

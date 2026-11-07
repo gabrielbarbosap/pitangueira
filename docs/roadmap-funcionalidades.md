@@ -1,7 +1,7 @@
 # Pitangueira — roadmap de funcionalidades para o arquiteto
 
 Ponto de partida: o PDF "Programa de necessidades" do Jadir (reforma da casa Pitanga) e a planilha de orçamento por etapas.
-Ideia central: **um fio condutor** — o que o cliente pediu vira orçamento, que vira obra, e o cliente enxerga isso inteiro.
+Ideia central: **um fio condutor** — o que o cliente pediu vira orçamento, que vira projeto, e o cliente enxerga isso inteiro.
 
 ## O que o PDF ensina
 
@@ -23,24 +23,24 @@ Dois achados:
 
 | Fase | Funcionalidade | Valor |
 |---|---|---|
-| 0. Dados da obra | Cliente(s), endereço, tipo de obra, responsável técnico (CAU/CREA), datas | Base para todos os documentos |
+| 0. Dados do projeto | Cliente(s), endereço, tipo de projeto, responsável técnico (CAU/CREA), datas | Base para todos os documentos |
 | 1. Briefing | **Programa de necessidades**: ambientes (qtd, função, área, proximidades) + requisitos, com status (pendente / previsto / atendido) | O documento que o Jadir já faz à mão |
 | 1. Briefing | Exportar PDF com a marca do arquiteto; cliente **aprova online** (nome + data) | Substitui PDF + WhatsApp |
 | 2. Orçamento | **Catálogo do arquiteto**: itens com unidade, valor de referência, etapa | Montar orçamento sem redigitar |
-| 2. Orçamento | **Modelos por tipo de obra** (reforma residencial, construção, comercial, interiores) | Resolve o "genérico" |
-| 2. Orçamento | Montar por ambiente (qtd × unitário), duplicar obra, **revisões** (REV01, REV02) | O arquiteto já versiona assim |
+| 2. Orçamento | **Modelos por tipo de projeto** (reforma residencial, construção, comercial, interiores) | Resolve o "genérico" |
+| 2. Orçamento | Montar por ambiente (qtd × unitário), duplicar projeto, **revisões** (REV01, REV02) | O arquiteto já versiona assim |
 | 2. Orçamento | Importar planilha (xlsx/csv) | Entrada do cliente existente |
 | 3. Execução | Vincular requisito ↔ itens do orçamento (rastreabilidade) | "Pedi X, custou Y, está Z%" |
 | 3. Execução | **Diário de obra com fotos** | Lacuna vs concorrentes; cliente espera ver foto |
 | 3. Execução | Cronograma por etapa e **fluxo de pagamentos** (parcelas por data) | Quando sai dinheiro |
 | 3. Execução | Fornecedores/prestadores e valor contratado | Hoje é só um campo de texto |
 | 3. Execução | **Aditivos / pedidos de alteração** com aprovação do cliente | Evita o "não combinamos isso" |
-| 4. Entrega | Documentos da obra (projetos, ART/RRT, contratos) | Tudo num lugar |
+| 4. Entrega | Documentos do projeto (plantas, ART/RRT, contratos) | Tudo num lugar |
 
 ## Como ser genérico sem virar monstro
 
-Não construir um "motor configurável". Quatro blocos servem a qualquer obra: **Ambiente**, **Requisito**, **Etapa**, **Item**.
-O que muda de um tipo de obra para outro é só o *modelo* (lista inicial de etapas, ambientes e itens sugeridos), que é dado,
+Não construir um "motor configurável". Quatro blocos servem a qualquer projeto: **Ambiente**, **Requisito**, **Etapa**, **Item**.
+O que muda de um tipo de projeto para outro é só o *modelo* (lista inicial de etapas, ambientes e itens sugeridos), que é dado,
 não código. A Casa Pitanga vira o primeiro modelo ("Reforma residencial completa").
 
 ## Fora do escopo (por enquanto)

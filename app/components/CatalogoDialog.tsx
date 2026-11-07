@@ -77,7 +77,7 @@ export function CatalogoDialog({
   async function remover(c: CatalogoItem) {
     const ok = await confirmar({
       titulo: "Remover do catálogo",
-      mensagem: `Remover "${c.descricao}" do seu catálogo? Os orçamentos das obras não mudam.`,
+      mensagem: `Remover "${c.descricao}" do seu catálogo? Os orçamentos dos projetos não mudam.`,
       confirmar: "Remover",
       tom: "perigo",
     });
@@ -117,7 +117,7 @@ export function CatalogoDialog({
         <p className="text-[13px] leading-snug text-ink/65">
           {onAdicionar
             ? "Seus itens com unidade e valor de referência. Informe a quantidade e toque em Adicionar para montar o orçamento sem redigitar."
-            : "Itens com unidade e valor de referência, só seus. Dentro de cada obra você os adiciona ao orçamento com a quantidade."}
+            : "Itens com unidade e valor de referência, só seus. Dentro de cada projeto você os adiciona ao orçamento com a quantidade."}
         </p>
 
         {editando ? (
@@ -153,8 +153,8 @@ export function CatalogoDialog({
           <div className="flex flex-wrap gap-2">
             <button className="btn btn-primario px-4 py-2.5 text-sm" onClick={() => abrirForm("novo")}>+ Novo item</button>
             {itensObra && itensObra.length > 0 && (
-              <button className="btn btn-linha px-4 py-2.5 text-sm" disabled={ocupado} onClick={importarDaObra} title="Copia os itens desta obra para o seu catálogo (sem repetir)">
-                Importar desta obra
+              <button className="btn btn-linha px-4 py-2.5 text-sm" disabled={ocupado} onClick={importarDaObra} title="Copia os itens deste projeto para o seu catálogo (sem repetir)">
+                Importar deste projeto
               </button>
             )}
           </div>
@@ -173,7 +173,7 @@ export function CatalogoDialog({
 
         {catalogo.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-ink/30 px-4 py-8 text-center text-sm text-ink/55">
-            Seu catálogo está vazio. Crie itens ou {itensObra && itensObra.length > 0 ? "importe os desta obra" : "salve itens ao cadastrá-los em uma obra"} para reaproveitar depois.
+            Seu catálogo está vazio. Crie itens ou {itensObra && itensObra.length > 0 ? "importe os deste projeto" : "salve itens ao cadastrá-los em um projeto"} para reaproveitar depois.
           </p>
         ) : filtrados.length === 0 ? (
           <p className="py-6 text-center text-sm text-ink/55">Nenhum item para “{busca}”.</p>

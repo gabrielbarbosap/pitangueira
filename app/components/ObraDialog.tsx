@@ -49,10 +49,10 @@ export function ObraDialog({ aberto, onFechar }: { aberto: boolean; onFechar: ()
   const rotulo = "rotulo-tec mb-1 block text-ink/55";
 
   return (
-    <Modal aberto={aberto} onFechar={onFechar} titulo="Nova obra">
+    <Modal aberto={aberto} onFechar={onFechar} titulo="Novo projeto">
       <div className="space-y-4">
         <div>
-          <label className={rotulo}>Nome da obra</label>
+          <label className={rotulo}>Nome do projeto</label>
           <input className={campo} placeholder="Ex.: Casa Pitanga" value={nome} onChange={(e) => setNome(e.target.value)} />
         </div>
 
@@ -64,13 +64,13 @@ export function ObraDialog({ aberto, onFechar }: { aberto: boolean; onFechar: ()
               Gerar
             </button>
           </div>
-          <p className="mt-1 text-xs text-ink/50">O cliente usa essa chave, junto com o link da obra, para acompanhar tudo.</p>
+          <p className="mt-1 text-xs text-ink/50">O cliente usa essa chave, junto com o link do projeto, para acompanhar tudo.</p>
         </div>
 
         <div>
           <label className={rotulo}>Orçamento disponível (R$) — opcional</label>
           <input type="number" inputMode="decimal" className={campo} placeholder="0,00" value={teto} onChange={(e) => setTeto(e.target.value)} />
-          <p className="mt-1 text-xs text-ink/50">O teto da obra. Pode ser definido depois, em Ajustes.</p>
+          <p className="mt-1 text-xs text-ink/50">O teto do projeto. Pode ser definido depois, em Ajustes.</p>
         </div>
 
         <label className="flex cursor-pointer items-start gap-2.5 border border-linha p-3 text-sm text-ink/75 transition-colors hover:border-ink">
@@ -82,7 +82,7 @@ export function ObraDialog({ aberto, onFechar }: { aberto: boolean; onFechar: ()
         </label>
 
         <button onClick={salvar} disabled={!valido || salvando} className="btn btn-primario w-full px-4 py-3 text-sm">
-          {salvando ? "Criando…" : "Criar obra"}
+          {salvando ? "Criando…" : "Criar projeto"}
         </button>
       </div>
     </Modal>

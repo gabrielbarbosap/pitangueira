@@ -47,7 +47,7 @@ export function SummaryCards({ resumo }: { resumo: Resumo }) {
         <Cartao
           rotulo="Orçamento disponível"
           valor={resumo.teto > 0 ? brl(resumo.teto) : "—"}
-          sub={resumo.teto > 0 ? "o teto da obra" : "defina em Ajustes"}
+          sub={resumo.teto > 0 ? "o teto do projeto" : "defina em Ajustes"}
         />
         <Cartao
           rotulo="Saldo em caixa"
