@@ -19,6 +19,9 @@ export function DocumentoBase({
   titulo,
   etapaRotulo,
   aprovacao,
+  nomeArquivo,
+  barra,
+  rotuloImprimir = "Imprimir / salvar PDF",
   children,
 }: {
   onFechar: () => void;
@@ -26,9 +29,23 @@ export function DocumentoBase({
   titulo: string;
   etapaRotulo: string;
   aprovacao?: AprovacaoPrograma | null;
+  /** Nome sugerido ao salvar o PDF (o navegador usa o título da página). */
+  nomeArquivo?: string;
+  /** Controles extras na barra de ações (ex.: navegar entre PDFs). */
+  barra?: ReactNode;
+  rotuloImprimir?: string;
   children: ReactNode;
 }) {
   const { config, projeto } = useData();
+
+  function imprimir() {
+    if (nomeArquivo) {
+      const antigo = document.title;
+      document.title = nomeArquivo;
+      window.addEventListener("afterprint", () => (document.title = antigo), { once: true });
+    }
+    window.print();
+  }
   const cor = corMarca(projeto.cor);
   const data = new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
   const estilo = { "--marca": cor } as CSSProperties;
@@ -46,8 +63,9 @@ export function DocumentoBase({
         <button onClick={onFechar} className="font-mono text-xs font-semibold uppercase tracking-wider text-ink/70 hover:text-ink">
           ← Fechar
         </button>
-        <button onClick={() => window.print()} className="bg-pitanga px-4 py-2 text-sm font-semibold text-white active:bg-pitanga-escuro">
-          Imprimir / salvar PDF
+        {barra && <div className="flex min-w-0 flex-1 items-center justify-center">{barra}</div>}
+        <button onClick={imprimir} className="shrink-0 bg-pitanga px-4 py-2 text-sm font-semibold text-white active:bg-pitanga-escuro">
+          {rotuloImprimir}
         </button>
       </div>
 
