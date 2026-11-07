@@ -117,6 +117,14 @@ export function DocumentoBase({
             </p>
           </div>
         </footer>
+
+        {/* Selo do produto: discreto, depois das assinaturas, em todo PDF. */}
+        <div className="mt-10 flex break-inside-avoid items-center justify-center gap-2.5 border-t border-linha pt-4 text-ink/45">
+          <LogoMark size={20} />
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em]">
+            Gerado com <span className="text-ink/70">Pitangueira</span> · gestão de obras
+          </p>
+        </div>
       </article>
     </div>
   );
