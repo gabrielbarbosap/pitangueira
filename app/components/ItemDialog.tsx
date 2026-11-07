@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Modal } from "./Modal";
 import { useData } from "@/lib/data";
 import { useArquiteto } from "@/lib/arquiteto";
-import { brl } from "@/lib/format";
+import { useDinheiro } from "@/lib/privacidade";
 import type { CatalogoItem, Item } from "@/lib/types";
 
 const VAZIO = {
@@ -39,6 +39,7 @@ export function ItemDialog({
   const [form, setForm] = useState(VAZIO);
   const [salvando, setSalvando] = useState(false);
   const { catalogo, salvarItem: salvarNoCatalogo } = useArquiteto();
+  const { brl } = useDinheiro();
   const [buscaCat, setBuscaCat] = useState("");
   const [guardar, setGuardar] = useState(false);
 

@@ -23,6 +23,7 @@ import { ConfigDialog } from "./ConfigDialog";
 import { ProgramaTab } from "./ProgramaTab";
 import { CatalogoDialog } from "./CatalogoDialog";
 import { EmAndamento } from "./EmAndamento";
+import { BotaoOlho } from "./BotaoOlho";
 import { OrcamentoDocumento, type ConfigOrcamentoPdf } from "./OrcamentoDocumento";
 import { OrcamentoPdfDialog } from "./OrcamentoPdfDialog";
 import { GerenciarObraDialog } from "./GerenciarObraDialog";
@@ -145,6 +146,7 @@ export function Dashboard() {
             </button>
             <Logo claro />
             <div className="flex gap-2">
+              <BotaoOlho className={botaoTopo} />
               <button onClick={() => setConfigDialog(true)} className={botaoTopo} aria-label="Ajustes da obra" title="Ajustes da obra">
                 <IconeAjustes />
               </button>

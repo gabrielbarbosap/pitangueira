@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { brl, percentual } from "@/lib/format";
+import { percentual } from "@/lib/format";
+import { useDinheiro } from "@/lib/privacidade";
 import { useData } from "@/lib/data";
 import { useConfirm } from "./ConfirmProvider";
 import { IconeEditar, IconeLixo, IconeSeta } from "./Icones";
@@ -50,6 +51,7 @@ const PAGO_ATIVO = "border-emerald-600 bg-emerald-600 text-white";
 
 function Linha({ item, onEditar }: { item: Item; onEditar: (i: Item) => void }) {
   const { updateItem, removeItem, ehCliente } = useData();
+  const { brl } = useDinheiro();
   const confirmar = useConfirm();
   const detalhes = [item.quantidade > 0 && `${item.quantidade} × ${brl(item.valorUnitario)}`, item.fornecedor, item.observacao].filter(Boolean).join(" · ");
 
@@ -115,6 +117,7 @@ function Linha({ item, onEditar }: { item: Item; onEditar: (i: Item) => void }) 
 
 function GrupoCard({ grupo, onEditar, forcarAberto }: { grupo: Grupo; onEditar: (i: Item) => void; forcarAberto?: boolean }) {
   const { updateMany } = useData();
+  const { brl } = useDinheiro();
   const confirmar = useConfirm();
   const [aberto, setAberto] = useState(false);
   const mostrar = forcarAberto || aberto;

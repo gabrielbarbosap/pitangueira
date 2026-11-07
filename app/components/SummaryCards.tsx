@@ -1,6 +1,6 @@
 "use client";
 
-import { brl, brlInt } from "@/lib/format";
+import { useDinheiro } from "@/lib/privacidade";
 import type { Resumo } from "@/lib/calc";
 import { Regua } from "./Regua";
 
@@ -16,6 +16,7 @@ function Cartao({ rotulo, valor, sub, alerta }: { rotulo: string; valor: string;
 
 /** Os dois números que ficam flutuando sobre o topo laranja: o que já saiu e o que falta. */
 export function ResumoTopo({ resumo }: { resumo: Resumo }) {
+  const { brlInt } = useDinheiro();
   return (
     <section className="relative z-10 grid grid-cols-2 gap-3" aria-label="Pago e a pagar">
       <Cartao rotulo="Já pago" valor={brlInt(resumo.pagoTotal)} sub={`${resumo.pctPago}% do previsto`} />
@@ -38,6 +39,7 @@ function Barra({ rotulo, pct, detalhe }: { rotulo: string; pct: number; detalhe?
 }
 
 export function SummaryCards({ resumo }: { resumo: Resumo }) {
+  const { brl } = useDinheiro();
   const estouro = resumo.projecaoVsTeto < 0;
   return (
     <section className="space-y-3" aria-label="Orçamento e andamento">

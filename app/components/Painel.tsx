@@ -6,7 +6,9 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { useObras } from "@/lib/obras";
 import { CASA_PITANGA_EMAILS } from "@/lib/demo";
-import { brlInt, percentual } from "@/lib/format";
+import { percentual } from "@/lib/format";
+import { useDinheiro } from "@/lib/privacidade";
+import { BotaoOlho } from "./BotaoOlho";
 import type { Obra } from "@/lib/types";
 import { Logo, LogoMark } from "./Logo";
 import { Regua } from "./Regua";
@@ -43,6 +45,7 @@ function Cartao({ rotulo, valor, sub, destaque }: { rotulo: string; valor: strin
 
 function CardObra({ obra, onGerenciar }: { obra: Obra; onGerenciar: () => void }) {
   const [copiado, setCopiado] = useState(false);
+  const { brlInt } = useDinheiro();
   const r = obra.resumo;
   const st = STATUS[statusDe(obra)];
   const execucao = r && r.itens > 0 ? percentual(r.concluidos, r.itens) : 0;
@@ -215,6 +218,7 @@ export function Painel() {
               >
                 {primeiroNome.slice(0, 1)}
               </span>
+              <BotaoOlho className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white transition-colors hover:bg-white/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white" />
               <button
                 onClick={logout}
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white transition-colors hover:bg-white/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"

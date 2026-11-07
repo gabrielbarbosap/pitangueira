@@ -5,7 +5,7 @@ import { Modal } from "./Modal";
 import { useConfirm } from "./ConfirmProvider";
 import { IconeBusca, IconeEditar, IconeLixo } from "./Icones";
 import { catalogoDeItem, useArquiteto } from "@/lib/arquiteto";
-import { brl } from "@/lib/format";
+import { useDinheiro } from "@/lib/privacidade";
 import type { CatalogoItem, Item } from "@/lib/types";
 
 const campo = "campo-pit w-full border border-ink/25 bg-white px-3 py-2.5 text-sm text-ink outline-none";
@@ -41,6 +41,7 @@ export function CatalogoDialog({
 }) {
   const { catalogo, salvarItem, removerItem, importar } = useArquiteto();
   const confirmar = useConfirm();
+  const { brl } = useDinheiro();
   const [busca, setBusca] = useState("");
   const [editando, setEditando] = useState<CatalogoItem | "novo" | null>(null);
   const [form, setForm] = useState<Form>(FORM_VAZIO);

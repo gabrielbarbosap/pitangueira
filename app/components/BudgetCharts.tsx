@@ -14,7 +14,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { brl, brlCompacto } from "@/lib/format";
+import { useDinheiro } from "@/lib/privacidade";
 import { statusGrupo, type Grupo, type Resumo } from "@/lib/calc";
 import type { Item } from "@/lib/types";
 
@@ -56,6 +56,7 @@ const rotuloPct = ({ percent }: { percent?: number }) =>
 
 /** Rosca: composição do orçamento (todas as etapas/ambientes). Detalhe só no hover. */
 export function ChartComposicao({ grupos }: { grupos: Grupo[] }) {
+  const { brl } = useDinheiro();
   if (grupos.length === 0) return null;
   const dados = [...grupos]
     .sort((a, b) => b.orcado - a.orcado)
@@ -80,6 +81,9 @@ export function ChartComposicao({ grupos }: { grupos: Grupo[] }) {
 
 /** Barras horizontais: orçamento por grupo, com a parte paga em verde. */
 export function ChartAndamento({ grupos, titulo }: { grupos: Grupo[]; titulo: string }) {
+  const { oculto, brl, brlCompacto } = useDinheiro();
+  // Escondido: eixo e rótulos de valor ficam vazios (a máscara repetida só poluiria).
+  const compacto = (v: number) => (oculto ? "" : brlCompacto(v));
   if (grupos.length === 0) return null;
   const dados = [...grupos]
     .sort((a, b) => b.previsto - a.previsto)
@@ -96,13 +100,13 @@ export function ChartAndamento({ grupos, titulo }: { grupos: Grupo[]; titulo: st
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={dados} layout="vertical" margin={{ left: 8, right: 64, top: 4, bottom: 4 }} barCategoryGap="22%">
           <CartesianGrid strokeDasharray="3 3" stroke="#f0ede8" horizontal={false} />
-          <XAxis type="number" tickFormatter={brlCompacto} tick={{ fontSize: 10, fill: "#a8a29e" }} />
+          <XAxis type="number" tickFormatter={compacto} tick={{ fontSize: 10, fill: "#a8a29e" }} />
           <YAxis type="category" dataKey="nome" tickFormatter={(v: string) => corte(v, 24)} tick={{ fontSize: 11, fill: "#57534e" }} width={160} />
           <Tooltip formatter={(v) => brl(Number(v))} contentStyle={tooltipStyle} cursor={{ fill: "#faf9f7" }} />
           <Legend wrapperStyle={{ fontSize: 12 }} />
           <Bar dataKey="Pago" stackId="a" fill="#10b981" />
           <Bar dataKey="A pagar" stackId="a" fill="#e7e5e4" radius={[0, 4, 4, 0]}>
-            <LabelList dataKey="total" position="right" formatter={(v) => brlCompacto(Number(v))} style={{ fontSize: 11, fill: "#78716c" }} />
+            <LabelList dataKey="total" position="right" formatter={(v) => compacto(Number(v))} style={{ fontSize: 11, fill: "#78716c" }} />
           </Bar>
         </BarChart>
       </ResponsiveContainer>
@@ -112,6 +116,7 @@ export function ChartAndamento({ grupos, titulo }: { grupos: Grupo[]; titulo: st
 
 /** Rosca: visão financeira geral (pago x a pagar). */
 export function ChartPagoApagar({ resumo }: { resumo: Resumo }) {
+  const { brl } = useDinheiro();
   const dados = [
     { name: "Pago", value: Math.round(resumo.pagoTotal), cor: "#10b981" },
     { name: "A pagar", value: Math.max(0, Math.round(resumo.faltaPagar)), cor: "#e7e5e4" },
@@ -163,6 +168,8 @@ export function ChartStatus({ grupos }: { grupos: Grupo[] }) {
 
 /** Barras: os 10 itens mais caros do orçamento. */
 export function ChartTopItens({ itens }: { itens: Item[] }) {
+  const { oculto, brl, brlCompacto } = useDinheiro();
+  const compacto = (v: number) => (oculto ? "" : brlCompacto(v));
   if (itens.length === 0) return null;
   const dados = [...itens]
     .sort((a, b) => b.valorOrcado - a.valorOrcado)
@@ -174,11 +181,11 @@ export function ChartTopItens({ itens }: { itens: Item[] }) {
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={dados} layout="vertical" margin={{ left: 8, right: 64, top: 4, bottom: 4 }} barCategoryGap="20%">
           <CartesianGrid strokeDasharray="3 3" stroke="#f0ede8" horizontal={false} />
-          <XAxis type="number" tickFormatter={brlCompacto} tick={{ fontSize: 10, fill: "#a8a29e" }} />
+          <XAxis type="number" tickFormatter={compacto} tick={{ fontSize: 10, fill: "#a8a29e" }} />
           <YAxis type="category" dataKey="nome" tickFormatter={(v: string) => corte(v, 26)} tick={{ fontSize: 11, fill: "#57534e" }} width={170} />
           <Tooltip formatter={(v) => brl(Number(v))} contentStyle={tooltipStyle} cursor={{ fill: "#faf9f7" }} />
           <Bar dataKey="valor" name="Orçado" fill="#0ea5e9" radius={[0, 4, 4, 0]}>
-            <LabelList dataKey="valor" position="right" formatter={(v) => brlCompacto(Number(v))} style={{ fontSize: 11, fill: "#78716c" }} />
+            <LabelList dataKey="valor" position="right" formatter={(v) => compacto(Number(v))} style={{ fontSize: 11, fill: "#78716c" }} />
           </Bar>
         </BarChart>
       </ResponsiveContainer>

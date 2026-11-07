@@ -3,7 +3,7 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { Modal } from "./Modal";
 import { agruparPor } from "@/lib/calc";
-import { brlInt } from "@/lib/format";
+import { useDinheiro } from "@/lib/privacidade";
 import type { Item } from "@/lib/types";
 import type { ConfigOrcamentoPdf, EscopoOrcamento, SaidaOrcamento } from "./OrcamentoDocumento";
 
@@ -46,6 +46,7 @@ export function OrcamentoPdfDialog({
   itens: Item[];
   onGerar: (cfg: ConfigOrcamentoPdf) => void;
 }) {
+  const { brlInt } = useDinheiro();
   const [escopo, setEscopo] = useState<EscopoOrcamento>("geral");
   // Guarda o que foi desmarcado: tudo começa marcado, ao abrir e ao trocar o escopo.
   const [fora, setFora] = useState<string[]>([]);

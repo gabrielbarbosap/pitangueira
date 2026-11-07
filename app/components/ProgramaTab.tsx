@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useAuth } from "@/lib/auth";
 import { useData } from "@/lib/data";
 import { useArquiteto } from "@/lib/arquiteto";
-import { brlInt } from "@/lib/format";
+import { useDinheiro } from "@/lib/privacidade";
 import { MODELOS_PROGRAMA, type ModeloPrograma } from "@/lib/modelosPrograma";
 import { filtrarItens, valorEfetivo, vinculoDoRequisito, type Grupo } from "@/lib/calc";
 import type { AmbientePrograma, Item, Projeto, Requisito, StatusRequisito } from "@/lib/types";
@@ -91,6 +91,7 @@ function Campo({ nome, dica, children }: { nome: string; dica?: string; children
 
 export function ProgramaTab({ gruposEtapa }: { gruposEtapa: Grupo[] }) {
   const { user } = useAuth();
+  const { brlInt } = useDinheiro();
   const { ehCliente, projeto, programa, aprovacao, saveProjeto, savePrograma, aprovarPrograma, itens } = useData();
   const confirmar = useConfirm();
 
@@ -626,6 +627,7 @@ function RequisitoDialog({ aberto, onFechar, requisito, ambientes, etapas, itens
   const [etapa, setEtapa] = useState("");
   const [sel, setSel] = useState<string[]>([]);
   const [busca, setBusca] = useState("");
+  const { brlInt } = useDinheiro();
 
   useEffect(() => {
     if (!aberto) return;
