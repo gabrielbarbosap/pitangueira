@@ -1,26 +1,209 @@
 @import "tailwindcss";
 
+/* Pitangueira — papel, tinta e o vermelho-alaranjado da pitanga (ação, destaque e alerta). */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f4f2ee;
+  --foreground: #14110f;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-papel: #f4f2ee;
+  --color-ink: #14110f;
+  --color-linha: rgba(20, 17, 15, 0.12);
+  --color-pitanga: #d23a1f;
+  --color-pitanga-escuro: #b32e16;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+html,
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Grade de prancha como detalhe: linhas bem discretas a cada 28px. */
+.grade {
+  background-image:
+    linear-gradient(to right, rgba(20, 17, 15, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(20, 17, 15, 0.03) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* Cartão: branco, cantos arredondados, borda fina. */
+@layer components {
+  .prancha {
+    position: relative;
+    background: #fff;
+    border: 1px solid var(--color-linha);
+    border-radius: 20px;
+  }
+}
+
+/* Rótulo técnico: mono, caixa alta, espaçado. */
+.rotulo-tec {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* Impressão: só o documento aberto (.print-area) aparece; o resto do app some. */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    position: absolute;
+    inset: 0;
+  }
+  .no-print {
+    display: none !important;
+  }
+  @page {
+    margin: 16mm;
+  }
+}
+
+/* Respeita a área segura de aparelhos com barra inferior. */
+.pb-seguro {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+/* ---------- Botões: hover, foco visível e clique ---------- */
+@layer components {
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 14px;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.12s ease,
+    box-shadow 0.18s ease;
+}
+.btn:focus-visible,
+.campo-pit:focus-visible,
+.clicavel:focus-visible {
+  outline: 2px solid var(--color-pitanga);
+  outline-offset: 2px;
+}
+.btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+.btn-primario {
+  background: var(--color-pitanga);
+  color: #fff;
+  font-weight: 600;
+}
+.btn-primario:hover:not(:disabled) {
+  background: var(--color-pitanga-escuro);
+  box-shadow: 0 8px 18px -8px rgba(210, 58, 31, 0.6);
+  transform: translateY(-1px);
+}
+/* Botão sólido escuro: ação normal; o laranja fica para ação principal e alerta. */
+.btn-solido {
+  background: var(--color-ink);
+  color: #fff;
+  font-weight: 600;
+}
+.btn-solido:hover:not(:disabled) {
+  background: #2c2723;
+  box-shadow: 0 8px 18px -8px rgba(20, 17, 15, 0.5);
+  transform: translateY(-1px);
+}
+.btn-linha {
+  border: 1px solid rgba(20, 17, 15, 0.5);
+  background: transparent;
+  color: var(--color-ink);
+}
+.btn-linha:hover:not(:disabled) {
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+  color: #fff;
+}
+/* Botão de ícone discreto (editar/remover). */
+.btn-icone {
+  border: 1px solid var(--color-linha);
+  border-radius: 12px;
+  background: #fff;
+  color: rgba(20, 17, 15, 0.6);
+}
+.btn-icone:hover:not(:disabled) {
+  border-color: rgba(20, 17, 15, 0.45);
+  color: var(--color-ink);
+  background: rgba(20, 17, 15, 0.04);
+}
+.btn-icone.perigo:hover:not(:disabled) {
+  border-color: var(--color-pitanga);
+  color: var(--color-pitanga);
+  background: rgba(210, 58, 31, 0.07);
+}
+
+/* Linha de lista com destaque ao passar o mouse. */
+.linha-hover {
+  transition: background-color 0.15s ease;
+}
+.linha-hover:hover {
+  background: rgba(20, 17, 15, 0.03);
+}
+
+/* Cartão clicável: sobe suavemente. */
+.prancha-clicavel {
+  cursor: pointer;
+  transition:
+    box-shadow 0.18s ease,
+    transform 0.18s ease,
+    border-color 0.18s ease;
+}
+.prancha-clicavel:hover {
+  border-color: rgba(20, 17, 15, 0.3);
+  box-shadow: 0 14px 28px -14px rgba(20, 17, 15, 0.35);
+  transform: translateY(-2px);
+}
+.prancha-clicavel:active {
+  box-shadow: none;
+  transform: translateY(0);
+}
+
+/* Campo de formulário com foco bem visível. */
+.campo-pit {
+  border-radius: 14px;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.campo-pit:hover {
+  border-color: rgba(20, 17, 15, 0.45);
+}
+.campo-pit:focus {
+  border-color: var(--color-pitanga);
+  box-shadow: 0 0 0 3px rgba(210, 58, 31, 0.15);
+}
+}
+
+/* Inputs numéricos sem as setinhas. */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
 }

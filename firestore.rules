@@ -1,0 +1,56 @@
+rules_version = '2';
+
+// Regras de segurança — SaaS multi-tenant de obras.
+// - Arquiteto (dono) só enxerga/gerencia as obras que criou (por uid) ou co-gerencia (por e-mail).
+// - Cliente (membro) só acessa a obra cujo código digitou; pode marcar feito/pago e editar o orçamento.
+// - Itens vivem dentro da obra, então uma obra nunca vê dados de outra.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+    // Dono a partir dos dados da própria obra (uid ou e-mail em ownerEmails).
+    function ehDono(data) {
+      return signedIn() && (
+        data.ownerUid == request.auth.uid
+        || data.get('ownerEmails', []).hasAny([request.auth.token.email])
+      );
+    }
+    function obra(obraId) {
+      return get(/databases/$(database)/documents/obras/$(obraId)).data;
+    }
+    // Dono a partir do id (usado nas subcoleções, que precisam buscar a obra-mãe).
+    function isOwner(obraId) {
+      return ehDono(obra(obraId));
+    }
+    function isMember(obraId) {
+      return signedIn() && exists(/databases/$(database)/documents/obras/$(obraId)/members/$(request.auth.uid));
+    }
+    function soAltera(campos) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(campos);
+    }
+
+    match /obras/{obraId} {
+      allow read: if ehDono(resource.data) || isMember(obraId);
+      allow create: if signedIn() && request.resource.data.ownerUid == request.auth.uid;
+      allow update: if ehDono(resource.data)
+        || (isMember(obraId) && soAltera(['orcamentoTotal', 'resumo', 'programaAprovacao', 'updatedAt']));
+      allow delete: if ehDono(resource.data);
+
+      match /itens/{itemId} {
+        allow read: if isOwner(obraId) || isMember(obraId);
+        allow create, delete: if isOwner(obraId);
+        allow update: if isOwner(obraId)
+          || (isMember(obraId) && soAltera(['feito', 'pago', 'feitoPor', 'feitoEm', 'pagoPor', 'pagoEm', 'updatedAt']));
+      }
+
+      match /members/{uid} {
+        allow create: if signedIn() && request.auth.uid == uid
+          && request.resource.data.code == obra(obraId).accessCode;
+        allow read: if request.auth.uid == uid || isOwner(obraId);
+        allow delete: if isOwner(obraId) || request.auth.uid == uid;
+      }
+    }
+  }
+}

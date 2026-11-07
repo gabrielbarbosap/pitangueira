@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Pitangueira
 
-## Getting Started
+Gestão de obras do arquiteto ao cliente: orçamento por etapas, pagamentos, andamento e programa de necessidades,
+com acesso do cliente por link e código (sem criar conta).
 
-First, run the development server:
+- **Arquiteto** entra com Google, cria quantas obras quiser e vê só as dele.
+- **Cliente** abre o link da obra, digita o código e o nome, e acompanha. Pode marcar feito/pago, editar o orçamento
+  disponível e aprovar o programa de necessidades; cada marcação registra quem fez.
+- Cada obra tem seus próprios dados (os itens vivem dentro da obra), então uma obra nunca enxerga outra.
+
+**Stack:** Next.js 16 (App Router) · TypeScript · Tailwind v4 · Firebase (Firestore + Auth) · Recharts
+
+## Rodando localmente
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abra http://localhost:3000. Sem variáveis de ambiente o app entra em **modo demo**: os dados ficam no navegador e o
+botão "Entrar com Google" entra como um arquiteto de exemplo.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Variáveis de ambiente
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Copie `.env.local.example` para `.env.local` e preencha com a configuração do app web do Firebase:
 
-## Learn More
+| Variável | Vem de |
+|---|---|
+| `NEXT_PUBLIC_FIREBASE_API_KEY` | Configuração do SDK |
+| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | Configuração do SDK |
+| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | Configuração do SDK |
+| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | Configuração do SDK |
+| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Configuração do SDK |
+| `NEXT_PUBLIC_FIREBASE_APP_ID` | Configuração do SDK |
 
-To learn more about Next.js, take a look at the following resources:
+Essas chaves de cliente do Firebase são públicas por desenho: a segurança está nas regras do Firestore e no login.
+Mesmo assim, não versione o `.env.local`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Configurando o Firebase
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Firestore:** crie o banco (Build → Firestore Database).
+2. **Authentication → Sign-in method:** ative **Google** (arquitetos) e **Anônimo** (clientes entram assim, com o código).
+3. **Authentication → Settings → Authorized domains:** inclua `localhost` e o domínio de produção (ex.: o da Vercel).
+4. **Regras:** publique [`firestore.rules`](./firestore.rules):
 
-## Deploy on Vercel
+   ```bash
+   firebase deploy --only firestore:rules --project <seu-projeto>
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deploy (Vercel)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Importe o repositório na Vercel (preset Next.js, sem configuração extra).
+2. Cadastre as 6 variáveis `NEXT_PUBLIC_FIREBASE_*` em Settings → Environment Variables.
+3. Depois do primeiro deploy, adicione o domínio gerado em Firebase → Authentication → Authorized domains.
+
+## Estrutura
+
+```
+app/
+  page.tsx            home: login, painel do arquiteto ou home do cliente
+  obra/[id]/          tela da obra (arquiteto ou cliente, conforme o acesso)
+  components/         interface (painel, itens, gráficos, programa, diálogos)
+lib/
+  firebase.ts         inicialização (e detecção do modo demo)
+  auth.tsx            login Google (arquiteto) e anônimo (cliente)
+  obras.tsx           lista, criação, arquivamento e exclusão de obras
+  data.tsx            itens, orçamento e programa de uma obra
+  calc.ts             cálculos de orçado, pago e andamento
+firestore.rules       regras de segurança multi-tenant
+docs/                 análise de concorrência e roadmap
+```
