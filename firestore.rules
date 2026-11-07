@@ -31,6 +31,15 @@ service cloud.firestore {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly(campos);
     }
 
+    // Catálogo e marca pessoais do arquiteto: só o próprio uid lê e escreve.
+    match /arquitetos/{uid} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+
+      match /catalogo/{itemId} {
+        allow read, write: if signedIn() && request.auth.uid == uid;
+      }
+    }
+
     match /obras/{obraId} {
       allow read: if ehDono(resource.data) || isMember(obraId);
       allow create: if signedIn() && request.resource.data.ownerUid == request.auth.uid;

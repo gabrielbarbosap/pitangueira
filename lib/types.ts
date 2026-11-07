@@ -10,9 +10,41 @@ export interface Projeto {
   responsavel: string;
   /** Registro profissional do responsável (CAU/CREA). */
   registro: string;
+  /** Marca do escritório nos documentos em PDF. */
+  escritorio: string;
+  contato: string;
+  /** Cor de destaque (hex) dos documentos. Vazio = cor padrão. */
+  cor: string;
+  /** Logo reduzida, como data URL (guardada no próprio documento da obra). */
+  logo: string;
 }
 
-export const PROJETO_VAZIO: Projeto = { cliente: "", endereco: "", tipo: "", responsavel: "", registro: "" };
+export const PROJETO_VAZIO: Projeto = {
+  cliente: "",
+  endereco: "",
+  tipo: "",
+  responsavel: "",
+  registro: "",
+  escritorio: "",
+  contato: "",
+  cor: "",
+  logo: "",
+};
+
+/** Item do catálogo pessoal do arquiteto (serve a todas as obras dele). */
+export interface CatalogoItem {
+  id: string;
+  descricao: string;
+  unidade: string;
+  valorUnitario: number;
+  etapa: string;
+  createdAt?: number;
+}
+
+/** Marca e dados padrão do arquiteto, reaproveitados nas obras novas. */
+export type PerfilArquiteto = Pick<Projeto, "escritorio" | "contato" | "cor" | "logo" | "responsavel" | "registro">;
+
+export const PERFIL_VAZIO: PerfilArquiteto = { escritorio: "", contato: "", cor: "", logo: "", responsavel: "", registro: "" };
 
 export interface AmbientePrograma {
   id: string;
@@ -34,6 +66,8 @@ export interface Requisito {
   ambiente: string;
   /** Etapa do orçamento onde esse requisito é atendido (vazio = não vinculado). */
   etapa: string;
+  /** Itens do orçamento que atendem este requisito (rastreabilidade pedido → custo → andamento). */
+  itensIds?: string[];
   status: StatusRequisito;
 }
 
@@ -96,6 +130,8 @@ export interface Item {
   etapa: string;
   ambiente: string;
   descricao: string;
+  /** Unidade de medida (m², un, vb…). */
+  unidade?: string;
   quantidade: number;
   valorUnitario: number;
   valorOrcado: number;

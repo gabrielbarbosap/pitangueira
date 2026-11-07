@@ -92,7 +92,7 @@ export function DataProvider({ obraId, children }: { obraId: string; children: R
         }[];
         const o = obras.find((x) => x.id === obraId);
         setConfig(o ? { nomeObra: o.nome, orcamentoTotal: o.orcamentoTotal } : CONFIG_PADRAO);
-        setProjeto(o?.projeto ?? PROJETO_VAZIO);
+        setProjeto({ ...PROJETO_VAZIO, ...(o?.projeto ?? {}) });
         setPrograma(o?.programa ?? PROGRAMA_VAZIO);
         setAprovacao(o?.programaAprovacao ?? null);
       } catch {

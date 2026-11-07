@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useAuth } from "@/lib/auth";
 import { useData } from "@/lib/data";
+import { useArquiteto } from "@/lib/arquiteto";
 import { brlInt } from "@/lib/format";
 import { MODELOS_PROGRAMA, type ModeloPrograma } from "@/lib/modelosPrograma";
-import type { Grupo } from "@/lib/calc";
-import type { AmbientePrograma, Projeto, Requisito, StatusRequisito } from "@/lib/types";
+import { filtrarItens, valorEfetivo, vinculoDoRequisito, type Grupo } from "@/lib/calc";
+import type { AmbientePrograma, Item, Projeto, Requisito, StatusRequisito } from "@/lib/types";
 import { Modal } from "./Modal";
 import { useConfirm } from "./ConfirmProvider";
 import { ProgramaDocumento } from "./ProgramaDocumento";
@@ -90,7 +91,7 @@ function Campo({ nome, dica, children }: { nome: string; dica?: string; children
 
 export function ProgramaTab({ gruposEtapa }: { gruposEtapa: Grupo[] }) {
   const { user } = useAuth();
-  const { ehCliente, projeto, programa, aprovacao, saveProjeto, savePrograma, aprovarPrograma } = useData();
+  const { ehCliente, projeto, programa, aprovacao, saveProjeto, savePrograma, aprovarPrograma, itens } = useData();
   const confirmar = useConfirm();
 
   const [documento, setDocumento] = useState(false);
@@ -293,6 +294,7 @@ export function ProgramaTab({ gruposEtapa }: { gruposEtapa: Grupo[] }) {
             <ul className="prancha divide-y divide-linha overflow-hidden">
               {programa.requisitos.map((r) => {
                 const e = r.etapa ? etapaInfo(r.etapa) : undefined;
+                const vinc = vinculoDoRequisito(r.itensIds, itens);
                 const st = STATUS[r.status];
                 const etiqueta = (
                   <>
@@ -314,6 +316,29 @@ export function ProgramaTab({ gruposEtapa }: { gruposEtapa: Grupo[] }) {
                             </span>
                           )}
                         </p>
+                      )}
+                      {vinc.lista.length > 0 ? (
+                        <div className="mt-2 rounded-xl border border-linha bg-papel/60 px-3 py-2">
+                          <p className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 text-xs text-ink/65">
+                            <strong className="font-semibold text-ink/85">
+                              {vinc.lista.length} {vinc.lista.length === 1 ? "item" : "itens"} do orçamento
+                            </strong>
+                            <span className="font-mono">{brlInt(vinc.previsto)}</span>
+                            <span>{vinc.concluidos} de {vinc.lista.length} concluídos · {Math.round(vinc.previsto > 0 ? (vinc.pago / vinc.previsto) * 100 : 0)}% pago</span>
+                          </p>
+                          <ul className="mt-1 space-y-0.5 text-xs text-ink/55">
+                            {vinc.lista.map((it) => (
+                              <li key={it.id} className="flex items-center gap-1.5">
+                                <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${it.feito && it.pago ? "bg-emerald-600" : it.feito || it.pago ? "bg-amber-500" : "bg-ink/25"}`} />
+                                <span className="truncate">{it.descricao}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : (
+                        !ehCliente && itens.length > 0 && (
+                          <p className="mt-1.5 text-xs text-ink/40">Nenhum item ligado. Edite o requisito para ligar o que atende a ele.</p>
+                        )
                       )}
                     </div>
                     <div className="flex shrink-0 items-center justify-between gap-2 sm:justify-end">
@@ -388,12 +413,18 @@ export function ProgramaTab({ gruposEtapa }: { gruposEtapa: Grupo[] }) {
         requisito={req && req !== "novo" ? req : null}
         ambientes={programa.ambientes.map((a) => a.nome)}
         etapas={gruposEtapa.map((g) => g.nome)}
+        itens={itens}
         onSalvar={async (r) => {
-          const existe = programa.requisitos.some((x) => x.id === r.id);
-          await savePrograma({
-            ...programa,
-            requisitos: existe ? programa.requisitos.map((x) => (x.id === r.id ? r : x)) : [...programa.requisitos, r],
-          });
+          const anterior = programa.requisitos.find((x) => x.id === r.id);
+          // Ligar itens/etapa só acompanha a execução: não pede nova aprovação do cliente.
+          const soVinculo = anterior !== undefined && anterior.texto === r.texto && anterior.ambiente === r.ambiente;
+          await savePrograma(
+            {
+              ...programa,
+              requisitos: anterior ? programa.requisitos.map((x) => (x.id === r.id ? r : x)) : [...programa.requisitos, r],
+            },
+            { manterAprovacao: soVinculo },
+          );
         }}
       />
     </div>
@@ -402,12 +433,70 @@ export function ProgramaTab({ gruposEtapa }: { gruposEtapa: Grupo[] }) {
 
 const btnSalvar = "btn btn-primario w-full px-4 py-3 text-sm";
 
+const CORES_MARCA = ["#14110f", "#d23a1f", "#1d4ed8", "#0f766e", "#7c3aed", "#b45309"];
+
+/** Reduz a imagem para caber no documento da obra (lado maior = `max` px) e devolve um data URL PNG. */
+function reduzirImagem(arquivo: File, max: number): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(arquivo);
+    const img = new Image();
+    img.onload = () => {
+      const escala = Math.min(1, max / Math.max(img.width, img.height));
+      const w = Math.max(1, Math.round(img.width * escala));
+      const h = Math.max(1, Math.round(img.height * escala));
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        URL.revokeObjectURL(url);
+        reject(new Error("canvas"));
+        return;
+      }
+      ctx.drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL("image/png"));
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("imagem"));
+    };
+    img.src = url;
+  });
+}
+
 function ProjetoDialog({ aberto, onFechar, projeto, onSalvar }: { aberto: boolean; onFechar: () => void; projeto: Projeto; onSalvar: (p: Projeto) => Promise<void> }) {
   const [f, setF] = useState<Projeto>(projeto);
   useEffect(() => {
     if (aberto) setF(projeto);
   }, [aberto, projeto]);
+  const { perfil, salvarPerfil } = useArquiteto();
+  const [padrao, setPadrao] = useState(false);
+  const [erroLogo, setErroLogo] = useState("");
   const set = (k: keyof Projeto) => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: e.target.value });
+  const temPerfil = Object.values(perfil).some(Boolean);
+
+  async function escolherLogo(e: React.ChangeEvent<HTMLInputElement>) {
+    const arq = e.target.files?.[0];
+    e.target.value = "";
+    if (!arq) return;
+    setErroLogo("");
+    try {
+      setF((s) => ({ ...s, logo: "" }));
+      const url = await reduzirImagem(arq, 320);
+      setF((s) => ({ ...s, logo: url }));
+    } catch {
+      setErroLogo("Não consegui ler essa imagem. Tente um PNG ou JPG.");
+    }
+  }
+
+  async function salvar() {
+    await onSalvar(f);
+    if (padrao) {
+      await salvarPerfil({ escritorio: f.escritorio, contato: f.contato, cor: f.cor, logo: f.logo, responsavel: f.responsavel, registro: f.registro });
+    }
+    onFechar();
+  }
 
   return (
     <Modal aberto={aberto} onFechar={onFechar} titulo="Dados do projeto">
@@ -417,7 +506,69 @@ function ProjetoDialog({ aberto, onFechar, projeto, onSalvar }: { aberto: boolea
         <Campo nome="Endereço da obra"><input className={campo} value={f.endereco} onChange={set("endereco")} placeholder="Rua, número, bairro, cidade" /></Campo>
         <Campo nome="Responsável técnico"><input className={campo} value={f.responsavel} onChange={set("responsavel")} placeholder="Nome do arquiteto" /></Campo>
         <Campo nome="Registro profissional" dica="CAU ou CREA, aparece abaixo da assinatura no PDF."><input className={campo} value={f.registro} onChange={set("registro")} placeholder="Ex.: CAU/BR A000000-0" /></Campo>
-        <button className={btnSalvar} onClick={async () => { await onSalvar(f); onFechar(); }}>Salvar dados</button>
+
+        <div className="space-y-3 rounded-2xl border border-linha bg-papel/60 p-3">
+          <div className="flex items-center justify-between gap-2">
+            <p className="rotulo-tec text-ink">Marca nos PDFs</p>
+            {temPerfil && (
+              <button
+                type="button"
+                className="font-mono text-[11px] font-semibold uppercase tracking-wider text-pitanga hover:underline"
+                onClick={() => setF({ ...f, ...perfil })}
+              >
+                Usar minha marca padrão
+              </button>
+            )}
+          </div>
+          <Campo nome="Nome do escritório"><input className={campo} value={f.escritorio} onChange={set("escritorio")} placeholder="Ex.: Jadir Arquitetura" /></Campo>
+          <Campo nome="Contato" dica="Telefone, e-mail ou site. Aparece sob o nome no cabeçalho."><input className={campo} value={f.contato} onChange={set("contato")} placeholder="Ex.: (11) 99999-0000 · contato@escritorio.com" /></Campo>
+          <div>
+            <label className={rotulo}>Cor de destaque</label>
+            <div className="flex flex-wrap items-center gap-2">
+              {CORES_MARCA.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  aria-label={`Cor ${c}`}
+                  aria-pressed={f.cor === c}
+                  onClick={() => setF({ ...f, cor: c })}
+                  className={`h-8 w-8 rounded-full border-2 ${f.cor === c ? "border-ink" : "border-white shadow-[0_0_0_1px_rgba(20,17,15,0.2)]"}`}
+                  style={{ background: c }}
+                />
+              ))}
+              {f.cor && (
+                <button type="button" className="ml-1 text-xs text-ink/55 underline" onClick={() => setF({ ...f, cor: "" })}>
+                  Padrão
+                </button>
+              )}
+            </div>
+          </div>
+          <div>
+            <label className={rotulo}>Logo</label>
+            <div className="flex items-center gap-3">
+              {f.logo ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={f.logo} alt="Logo" className="h-12 max-w-[120px] rounded-lg border border-linha bg-white object-contain p-1" />
+              ) : (
+                <span className="flex h-12 w-20 items-center justify-center rounded-lg border border-dashed border-ink/30 text-[11px] text-ink/40">sem logo</span>
+              )}
+              <label className="btn btn-linha cursor-pointer px-3 py-2 text-xs font-semibold">
+                {f.logo ? "Trocar" : "Enviar logo"}
+                <input type="file" accept="image/*" className="sr-only" onChange={escolherLogo} />
+              </label>
+              {f.logo && (
+                <button type="button" className="text-xs text-ink/55 underline" onClick={() => setF({ ...f, logo: "" })}>Remover</button>
+              )}
+            </div>
+            {erroLogo && <p className="mt-1 text-xs text-red-700">{erroLogo}</p>}
+          </div>
+          <label className="flex cursor-pointer items-center gap-2.5 text-[13px] text-ink/80">
+            <input type="checkbox" className="h-4 w-4 accent-[#d23a1f]" checked={padrao} onChange={(e) => setPadrao(e.target.checked)} />
+            Guardar como minha marca padrão (para as próximas obras)
+          </label>
+        </div>
+
+        <button className={btnSalvar} onClick={salvar}>Salvar dados</button>
       </div>
     </Modal>
   );
@@ -469,17 +620,25 @@ function AmbienteDialog({ aberto, onFechar, ambiente, onSalvar }: { aberto: bool
   );
 }
 
-function RequisitoDialog({ aberto, onFechar, requisito, ambientes, etapas, onSalvar }: { aberto: boolean; onFechar: () => void; requisito: Requisito | null; ambientes: string[]; etapas: string[]; onSalvar: (r: Requisito) => Promise<void> }) {
+function RequisitoDialog({ aberto, onFechar, requisito, ambientes, etapas, itens, onSalvar }: { aberto: boolean; onFechar: () => void; requisito: Requisito | null; ambientes: string[]; etapas: string[]; itens: Item[]; onSalvar: (r: Requisito) => Promise<void> }) {
   const [texto, setTexto] = useState("");
   const [ambiente, setAmbiente] = useState("");
   const [etapa, setEtapa] = useState("");
+  const [sel, setSel] = useState<string[]>([]);
+  const [busca, setBusca] = useState("");
 
   useEffect(() => {
     if (!aberto) return;
     setTexto(requisito?.texto ?? "");
     setAmbiente(requisito?.ambiente ?? "");
     setEtapa(requisito?.etapa ?? "");
+    setSel(requisito?.itensIds ?? []);
+    setBusca("");
   }, [aberto, requisito]);
+
+  const visiveis = useMemo(() => filtrarItens(itens, busca), [itens, busca]);
+  const alternar = (id: string) => setSel((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
+  const totalSel = itens.filter((i) => sel.includes(i.id)).reduce((s, i) => s + valorEfetivo(i), 0);
 
   async function salvar() {
     await onSalvar({
@@ -487,6 +646,7 @@ function RequisitoDialog({ aberto, onFechar, requisito, ambientes, etapas, onSal
       texto: texto.trim(),
       ambiente,
       etapa,
+      itensIds: sel.filter((id) => itens.some((i) => i.id === id)),
       status: requisito?.status ?? "pendente",
     });
     onFechar();
@@ -513,6 +673,36 @@ function RequisitoDialog({ aberto, onFechar, requisito, ambientes, etapas, onSal
               <option key={e} value={e}>{e}</option>
             ))}
           </select>
+        </Campo>
+        <Campo
+          nome={`Itens do orçamento que atendem${sel.length > 0 ? ` (${sel.length} · ${brlInt(totalSel)})` : ""}`}
+          dica="Marque os itens que entregam este pedido. Assim você vê quanto ele custa e quanto já foi feito e pago."
+        >
+          {itens.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-ink/30 px-3 py-3 text-xs text-ink/55">Cadastre itens no orçamento para poder ligá-los.</p>
+          ) : (
+            <>
+              <input className={`${campo} mb-2`} value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar item, etapa ou ambiente…" />
+              <ul className="max-h-48 divide-y divide-linha overflow-y-auto rounded-xl border border-linha">
+                {visiveis.length === 0 ? (
+                  <li className="px-3 py-4 text-center text-xs text-ink/50">Nenhum item encontrado.</li>
+                ) : (
+                  visiveis.slice(0, 80).map((i) => (
+                    <li key={i.id}>
+                      <label className="linha-hover flex cursor-pointer items-start gap-2.5 px-3 py-2">
+                        <input type="checkbox" className="mt-0.5 h-4 w-4 shrink-0 accent-[#d23a1f]" checked={sel.includes(i.id)} onChange={() => alternar(i.id)} />
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-sm leading-snug text-ink">{i.descricao}</span>
+                          <span className="block text-xs text-ink/50">{[i.etapa, i.ambiente !== "Geral" && i.ambiente].filter(Boolean).join(" · ")} · {brlInt(valorEfetivo(i))}</span>
+                        </span>
+                      </label>
+                    </li>
+                  ))
+                )}
+              </ul>
+              {visiveis.length > 80 && <p className="mt-1 text-xs text-ink/50">Mostrando 80 de {visiveis.length}. Use a busca para achar o resto.</p>}
+            </>
+          )}
         </Campo>
         <button className={btnSalvar} disabled={!texto.trim()} onClick={salvar}>Salvar requisito</button>
       </div>

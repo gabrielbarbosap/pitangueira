@@ -1,14 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Modal } from "./Modal";
 import { useData } from "@/lib/data";
-import type { Item } from "@/lib/types";
+import { useArquiteto } from "@/lib/arquiteto";
+import { brl } from "@/lib/format";
+import type { CatalogoItem, Item } from "@/lib/types";
 
 const VAZIO = {
   etapa: "",
   ambiente: "",
   descricao: "",
+  unidade: "",
   quantidade: "1",
   valorUnitario: "",
   valorOrcado: "",
@@ -35,14 +38,40 @@ export function ItemDialog({
   const { addItem, updateItem } = useData();
   const [form, setForm] = useState(VAZIO);
   const [salvando, setSalvando] = useState(false);
+  const { catalogo, salvarItem: salvarNoCatalogo } = useArquiteto();
+  const [buscaCat, setBuscaCat] = useState("");
+  const [guardar, setGuardar] = useState(false);
+
+  const sugestoes = useMemo(() => {
+    const q = buscaCat.trim().toLowerCase();
+    if (!q) return [];
+    return catalogo.filter((c) => `${c.descricao} ${c.etapa}`.toLowerCase().includes(q)).slice(0, 5);
+  }, [catalogo, buscaCat]);
+
+  function usarDoCatalogo(c: CatalogoItem) {
+    const q = Number(form.quantidade) || 1;
+    setForm({
+      ...form,
+      descricao: c.descricao,
+      unidade: c.unidade,
+      etapa: form.etapa.trim() || c.etapa,
+      quantidade: String(q),
+      valorUnitario: c.valorUnitario ? String(c.valorUnitario) : "",
+      valorOrcado: c.valorUnitario ? String(Math.round(q * c.valorUnitario * 100) / 100) : form.valorOrcado,
+    });
+    setBuscaCat("");
+  }
 
   useEffect(() => {
     if (!aberto) return;
+    setBuscaCat("");
+    setGuardar(false);
     if (item) {
       setForm({
         etapa: item.etapa,
         ambiente: item.ambiente,
         descricao: item.descricao,
+        unidade: item.unidade ?? "",
         quantidade: String(item.quantidade ?? 1),
         valorUnitario: item.valorUnitario ? String(item.valorUnitario) : "",
         valorOrcado: String(item.valorOrcado ?? ""),
@@ -76,6 +105,7 @@ export function ItemDialog({
       etapa: form.etapa.trim(),
       ambiente: form.ambiente.trim() || "Geral",
       descricao: form.descricao.trim(),
+      unidade: form.unidade.trim() || undefined,
       quantidade: Number(form.quantidade) || 0,
       valorUnitario: Number(form.valorUnitario) || 0,
       valorOrcado: Number(form.valorOrcado) || 0,
@@ -88,6 +118,14 @@ export function ItemDialog({
     try {
       if (item) await updateItem(item.id, dados);
       else await addItem(dados);
+      if (guardar) {
+        await salvarNoCatalogo({
+          descricao: dados.descricao,
+          unidade: dados.unidade ?? "un",
+          valorUnitario: dados.valorUnitario || (dados.quantidade > 0 ? Math.round((dados.valorOrcado / dados.quantidade) * 100) / 100 : dados.valorOrcado),
+          etapa: dados.etapa,
+        });
+      }
       onFechar();
     } finally {
       setSalvando(false);
@@ -101,6 +139,25 @@ export function ItemDialog({
   return (
     <Modal aberto={aberto} onFechar={onFechar} titulo={item ? "Editar item" : "Novo item"}>
       <div className="space-y-4">
+        {!item && catalogo.length > 0 && (
+          <div>
+            <label className={rotulo}>Buscar no meu catálogo</label>
+            <input className={campo} placeholder="Digite para preencher com um item salvo…" value={buscaCat} onChange={(e) => setBuscaCat(e.target.value)} />
+            {sugestoes.length > 0 && (
+              <ul className="mt-1.5 divide-y divide-linha overflow-hidden rounded-xl border border-linha">
+                {sugestoes.map((c) => (
+                  <li key={c.id}>
+                    <button type="button" onClick={() => usarDoCatalogo(c)} className="linha-hover block w-full px-3 py-2 text-left">
+                      <span className="block text-sm text-ink">{c.descricao}</span>
+                      <span className="block text-xs text-ink/55">{brl(c.valorUnitario)} / {c.unidade || "un"}{c.etapa ? ` · ${c.etapa}` : ""}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className={rotulo}>Etapa</label>
@@ -119,10 +176,15 @@ export function ItemDialog({
           <input className={campo} placeholder="Ex.: Tinta acrílica 18L" value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} />
         </div>
 
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-[1fr_0.8fr_1.2fr_1.2fr] gap-2">
           <div>
             <label className={rotulo}>Qtd.</label>
             <input type="number" inputMode="decimal" className={campo} value={form.quantidade} onChange={(e) => setQtdUnit("quantidade", e.target.value)} />
+          </div>
+          <div>
+            <label className={rotulo}>Unid.</label>
+            <input list="unidades-item" className={campo} placeholder="un" value={form.unidade} onChange={(e) => setForm({ ...form, unidade: e.target.value })} />
+            <datalist id="unidades-item">{["un", "m²", "m", "m³", "kg", "vb", "h", "dia", "pç"].map((u) => <option key={u} value={u} />)}</datalist>
           </div>
           <div>
             <label className={rotulo}>Valor unit.</label>
@@ -171,6 +233,11 @@ export function ItemDialog({
             {form.pago ? "✓ " : ""}Pago
           </button>
         </div>
+
+        <label className="flex cursor-pointer items-center gap-2.5 text-sm text-ink/80">
+          <input type="checkbox" className="h-4 w-4 accent-[#d23a1f]" checked={guardar} onChange={(e) => setGuardar(e.target.checked)} />
+          Guardar no meu catálogo para usar em outras obras
+        </label>
 
         <button onClick={salvar} disabled={!valido || salvando} className="btn btn-primario w-full px-4 py-3 text-sm">
           {salvando ? "Salvando..." : item ? "Salvar alterações" : "Adicionar item"}

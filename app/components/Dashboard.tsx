@@ -22,6 +22,8 @@ import { ItemsList } from "./ItemsList";
 import { ItemDialog } from "./ItemDialog";
 import { ConfigDialog } from "./ConfigDialog";
 import { ProgramaTab } from "./ProgramaTab";
+import { CatalogoDialog } from "./CatalogoDialog";
+import { OrcamentoDocumento } from "./OrcamentoDocumento";
 import { GerenciarObraDialog } from "./GerenciarObraDialog";
 import { Logo } from "./Logo";
 import {
@@ -50,7 +52,9 @@ const botaoTopo =
 
 export function Dashboard() {
   const { user, logout } = useAuth();
-  const { obraId, itens, config, loading, ehCliente } = useData();
+  const { obraId, itens, config, loading, ehCliente, addItem } = useData();
+  const [catalogoAberto, setCatalogoAberto] = useState(false);
+  const [orcamentoDoc, setOrcamentoDoc] = useState(false);
   const { obras } = useObras();
   const router = useRouter();
   const [gerenciando, setGerenciando] = useState(false);
@@ -96,9 +100,14 @@ export function Dashboard() {
         {ehCliente ? "O arquiteto ainda não cadastrou o orçamento." : "Cadastre os itens do orçamento para acompanhar valores e andamento."}
       </p>
       {!ehCliente && (
-        <button onClick={abrirNovo} className="btn btn-primario mt-5 px-5 py-2.5 text-sm">
-          <IconeMais /> Adicionar primeiro item
-        </button>
+        <div className="mt-5 flex flex-wrap justify-center gap-2">
+          <button onClick={abrirNovo} className="btn btn-primario px-5 py-2.5 text-sm">
+            <IconeMais /> Adicionar primeiro item
+          </button>
+          <button onClick={() => setCatalogoAberto(true)} className="btn btn-linha px-5 py-2.5 text-sm">
+            Usar meu catálogo
+          </button>
+        </div>
       )}
     </div>
   );
@@ -159,6 +168,16 @@ export function Dashboard() {
                   <IconeMais /> Item
                 </button>
               )}
+            </div>
+            <div className="-mt-2 flex flex-wrap gap-2">
+              {!ehCliente && (
+                <button onClick={() => setCatalogoAberto(true)} className="btn btn-linha rounded-full px-3.5 py-2 font-mono text-[11px] font-semibold uppercase tracking-wider">
+                  Catálogo
+                </button>
+              )}
+              <button onClick={() => setOrcamentoDoc(true)} className="btn btn-linha rounded-full px-3.5 py-2 font-mono text-[11px] font-semibold uppercase tracking-wider">
+                Orçamento em PDF
+              </button>
             </div>
 
             <div className="space-y-3">
@@ -251,6 +270,30 @@ export function Dashboard() {
       </nav>
 
       <ItemDialog aberto={itemDialog} onFechar={() => setItemDialog(false)} item={itemEdicao} etapas={etapas} ambientes={ambientes} />
+      {!ehCliente && (
+        <CatalogoDialog
+          aberto={catalogoAberto}
+          onFechar={() => setCatalogoAberto(false)}
+          etapas={etapas}
+          itensObra={itens}
+          onAdicionar={(c, quantidade) =>
+            addItem({
+              etapaNum: 0,
+              etapa: c.etapa || "Sem etapa",
+              ambiente: "Geral",
+              descricao: c.descricao,
+              unidade: c.unidade || undefined,
+              quantidade,
+              valorUnitario: c.valorUnitario,
+              valorOrcado: Math.round(quantidade * c.valorUnitario * 100) / 100,
+              valorReal: 0,
+              feito: false,
+              pago: false,
+            })
+          }
+        />
+      )}
+      {orcamentoDoc && <OrcamentoDocumento onFechar={() => setOrcamentoDoc(false)} />}
       <ConfigDialog
         aberto={configDialog}
         onFechar={() => setConfigDialog(false)}

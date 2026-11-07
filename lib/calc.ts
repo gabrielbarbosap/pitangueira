@@ -23,6 +23,14 @@ export function resumoDeItens(itens: Item[]): ResumoObra {
   return { previsto, pago, itens: itens.length, feitos, concluidos };
 }
 
+/** Itens do orçamento ligados a um requisito (ignora vínculos de itens que já foram removidos). */
+export function vinculoDoRequisito(itensIds: string[] | undefined, itens: Item[]) {
+  const ids = new Set(itensIds ?? []);
+  const lista = itens.filter((i) => ids.has(i.id));
+  const r = resumoDeItens(lista);
+  return { ...r, lista };
+}
+
 export interface Resumo {
   teto: number;
   orcadoTotal: number;

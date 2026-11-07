@@ -12,6 +12,7 @@ import { Logo, LogoMark } from "./Logo";
 import { Regua } from "./Regua";
 import { ObraDialog } from "./ObraDialog";
 import { GerenciarObraDialog } from "./GerenciarObraDialog";
+import { CatalogoDialog } from "./CatalogoDialog";
 import { IconeArquivo, IconeMais, IconeObra, IconeOpcoes, IconeSair } from "./Icones";
 
 type StatusObra = "nova" | "parada" | "andamento" | "concluida";
@@ -159,6 +160,7 @@ export function Painel() {
   const [recuperando, setRecuperando] = useState(false);
   const [gerenciarId, setGerenciarId] = useState<string | null>(null);
   const [verArquivadas, setVerArquivadas] = useState(false);
+  const [catalogo, setCatalogo] = useState(false);
 
   const ehArqPitanga =
     !!user?.email && CASA_PITANGA_EMAILS.map((e) => e.toLowerCase()).includes(user.email.toLowerCase());
@@ -233,9 +235,17 @@ export function Painel() {
                 ? "Comece criando a sua primeira obra."
                 : `${ativas.length} ${ativas.length === 1 ? "obra sob sua gestão" : "obras sob sua gestão"}${arquivadas.length > 0 ? ` · ${arquivadas.length} arquivada${arquivadas.length > 1 ? "s" : ""}` : ""}.`}
           </p>
-          {!configured && (
-            <p className="rotulo-tec mt-3 inline-block rounded-full bg-white/15 px-3 py-1.5 text-white">Modo demo · dados só neste navegador</p>
-          )}
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => setCatalogo(true)}
+              className="rotulo-tec rounded-full bg-white/15 px-3 py-1.5 text-white transition-colors hover:bg-white/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              Meu catálogo
+            </button>
+            {!configured && (
+              <p className="rotulo-tec inline-block rounded-full bg-white/15 px-3 py-1.5 text-white">Modo demo · dados só neste navegador</p>
+            )}
+          </div>
         </div>
       </header>
 
@@ -332,6 +342,7 @@ export function Painel() {
 
       <ObraDialog aberto={dialog} onFechar={() => setDialog(false)} />
       <GerenciarObraDialog obra={obraGerenciada} onFechar={() => setGerenciarId(null)} />
+      <CatalogoDialog aberto={catalogo} onFechar={() => setCatalogo(false)} />
     </div>
   );
 }
