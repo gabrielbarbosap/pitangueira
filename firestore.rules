@@ -35,7 +35,8 @@ service cloud.firestore {
     match /arquitetos/{uid} {
       allow read, write: if signedIn() && request.auth.uid == uid;
 
-      match /catalogo/{itemId} {
+      // Catálogo, composições, fornecedores e honorários: tudo pessoal, só o próprio uid lê e escreve.
+      match /{colecao}/{docId} {
         allow read, write: if signedIn() && request.auth.uid == uid;
       }
     }

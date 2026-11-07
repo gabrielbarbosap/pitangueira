@@ -5,7 +5,8 @@ import { Modal } from "./Modal";
 import { useData } from "@/lib/data";
 import { useArquiteto } from "@/lib/arquiteto";
 import { useDinheiro } from "@/lib/privacidade";
-import type { CatalogoItem, Item } from "@/lib/types";
+import { useColecaoPessoal } from "@/lib/colecaoPessoal";
+import type { CatalogoItem, Fornecedor, Item } from "@/lib/types";
 
 const VAZIO = {
   etapa: "",
@@ -18,9 +19,22 @@ const VAZIO = {
   valorReal: "",
   fornecedor: "",
   observacao: "",
+  prazo: "",
   feito: false,
   pago: false,
 };
+
+/** Timestamp do prazo (fim do dia) → "AAAA-MM-DD" para o campo de data. */
+function deData(ms?: number): string {
+  if (!ms) return "";
+  const d = new Date(ms);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+/** "AAAA-MM-DD" → fim desse dia no horário local; vazio = sem prazo. */
+function paraPrazo(texto: string): number | undefined {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(texto);
+  return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), 23, 59, 59).getTime() : undefined;
+}
 
 export function ItemDialog({
   aberto,
@@ -40,6 +54,7 @@ export function ItemDialog({
   const [salvando, setSalvando] = useState(false);
   const { catalogo, salvarItem: salvarNoCatalogo } = useArquiteto();
   const { brl } = useDinheiro();
+  const { itens: fornecedores } = useColecaoPessoal<Fornecedor>("fornecedores", (a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
   const [buscaCat, setBuscaCat] = useState("");
   const [guardar, setGuardar] = useState(false);
 
@@ -79,6 +94,7 @@ export function ItemDialog({
         valorReal: item.valorReal ? String(item.valorReal) : "",
         fornecedor: item.fornecedor ?? "",
         observacao: item.observacao ?? "",
+        prazo: deData(item.prazo),
         feito: item.feito,
         pago: item.pago,
       });
@@ -113,12 +129,19 @@ export function ItemDialog({
       valorReal: Number(form.valorReal) || 0,
       fornecedor: form.fornecedor.trim() || undefined,
       observacao: form.observacao.trim() || undefined,
-      feito: form.feito,
-      pago: form.pago,
+      prazo: paraPrazo(form.prazo),
     };
     try {
-      if (item) await updateItem(item.id, dados);
-      else await addItem(dados);
+      if (item) {
+        // Só manda feito/pago se mudaram: reenviar regravaria a data (e o autor) da conclusão a cada edição.
+        await updateItem(item.id, {
+          ...dados,
+          ...(form.feito !== item.feito ? { feito: form.feito } : {}),
+          ...(form.pago !== item.pago ? { pago: form.pago } : {}),
+        });
+      } else {
+        await addItem({ ...dados, feito: form.feito, pago: form.pago });
+      }
       if (guardar) {
         await salvarNoCatalogo({
           descricao: dados.descricao,
@@ -204,10 +227,18 @@ export function ItemDialog({
           <p className={dica}>Quanto realmente custou. Se ficar vazio, vale o valor orçado.</p>
         </div>
 
-        <div>
-          <label className={rotulo}>Fornecedor (opcional)</label>
-          <input className={campo} value={form.fornecedor} onChange={(e) => setForm({ ...form, fornecedor: e.target.value })} />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div>
+            <label className={rotulo}>Fornecedor (opcional)</label>
+            <input list="fornecedores-item" className={campo} value={form.fornecedor} onChange={(e) => setForm({ ...form, fornecedor: e.target.value })} />
+            <datalist id="fornecedores-item">{fornecedores.map((f) => <option key={f.id} value={f.nome} />)}</datalist>
+          </div>
+          <div>
+            <label className={rotulo}>Prazo de entrega (opcional)</label>
+            <input type="date" className={campo} value={form.prazo} onChange={(e) => setForm({ ...form, prazo: e.target.value })} />
+          </div>
         </div>
+        <p className={`${dica} -mt-2`}>Fornecedor e prazo alimentam o histórico de entregas em Fornecedores, na home.</p>
 
         <div>
           <label className={rotulo}>Observação (opcional)</label>

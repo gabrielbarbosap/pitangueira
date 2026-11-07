@@ -15,6 +15,8 @@ import { Regua } from "./Regua";
 import { ObraDialog } from "./ObraDialog";
 import { GerenciarObraDialog } from "./GerenciarObraDialog";
 import { CatalogoDialog } from "./CatalogoDialog";
+import { ComposicoesDialog } from "./ComposicoesDialog";
+import { FornecedoresDialog } from "./FornecedoresDialog";
 import { IconeArquivo, IconeMais, IconeObra, IconeOpcoes, IconeSair } from "./Icones";
 
 type StatusObra = "nova" | "parada" | "andamento" | "concluida";
@@ -165,6 +167,8 @@ export function Painel() {
   const [gerenciarId, setGerenciarId] = useState<string | null>(null);
   const [verArquivadas, setVerArquivadas] = useState(false);
   const [catalogo, setCatalogo] = useState(false);
+  const [composicoes, setComposicoes] = useState(false);
+  const [fornecedores, setFornecedores] = useState(false);
 
   const ehArqPitanga =
     !!user?.email && CASA_PITANGA_EMAILS.map((e) => e.toLowerCase()).includes(user.email.toLowerCase());
@@ -247,6 +251,24 @@ export function Painel() {
             >
               Meu catálogo
             </button>
+            <button
+              onClick={() => setComposicoes(true)}
+              className="rotulo-tec rounded-full bg-white/15 px-3 py-1.5 text-white transition-colors hover:bg-white/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              Composições
+            </button>
+            <button
+              onClick={() => setFornecedores(true)}
+              className="rotulo-tec rounded-full bg-white/15 px-3 py-1.5 text-white transition-colors hover:bg-white/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              Fornecedores
+            </button>
+            <Link
+              href="/financeiro"
+              className="rotulo-tec rounded-full bg-white/15 px-3 py-1.5 text-white transition-colors hover:bg-white/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              Financeiro
+            </Link>
             {!configured && (
               <p className="rotulo-tec inline-block rounded-full bg-white/15 px-3 py-1.5 text-white">Modo demo · dados só neste navegador</p>
             )}
@@ -348,6 +370,8 @@ export function Painel() {
       <ObraDialog aberto={dialog} onFechar={() => setDialog(false)} />
       <GerenciarObraDialog obra={obraGerenciada} onFechar={() => setGerenciarId(null)} />
       <CatalogoDialog aberto={catalogo} onFechar={() => setCatalogo(false)} />
+      <ComposicoesDialog aberto={composicoes} onFechar={() => setComposicoes(false)} />
+      <FornecedoresDialog aberto={fornecedores} onFechar={() => setFornecedores(false)} />
     </div>
   );
 }

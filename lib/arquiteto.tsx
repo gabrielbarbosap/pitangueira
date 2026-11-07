@@ -28,6 +28,14 @@ interface ArquitetoContextValue {
   /** Acrescenta vários de uma vez, ignorando os que já existem (mesma descrição + unidade). Devolve quantos entraram. */
   importar: (lista: CatalogoInput[]) => Promise<number>;
   salvarPerfil: (p: PerfilArquiteto) => Promise<void>;
+  /** BDI e margem padrão (em %) das composições novas. */
+  parametros: ParametrosCusto;
+  salvarParametros: (p: ParametrosCusto) => Promise<void>;
+}
+
+export interface ParametrosCusto {
+  bdi: number;
+  margem: number;
 }
 
 const Ctx = createContext<ArquitetoContextValue | null>(null);
@@ -59,6 +67,7 @@ export function ArquitetoProvider({ children }: { children: ReactNode }) {
   const [catalogo, setCatalogo] = useState<CatalogoItem[]>([]);
   const [perfil, setPerfil] = useState<PerfilArquiteto>(PERFIL_VAZIO);
   const [carregando, setCarregando] = useState(true);
+  const [parametros, setParametros] = useState<ParametrosCusto>({ bdi: 0, margem: 0 });
   // Obras de onde o catálogo já foi semeado (null = o perfil ainda não chegou).
   const [semeadas, setSemeadas] = useState<string[] | null>(null);
   const semeando = useRef(new Set<string>());
@@ -74,7 +83,9 @@ export function ArquitetoProvider({ children }: { children: ReactNode }) {
     }
     if (!configured || !db) {
       setCatalogo(ler<CatalogoItem[]>(lsCatalogo(uid), []));
-      setPerfil({ ...PERFIL_VAZIO, ...ler<Partial<PerfilArquiteto>>(lsPerfil(uid), {}) });
+      const guardado = ler<Record<string, unknown>>(lsPerfil(uid), {});
+      setPerfil({ ...PERFIL_VAZIO, ...(guardado as Partial<PerfilArquiteto>) });
+      setParametros({ bdi: Number(guardado.bdiPadrao) || 0, margem: Number(guardado.margemPadrao) || 0 });
       setCarregando(false);
       return;
     }
@@ -95,6 +106,7 @@ export function ArquitetoProvider({ children }: { children: ReactNode }) {
         const dados = d.exists() ? d.data() : {};
         const marca = Object.fromEntries(Object.keys(PERFIL_VAZIO).map((k) => [k, (dados as Record<string, unknown>)[k] ?? ""]));
         setPerfil(marca as unknown as PerfilArquiteto);
+        setParametros({ bdi: Number(dados.bdiPadrao) || 0, margem: Number(dados.margemPadrao) || 0 });
         setSemeadas((dados.catalogoSemeadoDe as string[] | undefined) ?? []);
       },
       () => {},
@@ -177,7 +189,17 @@ export function ArquitetoProvider({ children }: { children: ReactNode }) {
       if (!uid) return;
       setPerfil(p);
       if (configured && db) await setDoc(doc(db, "arquitetos", uid), p, { merge: true });
-      else gravar(lsPerfil(uid), p);
+      else gravar(lsPerfil(uid), { ...ler<Record<string, unknown>>(lsPerfil(uid), {}), ...p });
+    },
+    [uid, configured],
+  );
+
+  const salvarParametros = useCallback(
+    async (p: ParametrosCusto) => {
+      if (!uid) return;
+      setParametros(p);
+      if (configured && db) await setDoc(doc(db, "arquitetos", uid), { bdiPadrao: p.bdi, margemPadrao: p.margem }, { merge: true });
+      else gravar(lsPerfil(uid), { ...ler<Record<string, unknown>>(lsPerfil(uid), {}), bdiPadrao: p.bdi, margemPadrao: p.margem });
     },
     [uid, configured],
   );
@@ -200,8 +222,8 @@ export function ArquitetoProvider({ children }: { children: ReactNode }) {
   }, [uid, configured, carregando, semeadas, obras, importar]);
 
   const value = useMemo(
-    () => ({ catalogo, perfil, carregando, salvarItem, removerItem, importar, salvarPerfil }),
-    [catalogo, perfil, carregando, salvarItem, removerItem, importar, salvarPerfil],
+    () => ({ catalogo, perfil, carregando, salvarItem, removerItem, importar, salvarPerfil, parametros, salvarParametros }),
+    [catalogo, perfil, carregando, salvarItem, removerItem, importar, salvarPerfil, parametros, salvarParametros],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

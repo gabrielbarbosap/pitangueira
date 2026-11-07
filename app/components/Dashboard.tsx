@@ -18,6 +18,7 @@ import { ConfigDialog } from "./ConfigDialog";
 import { ProgramaTab } from "./ProgramaTab";
 import { CatalogoDialog } from "./CatalogoDialog";
 import { EmAndamento } from "./EmAndamento";
+import { ComposicoesDialog } from "./ComposicoesDialog";
 import { BotaoOlho } from "./BotaoOlho";
 import { OrcamentoDocumento, type ConfigOrcamentoPdf } from "./OrcamentoDocumento";
 import { OrcamentoPdfDialog } from "./OrcamentoPdfDialog";
@@ -51,6 +52,7 @@ export function Dashboard() {
   const { user, logout } = useAuth();
   const { obraId, itens, config, loading, ehCliente, addItem } = useData();
   const [catalogoAberto, setCatalogoAberto] = useState(false);
+  const [composicoesAberto, setComposicoesAberto] = useState(false);
   const [pdfDialog, setPdfDialog] = useState(false);
   const [cfgPdf, setCfgPdf] = useState<ConfigOrcamentoPdf | null>(null);
   const { obras } = useObras();
@@ -208,6 +210,11 @@ export function Dashboard() {
                   Catálogo
                 </button>
               )}
+              {!ehCliente && (
+                <button onClick={() => setComposicoesAberto(true)} className="btn btn-linha rounded-full px-3.5 py-2 font-mono text-[11px] font-semibold uppercase tracking-wider">
+                  Composições
+                </button>
+              )}
               <button onClick={() => setPdfDialog(true)} className="btn btn-linha rounded-full px-3.5 py-2 font-mono text-[11px] font-semibold uppercase tracking-wider">
                 Orçamento em PDF
               </button>
@@ -323,6 +330,28 @@ export function Dashboard() {
               quantidade,
               valorUnitario: c.valorUnitario,
               valorOrcado: Math.round(quantidade * c.valorUnitario * 100) / 100,
+              valorReal: 0,
+              feito: false,
+              pago: false,
+            })
+          }
+        />
+      )}
+      {!ehCliente && (
+        <ComposicoesDialog
+          aberto={composicoesAberto}
+          onFechar={() => setComposicoesAberto(false)}
+          etapas={etapas}
+          onAdicionar={(c, quantidade, preco) =>
+            addItem({
+              etapaNum: 0,
+              etapa: c.etapa || "Sem etapa",
+              ambiente: "Geral",
+              descricao: c.nome,
+              unidade: c.unidade || undefined,
+              quantidade,
+              valorUnitario: preco,
+              valorOrcado: Math.round(quantidade * preco * 100) / 100,
               valorReal: 0,
               feito: false,
               pago: false,

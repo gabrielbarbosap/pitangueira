@@ -6,11 +6,14 @@ export function Modal({
   aberto,
   onFechar,
   titulo,
+  largo = false,
   children,
 }: {
   aberto: boolean;
   onFechar: () => void;
   titulo: string;
+  /** Janela mais larga, para formulários com tabela. */
+  largo?: boolean;
   children: ReactNode;
 }) {
   useEffect(() => {
@@ -31,7 +34,7 @@ export function Modal({
       aria-label={titulo}
     >
       <div
-        className="max-h-[92dvh] w-full max-w-md overflow-y-auto rounded-t-[28px] bg-white p-5 shadow-[0_24px_60px_-20px_rgba(20,17,15,0.5)] sm:rounded-[28px] sm:p-6"
+        className={`max-h-[92dvh] w-full ${largo ? "max-w-2xl" : "max-w-md"} overflow-y-auto rounded-t-[28px] bg-white p-5 shadow-[0_24px_60px_-20px_rgba(20,17,15,0.5)] sm:rounded-[28px] sm:p-6`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-5 flex items-center justify-between gap-3 border-b border-linha pb-3">

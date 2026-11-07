@@ -145,6 +145,8 @@ export interface Item {
   pagoEm?: number;
   fornecedor?: string;
   observacao?: string;
+  /** Prazo combinado para o serviço ficar pronto (ms). Base do histórico de entregas do fornecedor. */
+  prazo?: number;
   ordem: number;
   createdAt?: number;
   updatedAt?: number;
@@ -172,3 +174,79 @@ export const CONFIG_PADRAO: Config = {
   nomeObra: "Projeto",
   orcamentoTotal: 0,
 };
+
+// ---------- Composições de custo (pessoais do arquiteto) ----------
+
+export type TipoInsumo = "material" | "mao_de_obra" | "equipamento";
+
+export const ROTULO_INSUMO: Record<TipoInsumo, string> = {
+  material: "Material",
+  mao_de_obra: "Mão de obra",
+  equipamento: "Equipamento",
+};
+
+/** Um insumo de uma composição: quanto dele entra em 1 unidade do serviço (ex.: 0,3 L de tinta por m²). */
+export interface InsumoComposicao {
+  id: string;
+  descricao: string;
+  unidade: string;
+  /** Quantidade consumida por 1 unidade da composição. */
+  quantidade: number;
+  valorUnitario: number;
+  tipo: TipoInsumo;
+  /** Quando vem do catálogo, o preço acompanha o catálogo (se o preço de lá mudar, a composição muda). */
+  catalogoId?: string;
+}
+
+/** Serviço composto: custo direto dos insumos + BDI + margem = preço de 1 unidade. */
+export interface Composicao {
+  id: string;
+  nome: string;
+  /** Unidade do serviço (m², m, un…). */
+  unidade: string;
+  etapa: string;
+  insumos: InsumoComposicao[];
+  /** BDI (benefícios e despesas indiretas), em %. */
+  bdi: number;
+  /** Margem de lucro, em %. */
+  margem: number;
+  createdAt?: number;
+}
+
+// ---------- Fornecedores (pessoais do arquiteto) ----------
+
+export interface Fornecedor {
+  id: string;
+  nome: string;
+  /** Especialidade: pedreiro, eletricista, marmoraria… */
+  categoria: string;
+  telefone: string;
+  email: string;
+  observacao: string;
+  /** Nota própria de 1 a 5 (0 = sem nota). */
+  nota: number;
+  createdAt?: number;
+}
+
+// ---------- Financeiro do escritório (pessoal do arquiteto) ----------
+
+export interface Parcela {
+  id: string;
+  descricao: string;
+  valor: number;
+  /** Vencimento (meia-noite local, em ms). */
+  vencimento: number;
+  /** Quando foi recebida; null = a receber. */
+  recebidoEm: number | null;
+}
+
+/** Contrato de honorários de um projeto, com as parcelas a receber. */
+export interface Honorario {
+  id: string;
+  projetoId: string;
+  projetoNome: string;
+  cliente: string;
+  descricao: string;
+  parcelas: Parcela[];
+  createdAt?: number;
+}
