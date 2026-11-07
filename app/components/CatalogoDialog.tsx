@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { Modal } from "./Modal";
 import { useConfirm } from "./ConfirmProvider";
 import { IconeBusca, IconeEditar, IconeLixo } from "./Icones";
-import { useArquiteto } from "@/lib/arquiteto";
+import { catalogoDeItem, useArquiteto } from "@/lib/arquiteto";
 import { brl } from "@/lib/format";
 import type { CatalogoItem, Item } from "@/lib/types";
 
@@ -87,13 +87,7 @@ export function CatalogoDialog({
     if (!itensObra || ocupado) return;
     setOcupado(true);
     try {
-      const lista = itensObra.map((i) => ({
-        descricao: i.descricao,
-        unidade: i.unidade || "un",
-        valorUnitario: i.valorUnitario || (i.quantidade > 0 ? Math.round((i.valorOrcado / i.quantidade) * 100) / 100 : i.valorOrcado),
-        etapa: i.etapa,
-      }));
-      const n = await importar(lista);
+      const n = await importar(itensObra.map(catalogoDeItem));
       setAviso(n > 0 ? `${n} ${n === 1 ? "item novo entrou" : "itens novos entraram"} no catálogo.` : "Nada novo para importar: tudo isso já está no catálogo.");
     } finally {
       setOcupado(false);

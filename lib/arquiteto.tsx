@@ -1,12 +1,23 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { collection, deleteDoc, doc, onSnapshot, setDoc, writeBatch } from "firebase/firestore";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { arrayUnion, collection, deleteDoc, doc, getDocs, onSnapshot, setDoc, writeBatch } from "firebase/firestore";
 import { db } from "./firebase";
 import { useAuth } from "./auth";
-import { PERFIL_VAZIO, type CatalogoItem, type PerfilArquiteto } from "./types";
+import { useObras } from "./obras";
+import { PERFIL_VAZIO, type CatalogoItem, type Item, type PerfilArquiteto } from "./types";
 
 type CatalogoInput = Omit<CatalogoItem, "id" | "createdAt">;
+
+/** Converte um item de obra em item de catálogo (valor unitário = o informado, ou orçado ÷ quantidade). */
+export function catalogoDeItem(i: Item): CatalogoInput {
+  return {
+    descricao: i.descricao,
+    unidade: i.unidade || "un",
+    valorUnitario: i.valorUnitario || (i.quantidade > 0 ? Math.round((i.valorOrcado / i.quantidade) * 100) / 100 : i.valorOrcado),
+    etapa: i.etapa,
+  };
+}
 
 interface ArquitetoContextValue {
   catalogo: CatalogoItem[];
@@ -44,15 +55,20 @@ function gravar(key: string, valor: unknown) {
 /** Catálogo de itens e marca pessoal do arquiteto. Clientes (anônimos) não têm nada disso. */
 export function ArquitetoProvider({ children }: { children: ReactNode }) {
   const { user, configured } = useAuth();
+  const { obras } = useObras();
   const [catalogo, setCatalogo] = useState<CatalogoItem[]>([]);
   const [perfil, setPerfil] = useState<PerfilArquiteto>(PERFIL_VAZIO);
   const [carregando, setCarregando] = useState(true);
+  // Obras de onde o catálogo já foi semeado (null = o perfil ainda não chegou).
+  const [semeadas, setSemeadas] = useState<string[] | null>(null);
+  const semeando = useRef(new Set<string>());
   const uid = user && !user.anonimo ? user.uid : null;
 
   useEffect(() => {
     if (!uid) {
       setCatalogo([]);
       setPerfil(PERFIL_VAZIO);
+      setSemeadas(null);
       setCarregando(false);
       return;
     }
@@ -75,7 +91,12 @@ export function ArquitetoProvider({ children }: { children: ReactNode }) {
     );
     const unsubPerfil = onSnapshot(
       doc(db, "arquitetos", uid),
-      (d) => setPerfil({ ...PERFIL_VAZIO, ...(d.exists() ? (d.data() as Partial<PerfilArquiteto>) : {}) }),
+      (d) => {
+        const dados = d.exists() ? d.data() : {};
+        const marca = Object.fromEntries(Object.keys(PERFIL_VAZIO).map((k) => [k, (dados as Record<string, unknown>)[k] ?? ""]));
+        setPerfil(marca as unknown as PerfilArquiteto);
+        setSemeadas((dados.catalogoSemeadoDe as string[] | undefined) ?? []);
+      },
       () => {},
     );
     return () => {
@@ -155,11 +176,28 @@ export function ArquitetoProvider({ children }: { children: ReactNode }) {
     async (p: PerfilArquiteto) => {
       if (!uid) return;
       setPerfil(p);
-      if (configured && db) await setDoc(doc(db, "arquitetos", uid), p);
+      if (configured && db) await setDoc(doc(db, "arquitetos", uid), p, { merge: true });
       else gravar(lsPerfil(uid), p);
     },
     [uid, configured],
   );
+
+  // Obra compartilhada entre arquitetos (a Casa Pitanga): cada co-dono recebe, uma única vez,
+  // o catálogo dela. O registro fica no perfil para não recriar itens que ele apagar depois.
+  useEffect(() => {
+    if (!uid || !configured || !db || carregando || semeadas === null) return;
+    const banco = db;
+    const compartilhadas = obras.filter((o) => (o.ownerEmails?.length ?? 0) > 1 && !semeadas.includes(o.id));
+    for (const o of compartilhadas) {
+      if (semeando.current.has(o.id)) continue;
+      semeando.current.add(o.id);
+      (async () => {
+        const snap = await getDocs(collection(banco, "obras", o.id, "itens"));
+        await importar(snap.docs.map((d) => catalogoDeItem(d.data() as Item)));
+        await setDoc(doc(banco, "arquitetos", uid), { catalogoSemeadoDe: arrayUnion(o.id) }, { merge: true });
+      })().catch(() => semeando.current.delete(o.id));
+    }
+  }, [uid, configured, carregando, semeadas, obras, importar]);
 
   const value = useMemo(
     () => ({ catalogo, perfil, carregando, salvarItem, removerItem, importar, salvarPerfil }),
