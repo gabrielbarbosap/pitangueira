@@ -23,6 +23,7 @@ import { ItemDialog } from "./ItemDialog";
 import { ConfigDialog } from "./ConfigDialog";
 import { ProgramaTab } from "./ProgramaTab";
 import { CatalogoDialog } from "./CatalogoDialog";
+import { EmAndamento } from "./EmAndamento";
 import { OrcamentoDocumento } from "./OrcamentoDocumento";
 import { GerenciarObraDialog } from "./GerenciarObraDialog";
 import { Logo } from "./Logo";
@@ -76,7 +77,11 @@ export function Dashboard() {
   const resumo = useMemo(() => calcularResumo(itens, config), [itens, config]);
   const agregado = useMemo(() => resumoDeItens(itens), [itens]);
   const pct = agregado.itens > 0 ? percentual(agregado.concluidos, agregado.itens) : 0;
-  const itensFiltrados = useMemo(() => filtrarItens(itens, busca), [itens, busca]);
+  const [etapaFoco, setEtapaFoco] = useState<string | null>(null);
+  const itensFiltrados = useMemo(
+    () => filtrarItens(etapaFoco ? itens.filter((i) => (i.etapa?.trim() || "Sem definição") === etapaFoco) : itens, busca),
+    [itens, busca, etapaFoco],
+  );
   const gruposGrafico = useMemo(() => agruparPor(itens, agrupamento), [itens, agrupamento]);
   const gruposLista = useMemo(() => ordenarPorStatus(agruparPor(itensFiltrados, agrupamento)), [itensFiltrados, agrupamento]);
   const gruposEtapa = useMemo(() => agruparPor(itens, "etapa"), [itens]);
@@ -156,6 +161,21 @@ export function Dashboard() {
         ) : aba === "resumo" ? (
           <>
             <ResumoTopo resumo={resumo} />
+            <EmAndamento
+              gruposEtapa={gruposEtapa}
+              onAbrirEtapa={(nome) => {
+                setAgrupamento("etapa");
+                setBusca("");
+                setEtapaFoco(nome);
+                setAba("itens");
+              }}
+              onVerTodas={() => {
+                setAgrupamento("etapa");
+                setBusca("");
+                setEtapaFoco(null);
+                setAba("itens");
+              }}
+            />
             <SummaryCards resumo={resumo} />
             <ChartComposicao grupos={gruposGrafico} />
           </>
@@ -202,9 +222,19 @@ export function Dashboard() {
                   </button>
                 )}
               </div>
+              {etapaFoco && (
+                <button
+                  onClick={() => setEtapaFoco(null)}
+                  className="btn btn-linha flex max-w-full items-center gap-2 rounded-full px-3.5 py-2 text-left text-xs font-semibold"
+                  title="Remover o filtro de etapa"
+                >
+                  <span className="min-w-0 truncate">Etapa: {etapaFoco}</span>
+                  <span aria-hidden className="shrink-0 text-ink/50">✕</span>
+                </button>
+              )}
               <div className="flex items-center justify-between gap-3">
                 <span className="rotulo-tec text-ink/55">
-                  {busca.trim() ? `${itensFiltrados.length} de ${itens.length} itens` : "Agrupar por"}
+                  {busca.trim() || etapaFoco ? `${itensFiltrados.length} de ${itens.length} itens` : "Agrupar por"}
                 </span>
                 <div className="inline-flex rounded-full bg-ink/[0.07] p-1" role="tablist">
                   {(
@@ -230,9 +260,9 @@ export function Dashboard() {
             </div>
 
             {gruposLista.length === 0 ? (
-              <div className="prancha py-12 text-center text-sm text-ink/55">Nenhum serviço encontrado para “{busca}”.</div>
+              <div className="prancha py-12 text-center text-sm text-ink/55">{busca.trim() ? `Nenhum serviço encontrado para “${busca}”.` : "Nenhum serviço nesta etapa."}</div>
             ) : (
-              <ItemsList grupos={gruposLista} onEditar={abrirEdicao} expandir={busca.trim().length > 0} />
+              <ItemsList grupos={gruposLista} onEditar={abrirEdicao} expandir={busca.trim().length > 0 || etapaFoco !== null} />
             )}
           </>
         ) : (
