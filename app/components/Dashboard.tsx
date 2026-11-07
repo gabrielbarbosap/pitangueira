@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ComponentType } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { registrarObraCliente } from "@/lib/clienteObras";
 import { useAuth } from "@/lib/auth";
@@ -89,6 +88,17 @@ export function Dashboard() {
   const etapas = useMemo(() => distintos(itens, "etapa"), [itens]);
   const ambientes = useMemo(() => distintos(itens, "ambiente"), [itens]);
 
+  /** Dentro da obra volta para o início dela (Resumo); já no início, sai para a home de quem está logado. */
+  function voltar() {
+    if (aba !== "resumo") {
+      setEtapaFoco(null);
+      setAba("resumo");
+      window.scrollTo({ top: 0 });
+      return;
+    }
+    router.push("/");
+  }
+
   function abrirNovo() {
     setItemEdicao(null);
     setItemDialog(true);
@@ -123,9 +133,14 @@ export function Dashboard() {
       <header className={`rounded-b-[32px] bg-pitanga text-white transition-[padding] ${aba === "resumo" ? "pb-16" : "pb-7"}`}>
         <div className="mx-auto max-w-3xl px-4 pt-4">
           <div className="flex items-center justify-between gap-3">
-            <Link href="/" className={botaoTopo} aria-label="Voltar ao painel" title="Voltar ao painel">
+            <button
+              onClick={voltar}
+              className={botaoTopo}
+              aria-label={aba === "resumo" ? "Voltar ao painel" : "Voltar ao início da obra"}
+              title={aba === "resumo" ? "Voltar ao painel" : "Voltar ao início da obra"}
+            >
               <IconeVoltar />
-            </Link>
+            </button>
             <Logo claro />
             <div className="flex gap-2">
               <button onClick={() => setConfigDialog(true)} className={botaoTopo} aria-label="Ajustes da obra" title="Ajustes da obra">

@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-import { brlInt } from "@/lib/format";
 import { statusGrupo, valorEfetivo, type Grupo } from "@/lib/calc";
 import type { Item } from "@/lib/types";
 
@@ -87,7 +86,6 @@ function calcular(grupos: Grupo[]): EtapaAndamento[] {
  */
 export function EmAndamento({ gruposEtapa, onAbrirEtapa, onVerTodas }: { gruposEtapa: Grupo[]; onAbrirEtapa: (nome: string) => void; onVerTodas: () => void }) {
   const etapas = useMemo(() => calcular(gruposEtapa), [gruposEtapa]);
-  const aPagar = useMemo(() => etapas.reduce((s, e) => s + e.meio.filter((i) => i.feito && !i.pago).reduce((t, i) => t + valorEfetivo(i), 0), 0), [etapas]);
   const itensNoMeio = etapas.reduce((s, e) => s + e.meio.length, 0);
   const visiveis = etapas.slice(0, MAX_ETAPAS);
 
@@ -105,7 +103,7 @@ export function EmAndamento({ gruposEtapa, onAbrirEtapa, onVerTodas }: { gruposE
           <p className="mt-0.5 text-[13px] text-ink/55">
             {etapas.length === 0
               ? "Nada em execução agora."
-              : `${etapas.length} ${etapas.length === 1 ? "etapa" : "etapas"} · ${itensNoMeio} ${itensNoMeio === 1 ? "item" : "itens"} no meio do caminho${aPagar > 0 ? ` · ${brlInt(aPagar)} feito e a pagar` : ""}`}
+              : `${etapas.length} ${etapas.length === 1 ? "etapa" : "etapas"} · ${itensNoMeio} ${itensNoMeio === 1 ? "item" : "itens"} em andamento`}
           </p>
         </div>
         {etapas.length > MAX_ETAPAS && (
@@ -133,7 +131,7 @@ export function EmAndamento({ gruposEtapa, onAbrirEtapa, onVerTodas }: { gruposE
                   <div className="min-w-0 flex-1">
                     <p className="line-clamp-2 text-[15px] font-semibold leading-snug text-ink">{e.grupo.nome}</p>
                     <p className="mt-1 text-xs text-ink/55">
-                      {e.concluidos} de {e.grupo.total} concluídos · <span className="font-mono">{brlInt(e.grupo.previsto)}</span>
+                      {e.concluidos} de {e.grupo.total} itens concluídos
                     </p>
                   </div>
                 </div>
@@ -151,9 +149,7 @@ export function EmAndamento({ gruposEtapa, onAbrirEtapa, onVerTodas }: { gruposE
                         <li key={i.id} className="flex items-center gap-2">
                           <span className={`h-2 w-2 shrink-0 rounded-full ${s.ponto}`} aria-hidden />
                           <span className="min-w-0 flex-1 truncate text-[13px] text-ink/80">{i.descricao}</span>
-                          <span className={`hidden shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium min-[420px]:inline ${s.etiqueta}`}>{s.texto}</span>
-                          <span className="shrink-0 font-mono text-xs tabular-nums text-ink/60">{brlInt(valorEfetivo(i))}</span>
-                        </li>
+                          <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium ${s.etiqueta}`}>{s.texto}</span>                        </li>
                       );
                     })}
                     {e.meio.length > MAX_ITENS && <li className="pl-4 text-xs text-ink/45">+ {e.meio.length - MAX_ITENS} {e.meio.length - MAX_ITENS === 1 ? "item" : "itens"} em andamento</li>}
