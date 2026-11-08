@@ -17,7 +17,8 @@ import { GerenciarObraDialog } from "./GerenciarObraDialog";
 import { CatalogoDialog } from "./CatalogoDialog";
 import { ComposicoesDialog } from "./ComposicoesDialog";
 import { FornecedoresDialog } from "./FornecedoresDialog";
-import { IconeArquivo, IconeMais, IconeObra, IconeOpcoes, IconeSair } from "./Icones";
+import { Tour, useTour, type PassoTour } from "./Tour";
+import { IconeAjuda, IconeArquivo, IconeMais, IconeObra, IconeOpcoes, IconeSair } from "./Icones";
 
 type StatusObra = "nova" | "parada" | "andamento" | "concluida";
 
@@ -45,7 +46,7 @@ function Cartao({ rotulo, valor, sub, destaque }: { rotulo: string; valor: strin
   );
 }
 
-function CardObra({ obra, onGerenciar }: { obra: Obra; onGerenciar: () => void }) {
+function CardObra({ obra, onGerenciar, tour }: { obra: Obra; onGerenciar: () => void; tour?: boolean }) {
   const [copiado, setCopiado] = useState(false);
   const { brlInt } = useDinheiro();
   const r = obra.resumo;
@@ -66,7 +67,7 @@ function CardObra({ obra, onGerenciar }: { obra: Obra; onGerenciar: () => void }
   }
 
   return (
-    <article className="prancha overflow-hidden">
+    <article className="prancha overflow-hidden" data-tour={tour ? "cartao-projeto" : undefined}>
       <Link href={`/obra/${obra.id}`} className="clicavel block p-4 transition-colors hover:bg-ink/[0.02] active:bg-ink/[0.04]">
         <div className="flex items-start gap-3">
           <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${st.tile}`}>
@@ -170,6 +171,47 @@ export function Painel() {
   const [composicoes, setComposicoes] = useState(false);
   const [fornecedores, setFornecedores] = useState(false);
 
+  // Tutorial da home: abre sozinho na primeira visita (depois que a lista de projetos carregou).
+  const tour = useTour("painel", { auto: true, pronto: !loading });
+  const passosTour: PassoTour[] = [
+    {
+      titulo: "Bem-vindo à Pitangueira",
+      texto: "Em um minuto você conhece a sua home. Cada projeto reúne orçamento, andamento, programa de necessidades e o acesso do seu cliente.",
+    },
+    {
+      alvo: "novo-projeto",
+      titulo: "Comece por aqui",
+      texto: "Crie um projeto do zero ou parta de um projeto seu: os itens e o programa já vêm prontos, sem pagamentos nem dados do cliente.",
+    },
+    {
+      alvo: "cartao-projeto",
+      opcional: true,
+      titulo: "Cada projeto é um cartão",
+      texto: "Veja o andamento de relance. A chave é o código que o cliente digita; “Copiar link” leva só o endereço, e a chave você passa à parte. No botão ⋯ você arquiva ou exclui.",
+    },
+    {
+      alvo: "resumo-geral",
+      opcional: true,
+      titulo: "A visão de todos os projetos",
+      texto: "Quantos projetos você toca e o progresso geral, somando todos os itens.",
+    },
+    {
+      alvo: "atalhos",
+      titulo: "Suas ferramentas pessoais",
+      texto:
+        "Meu catálogo guarda seus itens e preços. Composições monta serviços com insumos, BDI e margem. Fornecedores mostra o histórico de prazo e custo. Financeiro controla honorários e parcelas a receber.",
+    },
+    {
+      alvo: "olhinho",
+      titulo: "Privacidade num toque",
+      texto: "O olhinho esconde todos os valores em dinheiro, como nos apps de banco. Bom para mostrar a tela a um cliente.",
+    },
+    {
+      titulo: "Pronto!",
+      texto: "Reveja este tutorial quando quiser, pelo botão ? no topo. Dentro de cada projeto há outro tutorial, que abre na primeira visita.",
+    },
+  ];
+
   const ehArqPitanga =
     !!user?.email && CASA_PITANGA_EMAILS.map((e) => e.toLowerCase()).includes(user.email.toLowerCase());
   const temCompartilhada = obras.some((o) => (o.ownerEmails?.length ?? 0) > 1);
@@ -223,7 +265,18 @@ export function Painel() {
               >
                 {primeiroNome.slice(0, 1)}
               </span>
-              <BotaoOlho className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white transition-colors hover:bg-white/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white" />
+              <button
+                onClick={tour.iniciar}
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white transition-colors hover:bg-white/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                aria-label="Ver o tutorial"
+                title="Ver o tutorial"
+              >
+                <IconeAjuda />
+              </button>
+              <BotaoOlho
+                tour="olhinho"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white transition-colors hover:bg-white/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              />
               <button
                 onClick={logout}
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white transition-colors hover:bg-white/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
@@ -244,7 +297,7 @@ export function Painel() {
                 ? "Comece criando o seu primeiro projeto."
                 : `${ativas.length} ${ativas.length === 1 ? "projeto sob sua gestão" : "projetos sob sua gestão"}${arquivadas.length > 0 ? ` · ${arquivadas.length} arquivado${arquivadas.length > 1 ? "s" : ""}` : ""}.`}
           </p>
-          <div className="mt-3 flex flex-wrap items-center gap-2">
+          <div className="mt-3 flex flex-wrap items-center gap-2" data-tour="atalhos">
             <button
               onClick={() => setCatalogo(true)}
               className="rotulo-tec rounded-full bg-white/15 px-3 py-1.5 text-white transition-colors hover:bg-white/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
@@ -278,7 +331,7 @@ export function Painel() {
 
       <main className={`mx-auto max-w-3xl space-y-6 px-4 pb-32 ${comCartoes ? "-mt-9" : "pt-6"}`}>
         {comCartoes && (
-          <section aria-label="Resumo geral" className="relative z-10 grid grid-cols-2 gap-3">
+          <section aria-label="Resumo geral" className="relative z-10 grid grid-cols-2 gap-3" data-tour="resumo-geral">
             <Cartao
               rotulo="Projetos que você toca"
               valor={String(ativas.length)}
@@ -327,8 +380,8 @@ export function Painel() {
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
-              {ativas.map((o) => (
-                <CardObra key={o.id} obra={o} onGerenciar={() => setGerenciarId(o.id)} />
+              {ativas.map((o, idx) => (
+                <CardObra key={o.id} obra={o} tour={idx === 0} onGerenciar={() => setGerenciarId(o.id)} />
               ))}
             </div>
           )}
@@ -361,6 +414,7 @@ export function Painel() {
       <div className="pb-seguro pointer-events-none fixed inset-x-0 bottom-0 z-30 flex justify-center px-4">
         <button
           onClick={() => setDialog(true)}
+          data-tour="novo-projeto"
           className="btn btn-primario pointer-events-auto gap-2 rounded-full px-7 py-4 text-base shadow-[0_14px_30px_-10px_rgba(210,58,31,0.7)]"
         >
           <IconeMais size={20} /> Novo projeto
@@ -372,6 +426,7 @@ export function Painel() {
       <CatalogoDialog aberto={catalogo} onFechar={() => setCatalogo(false)} />
       <ComposicoesDialog aberto={composicoes} onFechar={() => setComposicoes(false)} />
       <FornecedoresDialog aberto={fornecedores} onFechar={() => setFornecedores(false)} />
+      <Tour passos={passosTour} aberto={tour.aberto} onFechar={tour.fechar} />
     </div>
   );
 }

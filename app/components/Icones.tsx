@@ -180,3 +180,14 @@ export function IconeOlhoRisco({ size = 20 }: P) {
     </svg>
   );
 }
+
+/** Ponto de interrogação num círculo: reabre o tutorial. */
+export function IconeAjuda({ size = 20 }: P) {
+  return (
+    <svg {...base(size)}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9.6 9.5a2.5 2.5 0 114 2c-.9.6-1.6 1.1-1.6 2.2" />
+      <path d="M12 17.2h.01" />
+    </svg>
+  );
+}

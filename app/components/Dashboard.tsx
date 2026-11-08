@@ -20,11 +20,13 @@ import { CatalogoDialog } from "./CatalogoDialog";
 import { EmAndamento } from "./EmAndamento";
 import { ComposicoesDialog } from "./ComposicoesDialog";
 import { BotaoOlho } from "./BotaoOlho";
+import { Tour, useTour, type PassoTour } from "./Tour";
 import { OrcamentoDocumento, type ConfigOrcamentoPdf } from "./OrcamentoDocumento";
 import { OrcamentoPdfDialog } from "./OrcamentoPdfDialog";
 import { GerenciarObraDialog } from "./GerenciarObraDialog";
 import { Logo } from "./Logo";
 import {
+  IconeAjuda,
   IconeAjustes,
   IconeBusca,
   IconeGraficos,
@@ -87,6 +89,84 @@ export function Dashboard() {
   const etapas = useMemo(() => distintos(itens, "etapa"), [itens]);
   const ambientes = useMemo(() => distintos(itens, "ambiente"), [itens]);
 
+  // Tutorial do projeto: um roteiro para o arquiteto e outro para o cliente, cada um abre sozinho na primeira visita.
+  const tour = useTour(ehCliente ? "projeto-cliente" : "projeto", { auto: true, pronto: !loading });
+  const irPara = (a: Aba) => () => setAba(a);
+  const passoAbas: PassoTour = {
+    alvo: "abas",
+    titulo: "Quatro áreas",
+    texto: "Resumo, Itens, Gráficos e Programa. Toque nas abas para navegar. O botão de voltar leva ao início do projeto e, de lá, à sua home.",
+    aoEntrar: irPara("resumo"),
+  };
+  const passoProgresso: PassoTour = {
+    alvo: "topo-progresso",
+    titulo: "Andamento geral",
+    texto: "O nome do projeto e a porcentagem de itens concluídos, ou seja, feitos e pagos.",
+    aoEntrar: irPara("resumo"),
+  };
+  const passoOlho: PassoTour = {
+    alvo: "olhinho",
+    titulo: "Privacidade num toque",
+    texto: "O olhinho esconde todos os valores em dinheiro, como nos apps de banco. Bom para mostrar a tela a outra pessoa.",
+  };
+  const passosTour: PassoTour[] = ehCliente
+    ? [
+        {
+          titulo: "Acompanhe o seu projeto",
+          texto: "Aqui você vê o orçamento, o andamento e o programa de necessidades que o seu arquiteto preparou. Vamos conhecer cada área.",
+        },
+        passoProgresso,
+        passoAbas,
+        {
+          alvo: "lista-itens",
+          opcional: true,
+          titulo: "Marque o que foi feito e pago",
+          texto: "Em cada item você pode marcar Feito e Pago. Fica registrado quem marcou e quando. Os itens em andamento aparecem primeiro.",
+          aoEntrar: irPara("itens"),
+        },
+        {
+          alvo: "programa-passos",
+          titulo: "Aprove o programa",
+          texto: "Confira os ambientes e requisitos do projeto. Ao aprovar, o seu nome e a data ficam registrados.",
+          aoEntrar: irPara("programa"),
+        },
+        { ...passoOlho, aoEntrar: irPara("resumo") },
+        { titulo: "Pronto!", texto: "Reveja este tutorial quando quiser, pelo botão ? no topo.", aoEntrar: irPara("resumo") },
+      ]
+    : [
+        { titulo: "Este é o seu projeto", texto: "Aqui ficam o orçamento, o andamento e o programa de necessidades. Vou mostrar cada área." },
+        passoProgresso,
+        passoAbas,
+        {
+          alvo: "em-andamento",
+          opcional: true,
+          titulo: "O que está em andamento",
+          texto: "As etapas com itens feitos ou pagos aparecem aqui, com o progresso. Toque num cartão para ver os itens daquela etapa.",
+          aoEntrar: irPara("resumo"),
+        },
+        {
+          alvo: "acoes-itens",
+          titulo: "Monte o orçamento",
+          texto:
+            "Adicione itens à mão, do seu catálogo ou de uma composição de custo. Em cada item você marca Feito e Pago e informa fornecedor e prazo. E gera o orçamento em PDF por etapa ou ambiente.",
+          aoEntrar: irPara("itens"),
+        },
+        {
+          alvo: "programa-passos",
+          titulo: "Programa de necessidades",
+          texto: "Cadastre os ambientes e requisitos do cliente, ligue cada requisito aos itens do orçamento e peça a aprovação online. Qualquer mudança pede nova aprovação.",
+          aoEntrar: irPara("programa"),
+        },
+        {
+          alvo: "ajustes",
+          titulo: "Ajustes do projeto",
+          texto: "Mude o nome e o teto do orçamento, ou arquive e exclua o projeto. A chave e o link do cliente você copia na sua home.",
+          aoEntrar: irPara("resumo"),
+        },
+        passoOlho,
+        { titulo: "Pronto!", texto: "Reveja este tutorial quando quiser, pelo botão ? no topo." },
+      ];
+
   /** Dentro da obra volta para o início dela (Resumo); já no início, sai para a home de quem está logado. */
   function voltar() {
     if (aba !== "resumo") {
@@ -108,7 +188,7 @@ export function Dashboard() {
   }
 
   const vazio = (
-    <div className="prancha px-6 py-14 text-center">
+    <div className="prancha px-6 py-14 text-center" data-tour="acoes-itens">
       <p className="text-lg font-semibold text-ink">Nenhum item neste projeto ainda</p>
       <p className="mx-auto mt-1 max-w-xs text-sm text-ink/60">
         {ehCliente ? "O arquiteto ainda não cadastrou o orçamento." : "Cadastre os itens do orçamento para acompanhar valores e andamento."}
@@ -142,8 +222,11 @@ export function Dashboard() {
             </button>
             <Logo claro />
             <div className="flex gap-2">
-              <BotaoOlho className={botaoTopo} />
-              <button onClick={() => setConfigDialog(true)} className={botaoTopo} aria-label="Ajustes do projeto" title="Ajustes do projeto">
+              <button onClick={tour.iniciar} className={botaoTopo} aria-label="Ver o tutorial" title="Ver o tutorial">
+                <IconeAjuda />
+              </button>
+              <BotaoOlho className={botaoTopo} tour="olhinho" />
+              <button onClick={() => setConfigDialog(true)} className={botaoTopo} aria-label="Ajustes do projeto" title="Ajustes do projeto" data-tour="ajustes">
                 <IconeAjustes />
               </button>
               <button onClick={logout} className={botaoTopo} aria-label="Sair" title="Sair">
@@ -152,16 +235,18 @@ export function Dashboard() {
             </div>
           </div>
 
-          <p className="rotulo-tec mt-6 truncate text-white/85">
-            {user?.nome ?? "Modo demo"}
-            {ehCliente ? " · cliente" : ""}
-          </p>
-          <h1 className="mt-1 text-3xl font-semibold leading-tight tracking-tight">{config.nomeObra || "Projeto"}</h1>
-          <p className="mt-1 text-sm text-white">
-            {pct}% concluído · {agregado.concluidos} de {agregado.itens} itens
-          </p>
-          <div className="mt-4 h-2 rounded-full bg-white/25" role="img" aria-label={`${pct}% concluído`}>
-            <div className="h-2 rounded-full bg-white transition-[width] duration-500" style={{ width: `${Math.min(pct, 100)}%` }} />
+          <div data-tour="topo-progresso">
+            <p className="rotulo-tec mt-6 truncate text-white/85">
+              {user?.nome ?? "Modo demo"}
+              {ehCliente ? " · cliente" : ""}
+            </p>
+            <h1 className="mt-1 text-3xl font-semibold leading-tight tracking-tight">{config.nomeObra || "Projeto"}</h1>
+            <p className="mt-1 text-sm text-white">
+              {pct}% concluído · {agregado.concluidos} de {agregado.itens} itens
+            </p>
+            <div className="mt-4 h-2 rounded-full bg-white/25" role="img" aria-label={`${pct}% concluído`}>
+              <div className="h-2 rounded-full bg-white transition-[width] duration-500" style={{ width: `${Math.min(pct, 100)}%` }} />
+            </div>
           </div>
         </div>
       </header>
@@ -176,21 +261,23 @@ export function Dashboard() {
         ) : aba === "resumo" ? (
           <>
             <ResumoTopo resumo={resumo} />
-            <EmAndamento
-              gruposEtapa={gruposEtapa}
-              onAbrirEtapa={(nome) => {
-                setAgrupamento("etapa");
-                setBusca("");
-                setEtapaFoco(nome);
-                setAba("itens");
-              }}
-              onVerTodas={() => {
-                setAgrupamento("etapa");
-                setBusca("");
-                setEtapaFoco(null);
-                setAba("itens");
-              }}
-            />
+            <div data-tour="em-andamento">
+              <EmAndamento
+                gruposEtapa={gruposEtapa}
+                onAbrirEtapa={(nome) => {
+                  setAgrupamento("etapa");
+                  setBusca("");
+                  setEtapaFoco(nome);
+                  setAba("itens");
+                }}
+                onVerTodas={() => {
+                  setAgrupamento("etapa");
+                  setBusca("");
+                  setEtapaFoco(null);
+                  setAba("itens");
+                }}
+              />
+            </div>
             <SummaryCards resumo={resumo} />
             <ChartComposicao grupos={gruposGrafico} />
           </>
@@ -204,7 +291,7 @@ export function Dashboard() {
                 </button>
               )}
             </div>
-            <div className="-mt-2 flex flex-wrap gap-2">
+            <div className="-mt-2 flex flex-wrap gap-2" data-tour="acoes-itens">
               {!ehCliente && (
                 <button onClick={() => setCatalogoAberto(true)} className="btn btn-linha rounded-full px-3.5 py-2 font-mono text-[11px] font-semibold uppercase tracking-wider">
                   Catálogo
@@ -220,7 +307,7 @@ export function Dashboard() {
               </button>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3" data-tour="lista-itens">
               <div className="relative">
                 <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink/40">
                   <IconeBusca />
@@ -292,7 +379,7 @@ export function Dashboard() {
 
       {/* Menu em pílula: ao alcance do polegar */}
       <nav aria-label="Seções do projeto" className="pb-seguro pointer-events-none fixed inset-x-0 bottom-0 z-30 flex justify-center px-4">
-        <div role="tablist" className="pointer-events-auto flex w-full max-w-md items-center justify-between gap-1 rounded-full bg-ink p-1.5 shadow-[0_14px_30px_-10px_rgba(20,17,15,0.55)]">
+        <div role="tablist" data-tour="abas" className="pointer-events-auto flex w-full max-w-md items-center justify-between gap-1 rounded-full bg-ink p-1.5 shadow-[0_14px_30px_-10px_rgba(20,17,15,0.55)]">
           {ABAS.map(({ id, rotulo, Icone }) => {
             const ativa = aba === id;
             return (
@@ -313,6 +400,7 @@ export function Dashboard() {
         </div>
       </nav>
 
+      <Tour passos={passosTour} aberto={tour.aberto} onFechar={tour.fechar} />
       <ItemDialog aberto={itemDialog} onFechar={() => setItemDialog(false)} item={itemEdicao} etapas={etapas} ambientes={ambientes} />
       {!ehCliente && (
         <CatalogoDialog

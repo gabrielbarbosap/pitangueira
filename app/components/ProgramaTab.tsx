@@ -146,7 +146,7 @@ export function ProgramaTab({ gruposEtapa }: { gruposEtapa: Grupo[] }) {
   return (
     <div className="space-y-8">
       {/* Passo a passo: deixa claro o que é o programa e em que ponto está */}
-      <section aria-label="Passo a passo">
+      <section aria-label="Passo a passo" data-tour="programa-passos">
         <p className="mb-3 text-[13px] leading-snug text-ink/65">
           O <strong className="font-semibold text-ink">programa de necessidades</strong> reúne o que o cliente precisa (espaços e requisitos) antes do projeto e do
           orçamento. Preencha, envie o link do projeto e o cliente aprova online.
