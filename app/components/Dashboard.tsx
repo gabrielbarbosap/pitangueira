@@ -20,6 +20,7 @@ import { CatalogoDialog } from "./CatalogoDialog";
 import { EmAndamento } from "./EmAndamento";
 import { ComposicoesDialog } from "./ComposicoesDialog";
 import { BotaoOlho } from "./BotaoOlho";
+import { PrazoCard } from "./PrazoVisual";
 import { Tour, useTour, type PassoTour } from "./Tour";
 import { OrcamentoDocumento, type ConfigOrcamentoPdf } from "./OrcamentoDocumento";
 import { OrcamentoPdfDialog } from "./OrcamentoPdfDialog";
@@ -52,7 +53,7 @@ const botaoTopo =
 
 export function Dashboard() {
   const { user, logout } = useAuth();
-  const { obraId, itens, config, loading, ehCliente, addItem } = useData();
+  const { obraId, itens, config, loading, ehCliente, addItem, previsoes, registrarPrevisao } = useData();
   const [catalogoAberto, setCatalogoAberto] = useState(false);
   const [composicoesAberto, setComposicoesAberto] = useState(false);
   const [pdfDialog, setPdfDialog] = useState(false);
@@ -116,6 +117,13 @@ export function Dashboard() {
           texto: "Aqui você vê o orçamento, o andamento e o programa de necessidades que o seu arquiteto preparou. Vamos conhecer cada área.",
         },
         passoProgresso,
+        {
+          alvo: "prazo",
+          opcional: true,
+          titulo: "O prazo da obra",
+          texto: "Veja quando o projeto deve terminar. Se o arquiteto replanejar, a nova previsão aparece ao lado do prazo original, que nunca muda.",
+          aoEntrar: irPara("resumo"),
+        },
         passoAbas,
         {
           alvo: "lista-itens",
@@ -136,6 +144,14 @@ export function Dashboard() {
     : [
         { titulo: "Este é o seu projeto", texto: "Aqui ficam o orçamento, o andamento e o programa de necessidades. Vou mostrar cada área." },
         passoProgresso,
+        {
+          alvo: "prazo",
+          opcional: true,
+          titulo: "Prazo do projeto",
+          texto:
+            "Registre o prazo previsto no começo: depois de salvo, ele não pode ser editado. Se mudar, você registra uma nova previsão, e o cliente vê as duas lado a lado, a original e a nova.",
+          aoEntrar: irPara("resumo"),
+        },
         passoAbas,
         {
           alvo: "em-andamento",
@@ -257,10 +273,15 @@ export function Dashboard() {
         ) : aba === "programa" ? (
           <ProgramaTab gruposEtapa={gruposEtapa} />
         ) : itens.length === 0 ? (
-          vazio
+          <>
+            {/* Projeto novo ainda sem itens: o prazo já pode ser registrado */}
+            {aba === "resumo" && <PrazoCard previsoes={previsoes} pctConcluido={pct} ehCliente={ehCliente} onRegistrar={registrarPrevisao} />}
+            {vazio}
+          </>
         ) : aba === "resumo" ? (
           <>
             <ResumoTopo resumo={resumo} />
+            <PrazoCard previsoes={previsoes} pctConcluido={pct} ehCliente={ehCliente} onRegistrar={registrarPrevisao} />
             <div data-tour="em-andamento">
               <EmAndamento
                 gruposEtapa={gruposEtapa}

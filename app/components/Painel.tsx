@@ -18,6 +18,7 @@ import { CatalogoDialog } from "./CatalogoDialog";
 import { ComposicoesDialog } from "./ComposicoesDialog";
 import { FornecedoresDialog } from "./FornecedoresDialog";
 import { Tour, useTour, type PassoTour } from "./Tour";
+import { PrazoMini, ProximasEntregas, useHoje } from "./PrazoVisual";
 import { IconeAjuda, IconeArquivo, IconeMais, IconeObra, IconeOpcoes, IconeSair } from "./Icones";
 
 type StatusObra = "nova" | "parada" | "andamento" | "concluida";
@@ -46,7 +47,7 @@ function Cartao({ rotulo, valor, sub, destaque }: { rotulo: string; valor: strin
   );
 }
 
-function CardObra({ obra, onGerenciar, tour }: { obra: Obra; onGerenciar: () => void; tour?: boolean }) {
+function CardObra({ obra, onGerenciar, tour, hoje }: { obra: Obra; onGerenciar: () => void; tour?: boolean; hoje: number }) {
   const [copiado, setCopiado] = useState(false);
   const { brlInt } = useDinheiro();
   const r = obra.resumo;
@@ -111,6 +112,8 @@ function CardObra({ obra, onGerenciar, tour }: { obra: Obra; onGerenciar: () => 
             {r.concluidos}/{r.itens} itens concluídos · {pagoPct}% do valor pago
           </p>
         )}
+
+        <PrazoMini obra={obra} hoje={hoje} />
       </Link>
 
       <div className="flex items-center justify-between gap-3 border-t border-linha bg-ink/[0.025] px-4 py-2.5">
@@ -173,6 +176,7 @@ export function Painel() {
 
   // Tutorial da home: abre sozinho na primeira visita (depois que a lista de projetos carregou).
   const tour = useTour("painel", { auto: true, pronto: !loading });
+  const diaHoje = useHoje();
   const passosTour: PassoTour[] = [
     {
       titulo: "Bem-vindo à Pitangueira",
@@ -194,6 +198,12 @@ export function Painel() {
       opcional: true,
       titulo: "A visão de todos os projetos",
       texto: "Quantos projetos você toca e o progresso geral, somando todos os itens.",
+    },
+    {
+      alvo: "proximas-entregas",
+      opcional: true,
+      titulo: "Próximas entregas",
+      texto: "Os prazos dos seus projetos, do mais próximo ao mais distante. Quando um prazo é replanejado, aparece “nova previsão”, e o prazo original continua registrado dentro do projeto.",
     },
     {
       alvo: "atalhos",
@@ -346,6 +356,8 @@ export function Painel() {
           </section>
         )}
 
+        {comCartoes && <ProximasEntregas obras={ativas} hoje={diaHoje} />}
+
         {ehArqPitanga && !temCompartilhada && !loading && (
           <div className="flex flex-col gap-3 rounded-3xl border border-ink/80 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-ink">
@@ -381,7 +393,7 @@ export function Painel() {
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               {ativas.map((o, idx) => (
-                <CardObra key={o.id} obra={o} tour={idx === 0} onGerenciar={() => setGerenciarId(o.id)} />
+                <CardObra key={o.id} obra={o} tour={idx === 0} hoje={diaHoje} onGerenciar={() => setGerenciarId(o.id)} />
               ))}
             </div>
           )}

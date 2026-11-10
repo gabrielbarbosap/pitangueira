@@ -103,6 +103,8 @@ export interface Obra {
   programa?: Programa;
   /** Aprovação do cliente; é apagada quando o arquiteto altera o programa. */
   programaAprovacao?: AprovacaoPrograma;
+  /** Previsões de prazo, da mais antiga (a original) à mais recente. Só cresce: ver `Previsao`. */
+  previsoes?: Previsao[];
   /** UID do arquiteto dono. */
   ownerUid: string;
   ownerEmail?: string;
@@ -249,4 +251,25 @@ export interface Honorario {
   descricao: string;
   parcelas: Parcela[];
   createdAt?: number;
+}
+
+// ---------- Prazo do projeto (previsões que só crescem) ----------
+
+/**
+ * Uma previsão de prazo do projeto. A lista `previsoes` da obra só cresce: a nº 1 é o prazo original e
+ * nunca muda; cada nova previsão (2, 3…) é acrescentada ao lado, com data, autor e motivo. Nada se edita nem se apaga.
+ */
+export interface Previsao {
+  id: string;
+  /** 1 = previsão original; 2 em diante = novas previsões. */
+  numero: number;
+  /** Início e término previstos (meia-noite local, em ms). */
+  inicio: number;
+  termino: number;
+  /** Duração em dias corridos (término − início). */
+  dias: number;
+  registradaEm: number;
+  registradaPor: string;
+  /** Por que o prazo mudou. Obrigatório nas novas previsões; a original traz uma observação opcional. */
+  motivo: string;
 }

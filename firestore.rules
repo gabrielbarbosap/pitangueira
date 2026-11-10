@@ -31,6 +31,16 @@ service cloud.firestore {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly(campos);
     }
 
+    // Previsões de prazo: o histórico só cresce. A gravação vale se a lista ficou igual ou se ganhou
+    // exatamente UMA previsão no fim, com todas as anteriores intactas. Ninguém (nem o dono) edita
+    // ou apaga a previsão original nem as novas já registradas.
+    function previsoesOk() {
+      let antigo = resource.data.get('previsoes', []);
+      let novo = request.resource.data.get('previsoes', []);
+      return novo == antigo
+        || (novo.size() == antigo.size() + 1 && novo[0:antigo.size()] == antigo);
+    }
+
     // Catálogo e marca pessoais do arquiteto: só o próprio uid lê e escreve.
     match /arquitetos/{uid} {
       allow read, write: if signedIn() && request.auth.uid == uid;
@@ -44,7 +54,7 @@ service cloud.firestore {
     match /obras/{obraId} {
       allow read: if ehDono(resource.data) || isMember(obraId);
       allow create: if signedIn() && request.resource.data.ownerUid == request.auth.uid;
-      allow update: if ehDono(resource.data)
+      allow update: if (ehDono(resource.data) && previsoesOk())
         || (isMember(obraId) && soAltera(['orcamentoTotal', 'resumo', 'programaAprovacao', 'updatedAt']));
       allow delete: if ehDono(resource.data);
 

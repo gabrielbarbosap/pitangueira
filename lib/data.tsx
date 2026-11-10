@@ -21,10 +21,11 @@ import {
   orderBy,
   writeBatch,
   deleteField,
+  arrayUnion,
 } from "firebase/firestore";
 import { db, isFirebaseConfigured } from "./firebase";
 import { useAuth } from "./auth";
-import type { AprovacaoPrograma, Config, Item, ItemInput, Programa, Projeto } from "./types";
+import type { AprovacaoPrograma, Config, Item, ItemInput, Previsao, Programa, Projeto } from "./types";
 import { CONFIG_PADRAO, PROGRAMA_VAZIO, PROJETO_VAZIO } from "./types";
 import { LS_OBRAS, lsItensKey } from "./demo";
 
@@ -59,6 +60,13 @@ interface DataContextValue {
   savePrograma: (p: Programa, opts?: { manterAprovacao?: boolean }) => Promise<void>;
   /** Cliente: aprova o programa atual. */
   aprovarPrograma: (nome: string) => Promise<void>;
+  /** Previsões de prazo do projeto: a original e as novas, da mais antiga à mais recente. */
+  previsoes: Previsao[];
+  /**
+   * Arquiteto: acrescenta uma previsão (a 1ª é a original; as seguintes são "novas previsões").
+   * Só acrescenta: não existe edição nem remoção, e as regras do banco também impedem.
+   */
+  registrarPrevisao: (p: { inicio: number; termino: number; motivo: string }) => Promise<void>;
 }
 
 const DataContext = createContext<DataContextValue | null>(null);
@@ -71,6 +79,7 @@ export function DataProvider({ obraId, children }: { obraId: string; children: R
   const [projeto, setProjeto] = useState<Projeto>(PROJETO_VAZIO);
   const [programa, setPrograma] = useState<Programa>(PROGRAMA_VAZIO);
   const [aprovacao, setAprovacao] = useState<AprovacaoPrograma | null>(null);
+  const [previsoes, setPrevisoes] = useState<Previsao[]>([]);
   const ator = user?.nome ?? "—";
   const ehCliente = user?.anonimo === true;
   // Resumo gravado na obra (null = ainda não chegou o snapshot da obra).
@@ -89,12 +98,14 @@ export function DataProvider({ obraId, children }: { obraId: string; children: R
           projeto?: Projeto;
           programa?: Programa;
           programaAprovacao?: AprovacaoPrograma;
+          previsoes?: Previsao[];
         }[];
         const o = obras.find((x) => x.id === obraId);
         setConfig(o ? { nomeObra: o.nome, orcamentoTotal: o.orcamentoTotal } : CONFIG_PADRAO);
         setProjeto({ ...PROJETO_VAZIO, ...(o?.projeto ?? {}) });
         setPrograma(o?.programa ?? PROGRAMA_VAZIO);
         setAprovacao(o?.programaAprovacao ?? null);
+        setPrevisoes(o?.previsoes ?? []);
       } catch {
         setItens([]);
       }
@@ -119,6 +130,7 @@ export function DataProvider({ obraId, children }: { obraId: string; children: R
         setProjeto({ ...PROJETO_VAZIO, ...(o.projeto ?? {}) });
         setPrograma(o.programa ?? PROGRAMA_VAZIO);
         setAprovacao(o.programaAprovacao ?? null);
+        setPrevisoes((o.previsoes as Previsao[] | undefined) ?? []);
       }
     });
     return () => {
@@ -275,13 +287,37 @@ export function DataProvider({ obraId, children }: { obraId: string; children: R
     else patchObraDemo({ programaAprovacao: ap });
   }
 
+  async function registrarPrevisao(p: { inicio: number; termino: number; motivo: string }) {
+    if (ehCliente) throw new Error("Só o arquiteto registra previsões");
+    const nova: Previsao = {
+      id: crypto.randomUUID(),
+      numero: previsoes.length + 1,
+      inicio: p.inicio,
+      termino: p.termino,
+      dias: Math.round((p.termino - p.inicio) / 86_400_000),
+      registradaEm: Date.now(),
+      registradaPor: ator,
+      motivo: p.motivo.trim(),
+    };
+    const antes = previsoes;
+    setPrevisoes([...antes, nova]);
+    try {
+      // arrayUnion só acrescenta ao fim; as regras do banco recusam qualquer outra mudança na lista.
+      if (configured && db) await updateDoc(doc(db, "obras", obraId), { previsoes: arrayUnion(nova), updatedAt: Date.now() });
+      else patchObraDemo({ previsoes: [...antes, nova] });
+    } catch (e) {
+      setPrevisoes(antes);
+      throw e;
+    }
+  }
+
   const value = useMemo(
     () => ({
       obraId, itens, config, loading, ator, ehCliente, addItem, updateItem, updateMany, removeItem, saveConfig,
-      projeto, programa, aprovacao, saveProjeto, savePrograma, aprovarPrograma,
+      projeto, programa, aprovacao, saveProjeto, savePrograma, aprovarPrograma, previsoes, registrarPrevisao,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [itens, config, loading, ator, ehCliente, projeto, programa, aprovacao],
+    [itens, config, loading, ator, ehCliente, projeto, programa, aprovacao, previsoes],
   );
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

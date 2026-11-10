@@ -191,3 +191,13 @@ export function IconeAjuda({ size = 20 }: P) {
     </svg>
   );
 }
+
+/** Cadeado: o que está registrado e não pode ser editado. */
+export function IconeCadeado({ size = 16 }: P) {
+  return (
+    <svg {...base(size)}>
+      <rect x="5" y="11" width="14" height="9" rx="2" />
+      <path d="M8 11V8a4 4 0 118 0v3" />
+    </svg>
+  );
+}
