@@ -86,7 +86,7 @@ export function GerenciarObraDialog({
               <p className="mt-1 text-[13px] leading-snug text-ink/65">
                 {arquivada
                   ? "Traz o projeto de volta para a sua lista principal, do jeito que ele estava."
-                  : "Tira o projeto da lista principal e o guarda em “Arquivados”. Nada é apagado: itens, programa e aprovações continuam como estão, e você restaura quando quiser. O seu cliente continua acessando com o link e o código."}
+                  : "Tira o projeto da lista principal e o guarda em “Arquivados”. Nada é apagado: itens, escopo e aprovações continuam como estão, e você restaura quando quiser. O seu cliente continua acessando com o link e o código."}
               </p>
             </div>
           </div>
@@ -109,7 +109,7 @@ export function GerenciarObraDialog({
                 </span>
               </div>
               <p className="mt-1 text-[13px] leading-snug text-ink/70">
-                Apaga o projeto e tudo o que está dentro dele: itens do orçamento, programa de necessidades, aprovações e o acesso dos clientes.{" "}
+                Apaga o projeto e tudo o que está dentro dele: itens do orçamento, escopo, aprovações e o acesso dos clientes.{" "}
                 <strong className="font-semibold text-ink">Não há como recuperar.</strong>
                 {!arquivada && " Se só quer tirar da lista, use Arquivar."}
               </p>

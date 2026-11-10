@@ -2,7 +2,7 @@
 
 import { useData } from "@/lib/data";
 import { brl } from "@/lib/format";
-import { vinculoDoRequisito } from "@/lib/calc";
+import { statusDoRequisito, vinculoDoRequisito } from "@/lib/calc";
 import { DocumentoBase, TituloSecao } from "./DocumentoBase";
 
 const STATUS_ROTULO = { pendente: "Pendente", previsto: "Previsto no orçamento", atendido: "Atendido" } as const;
@@ -12,7 +12,7 @@ export function ProgramaDocumento({ onFechar }: { onFechar: () => void }) {
   const { programa, aprovacao, itens } = useData();
 
   return (
-    <DocumentoBase onFechar={onFechar} titulo="Programa de necessidades" etapaRotulo="Programa de necessidades" aprovacao={aprovacao}>
+    <DocumentoBase onFechar={onFechar} titulo="Escopo do projeto" etapaRotulo="Programa de necessidades" aprovacao={aprovacao}>
       <section className="mt-8">
         <TituloSecao>Ambientes e quantidade</TituloSecao>
         {programa.ambientes.length === 0 ? (
@@ -63,7 +63,7 @@ export function ProgramaDocumento({ onFechar }: { onFechar: () => void }) {
                         </span>
                       )}
                     </span>
-                    <span className="shrink-0 text-xs text-ink/60">{STATUS_ROTULO[r.status]}</span>
+                    <span className="shrink-0 text-xs text-ink/60">{STATUS_ROTULO[statusDoRequisito(r, itens).status]}</span>
                   </div>
                   {v.lista.length > 0 && (
                     <ul className="ml-9 mt-1.5 space-y-0.5 text-xs text-ink/65">

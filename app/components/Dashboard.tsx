@@ -45,7 +45,7 @@ const ABAS: readonly { id: Aba; rotulo: string; Icone: ComponentType }[] = [
   { id: "resumo", rotulo: "Resumo", Icone: IconeResumo },
   { id: "itens", rotulo: "Itens", Icone: IconeItens },
   { id: "graficos", rotulo: "Gráficos", Icone: IconeGraficos },
-  { id: "programa", rotulo: "Programa", Icone: IconePrograma },
+  { id: "programa", rotulo: "Escopo", Icone: IconePrograma },
 ];
 
 const botaoTopo =
@@ -96,7 +96,7 @@ export function Dashboard() {
   const passoAbas: PassoTour = {
     alvo: "abas",
     titulo: "Quatro áreas",
-    texto: "Resumo, Itens, Gráficos e Programa. Toque nas abas para navegar. O botão de voltar leva ao início do projeto e, de lá, à sua home.",
+    texto: "Resumo, Itens, Gráficos e Escopo. Toque nas abas para navegar. O botão de voltar leva ao início do projeto e, de lá, à sua home.",
     aoEntrar: irPara("resumo"),
   };
   const passoProgresso: PassoTour = {
@@ -114,7 +114,7 @@ export function Dashboard() {
     ? [
         {
           titulo: "Acompanhe o seu projeto",
-          texto: "Aqui você vê o orçamento, o andamento e o programa de necessidades que o seu arquiteto preparou. Vamos conhecer cada área.",
+          texto: "Aqui você vê o orçamento, o andamento e o escopo que o seu arquiteto preparou. Vamos conhecer cada área.",
         },
         passoProgresso,
         passoAbas,
@@ -134,15 +134,15 @@ export function Dashboard() {
         },
         {
           alvo: "programa-passos",
-          titulo: "Aprove o programa",
-          texto: "Confira os ambientes e requisitos do projeto. Ao aprovar, o seu nome e a data ficam registrados.",
+          titulo: "Aprove o escopo",
+          texto: "Confira os ambientes e os pedidos do projeto. Ao aprovar, o seu nome e a data ficam registrados.",
           aoEntrar: irPara("programa"),
         },
         { ...passoOlho, aoEntrar: irPara("resumo") },
         { titulo: "Pronto!", texto: "Reveja este tutorial quando quiser, pelo botão ? no topo.", aoEntrar: irPara("resumo") },
       ]
     : [
-        { titulo: "Este é o seu projeto", texto: "Aqui ficam o orçamento, o andamento e o programa de necessidades. Vou mostrar cada área." },
+        { titulo: "Este é o seu projeto", texto: "Aqui ficam o orçamento, o andamento e o escopo. Vou mostrar cada área." },
         passoProgresso,
         passoAbas,
         {
@@ -169,8 +169,8 @@ export function Dashboard() {
         },
         {
           alvo: "programa-passos",
-          titulo: "Programa de necessidades",
-          texto: "Cadastre os ambientes e requisitos do cliente, ligue cada requisito aos itens do orçamento e peça a aprovação online. Qualquer mudança pede nova aprovação.",
+          titulo: "Escopo do projeto",
+          texto: "Registre os ambientes e os pedidos do cliente, ligue cada pedido aos itens do orçamento e peça a aprovação online. Qualquer mudança pede nova aprovação.",
           aoEntrar: irPara("programa"),
         },
         {

@@ -1,5 +1,5 @@
 // Cálculos do orçamento, compartilhados entre cards, gráficos e lista.
-import type { Agrupamento, Config, Item, ResumoObra } from "./types";
+import type { Agrupamento, Config, Item, Requisito, ResumoObra, StatusRequisito } from "./types";
 import { percentual } from "./format";
 
 /** Valor efetivo de um item: o real quando informado, senão o orçado. */
@@ -29,6 +29,17 @@ export function vinculoDoRequisito(itensIds: string[] | undefined, itens: Item[]
   const lista = itens.filter((i) => ids.has(i.id));
   const r = resumoDeItens(lista);
   return { ...r, lista };
+}
+
+/**
+ * Situação de um pedido do cliente (requisito). Com itens do orçamento ligados ela sai sozinha: concluído quando
+ * todos os itens ligados estão feitos e pagos, senão "no orçamento" (previsto). Sem itens ligados vale a que o
+ * arquiteto marcou à mão.
+ */
+export function statusDoRequisito(r: Requisito, itens: Item[]): { status: StatusRequisito; automatico: boolean } {
+  const v = vinculoDoRequisito(r.itensIds, itens);
+  if (v.lista.length === 0) return { status: r.status, automatico: false };
+  return { status: v.concluidos === v.lista.length ? "atendido" : "previsto", automatico: true };
 }
 
 export interface Resumo {

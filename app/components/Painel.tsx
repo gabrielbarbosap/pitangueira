@@ -180,12 +180,12 @@ export function Painel() {
   const passosTour: PassoTour[] = [
     {
       titulo: "Bem-vindo à Pitangueira",
-      texto: "Em um minuto você conhece a sua home. Cada projeto reúne orçamento, andamento, programa de necessidades e o acesso do seu cliente.",
+      texto: "Em um minuto você conhece a sua home. Cada projeto reúne orçamento, andamento, escopo e o acesso do seu cliente.",
     },
     {
       alvo: "novo-projeto",
       titulo: "Comece por aqui",
-      texto: "Crie um projeto do zero ou parta de um projeto seu: os itens e o programa já vêm prontos, sem pagamentos nem dados do cliente.",
+      texto: "Crie um projeto do zero ou parta de um projeto seu: os itens e o escopo já vêm prontos, sem pagamentos nem dados do cliente.",
     },
     {
       alvo: "cartao-projeto",

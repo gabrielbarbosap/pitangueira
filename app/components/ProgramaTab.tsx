@@ -6,7 +6,7 @@ import { useData } from "@/lib/data";
 import { useArquiteto } from "@/lib/arquiteto";
 import { useDinheiro } from "@/lib/privacidade";
 import { MODELOS_PROGRAMA, type ModeloPrograma } from "@/lib/modelosPrograma";
-import { filtrarItens, valorEfetivo, vinculoDoRequisito, type Grupo } from "@/lib/calc";
+import { filtrarItens, statusDoRequisito, valorEfetivo, vinculoDoRequisito, type Grupo } from "@/lib/calc";
 import type { AmbientePrograma, Item, Projeto, Requisito, StatusRequisito } from "@/lib/types";
 import { Modal } from "./Modal";
 import { useConfirm } from "./ConfirmProvider";
@@ -16,23 +16,22 @@ import { IconeEditar, IconeLixo } from "./Icones";
 const campo = "campo-pit w-full border border-ink/25 bg-white px-3 py-2.5 text-sm text-ink outline-none";
 const rotulo = "rotulo-tec mb-1 block text-ink/55";
 
-const PROXIMO: Record<StatusRequisito, StatusRequisito> = { pendente: "previsto", previsto: "atendido", atendido: "pendente" };
 const STATUS: Record<StatusRequisito, { rotulo: string; dica: string; classe: string; ponto: string }> = {
   pendente: {
     rotulo: "Pendente",
-    dica: "Ainda não tratado no projeto ou no orçamento",
+    dica: "ainda sem item no orçamento",
     classe: "border-ink/30 bg-white text-ink/65",
     ponto: "bg-ink/30",
   },
   previsto: {
-    rotulo: "Previsto",
-    dica: "Já está contemplado no orçamento",
+    rotulo: "No orçamento",
+    dica: "já tem item no orçamento",
     classe: "border-amber-400 bg-amber-50 text-amber-900",
     ponto: "bg-amber-500",
   },
   atendido: {
-    rotulo: "Atendido",
-    dica: "Executado no projeto",
+    rotulo: "Concluído",
+    dica: "os itens ligados estão feitos e pagos",
     classe: "border-emerald-500 bg-emerald-50 text-emerald-900",
     ponto: "bg-emerald-600",
   },
@@ -89,6 +88,81 @@ function Campo({ nome, dica, children }: { nome: string; dica?: string; children
   );
 }
 
+const AMBIENTES_COMUNS = ["Suíte", "Quarto", "Cozinha", "Sala", "Banheiro", "Lavabo", "Escritório", "Garagem", "Área de serviço", "Varanda"];
+
+/** Digitar e apertar Enter para acrescentar uma linha, sem abrir janela. Aceita atalhos de um toque. */
+function AdicionarRapido({
+  rotulo: nome,
+  placeholder,
+  botao,
+  sugestoes = [],
+  onAdicionar,
+}: {
+  rotulo: string;
+  placeholder: string;
+  botao: string;
+  sugestoes?: string[];
+  onAdicionar: (texto: string) => Promise<void>;
+}) {
+  const [texto, setTexto] = useState("");
+  const [ocupado, setOcupado] = useState(false);
+
+  async function enviar(valor: string) {
+    const v = valor.trim();
+    if (!v || ocupado) return;
+    setOcupado(true);
+    try {
+      await onAdicionar(v);
+      setTexto("");
+    } finally {
+      setOcupado(false);
+    }
+  }
+
+  return (
+    <div className="mt-3 space-y-2.5">
+      {sugestoes.length > 0 && (
+        <div className="flex flex-wrap gap-1.5" role="group" aria-label="Atalhos de um toque">
+          {sugestoes.map((s) => (
+            <button key={s} type="button" disabled={ocupado} onClick={() => enviar(s)} className="btn btn-linha rounded-full px-3 py-1.5 text-xs font-semibold">
+              + {s}
+            </button>
+          ))}
+        </div>
+      )}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          void enviar(texto);
+        }}
+        className="flex gap-2"
+      >
+        <input className={campo} value={texto} onChange={(e) => setTexto(e.target.value)} placeholder={placeholder} aria-label={nome} disabled={ocupado} />
+        <button type="submit" className="btn btn-primario shrink-0 px-4 text-sm" disabled={!texto.trim() || ocupado}>
+          {botao}
+        </button>
+      </form>
+    </div>
+  );
+}
+
+/** Etiqueta com a situação do pedido. `automatico` = vem dos itens ligados ao orçamento. */
+function PilulaStatus({ status, automatico }: { status: StatusRequisito; automatico: boolean }) {
+  const st = STATUS[status];
+  return (
+    <span
+      title={`${st.dica}${automatico ? ". Atualiza sozinho conforme os itens ligados." : ""}`}
+      className={`flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-wider ${st.classe}`}
+    >
+      <span className={`h-2 w-2 shrink-0 ${st.ponto}`} />
+      {st.rotulo}
+      {automatico && <span className="font-sans text-[10px] font-medium normal-case tracking-normal text-ink/45">· auto</span>}
+    </span>
+  );
+}
+
+type Filtro = "todos" | StatusRequisito;
+
 export function ProgramaTab({ gruposEtapa }: { gruposEtapa: Grupo[] }) {
   const { user } = useAuth();
   const { brlInt } = useDinheiro();
@@ -100,16 +174,33 @@ export function ProgramaTab({ gruposEtapa }: { gruposEtapa: Grupo[] }) {
   const [amb, setAmb] = useState<AmbientePrograma | "novo" | null>(null);
   const [req, setReq] = useState<Requisito | "novo" | null>(null);
   const [nomeAprov, setNomeAprov] = useState(user?.nome ?? "");
+  const [filtro, setFiltro] = useState<Filtro>("todos");
 
   const vazio = programa.ambientes.length === 0 && programa.requisitos.length === 0;
   const etapaInfo = (nome: string) => gruposEtapa.find((g) => g.nome === nome);
-  const dadosOk = Boolean(projeto.cliente.trim() || projeto.endereco.trim());
+
+  // Situação de cada pedido: sai dos itens ligados ao orçamento quando há; senão vale a marcação manual.
+  const efetivos = useMemo(() => programa.requisitos.map((r) => ({ r, ...statusDoRequisito(r, itens) })), [programa.requisitos, itens]);
+  const contagem: Record<Filtro, number> = {
+    todos: efetivos.length,
+    pendente: efetivos.filter((x) => x.status === "pendente").length,
+    previsto: efetivos.filter((x) => x.status === "previsto").length,
+    atendido: efetivos.filter((x) => x.status === "atendido").length,
+  };
+  const visiveis = filtro === "todos" ? efetivos : efetivos.filter((x) => x.status === filtro);
+  const ligados = efetivos.filter((x) => x.automatico).length;
+  const semItem = efetivos.length - ligados;
+
+  const nomesAmbiente = new Set(programa.ambientes.map((a) => a.nome.trim().toLowerCase()));
+  const sugestoesAmbiente = AMBIENTES_COMUNS.filter((n) => !nomesAmbiente.has(n.toLowerCase()));
+
+  const dadosResumo = [projeto.cliente, projeto.endereco].filter(Boolean).join(" · ");
 
   async function usarModelo(m: ModeloPrograma) {
     if (!vazio) {
       const ok = await confirmar({
-        titulo: "Substituir programa atual?",
-        mensagem: `Os ambientes e requisitos atuais serão trocados pelo modelo "${m.nome}". A aprovação do cliente também será desfeita.`,
+        titulo: "Substituir o escopo atual?",
+        mensagem: `Os ambientes e pedidos atuais serão trocados pelo modelo "${m.nome}". A aprovação do cliente também será desfeita.`,
         confirmar: "Substituir",
         tom: "perigo",
       });
@@ -119,107 +210,164 @@ export function ProgramaTab({ gruposEtapa }: { gruposEtapa: Grupo[] }) {
   }
 
   async function removerAmbiente(a: AmbientePrograma) {
-    const ok = await confirmar({ titulo: "Remover ambiente", mensagem: `Remover "${a.nome}" do programa?`, confirmar: "Remover", tom: "perigo" });
+    const ok = await confirmar({ titulo: "Remover ambiente", mensagem: `Remover "${a.nome}" do escopo?`, confirmar: "Remover", tom: "perigo" });
     if (ok) await savePrograma({ ...programa, ambientes: programa.ambientes.filter((x) => x.id !== a.id) });
   }
 
   async function removerRequisito(r: Requisito) {
-    const ok = await confirmar({ titulo: "Remover requisito", mensagem: "Remover este requisito do programa?", confirmar: "Remover", tom: "perigo" });
+    const ok = await confirmar({ titulo: "Remover pedido", mensagem: "Remover este pedido do escopo?", confirmar: "Remover", tom: "perigo" });
     if (ok) await savePrograma({ ...programa, requisitos: programa.requisitos.filter((x) => x.id !== r.id) });
   }
 
-  // Mudar o status acompanha a execução; não é mudança de conteúdo, então mantém a aprovação.
-  async function ciclarStatus(r: Requisito) {
-    await savePrograma(
-      { ...programa, requisitos: programa.requisitos.map((x) => (x.id === r.id ? { ...x, status: PROXIMO[x.status] } : x)) },
-      { manterAprovacao: true },
-    );
+  // Marcar à mão só acontece sem itens ligados e acompanha a execução; não é mudança de conteúdo, então mantém a aprovação.
+  async function marcarSituacao(r: Requisito, status: StatusRequisito) {
+    await savePrograma({ ...programa, requisitos: programa.requisitos.map((x) => (x.id === r.id ? { ...x, status } : x)) }, { manterAprovacao: true });
   }
 
+  async function adicionarAmbiente(nome: string) {
+    await savePrograma({
+      ...programa,
+      ambientes: [...programa.ambientes, { id: crypto.randomUUID(), nome, quantidade: 1, funcao: "", area: 0, proximidade: "" }],
+    });
+  }
+
+  async function adicionarPedido(texto: string) {
+    await savePrograma({
+      ...programa,
+      requisitos: [...programa.requisitos, { id: crypto.randomUUID(), texto, ambiente: "", etapa: "", itensIds: [], status: "pendente" }],
+    });
+  }
+
+  // O próximo passo que faz sentido para o arquiteto, em uma frase.
+  const proximoPasso = ehCliente
+    ? null
+    : vazio
+      ? "Comece por um modelo ou adicione os ambientes do projeto."
+      : programa.requisitos.length === 0
+        ? "Agora registre os pedidos do cliente: o que ele precisa em cada espaço."
+        : itens.length > 0 && semItem > 0
+          ? `${semItem} ${semItem === 1 ? "pedido ainda não tem item" : "pedidos ainda não têm item"} no orçamento. Ligue-${semItem === 1 ? "o" : "os"} para acompanhar custo e andamento.`
+          : !aprovacao
+            ? "Tudo registrado. Envie o link e a chave ao cliente para ele aprovar o escopo."
+            : null;
+
   const passos: { titulo: string; estado: string; ok: boolean }[] = [
-    { titulo: "Dados do projeto", estado: dadosOk ? "Preenchido" : "Falta preencher", ok: dadosOk },
-    { titulo: "Ambientes", estado: programa.ambientes.length > 0 ? `${programa.ambientes.length} cadastrados` : "Nenhum ainda", ok: programa.ambientes.length > 0 },
-    { titulo: "Requisitos", estado: programa.requisitos.length > 0 ? `${programa.requisitos.length} cadastrados` : "Nenhum ainda", ok: programa.requisitos.length > 0 },
-    { titulo: "Aprovação", estado: aprovacao ? "Aprovado" : "Aguardando cliente", ok: Boolean(aprovacao) },
+    {
+      titulo: "Registre",
+      estado: vazio ? "ambientes e pedidos" : `${programa.ambientes.length} ${programa.ambientes.length === 1 ? "ambiente" : "ambientes"} · ${programa.requisitos.length} ${programa.requisitos.length === 1 ? "pedido" : "pedidos"}`,
+      ok: !vazio,
+    },
+    {
+      titulo: "Ligue ao orçamento",
+      estado: efetivos.length === 0 ? "cada pedido a seus itens" : `${ligados} de ${efetivos.length} ligados`,
+      ok: efetivos.length > 0 && semItem === 0,
+    },
+    { titulo: "Cliente aprova", estado: aprovacao ? "aprovado" : "aguardando", ok: Boolean(aprovacao) },
   ];
 
+  const botaoSecao = "btn btn-linha rounded-full px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-wider";
+
   return (
-    <div className="space-y-8">
-      {/* Passo a passo: deixa claro o que é o programa e em que ponto está */}
-      <section aria-label="Passo a passo" data-tour="programa-passos">
-        <p className="mb-3 text-[13px] leading-snug text-ink/65">
-          O <strong className="font-semibold text-ink">programa de necessidades</strong> reúne o que o cliente precisa (espaços e requisitos) antes do projeto e do
-          orçamento. Preencha, envie o link do projeto e o cliente aprova online.
-        </p>
-        <ol className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-linha bg-linha sm:grid-cols-4">
+    <div className="space-y-7">
+      {/* O que é o escopo, em que ponto está e qual o próximo passo */}
+      <section aria-label="Sobre o escopo" data-tour="programa-passos" className="space-y-3">
+        <div>
+          <h2 className="text-xl font-semibold text-ink">Escopo do projeto</h2>
+          <p className="mt-0.5 text-[13px] leading-snug text-ink/60">
+            O que foi combinado com o cliente: os espaços da obra e o que ele precisa em cada um.{" "}
+            {ehCliente ? "Confira e aprove." : "Cada pedido pode ser ligado a itens do orçamento, e o cliente aprova online."}
+          </p>
+        </div>
+
+        <ol className="grid grid-cols-3 gap-2">
           {passos.map((p, i) => (
-            <li key={p.titulo} className="flex items-start gap-2.5 bg-white p-3">
-              <span
-                className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border font-mono text-[11px] font-semibold ${
-                  p.ok ? "border-emerald-600 bg-emerald-600 text-white" : "border-ink/30 text-ink/45"
-                }`}
-              >
-                {p.ok ? "✓" : i + 1}
-              </span>
-              <div className="min-w-0">
-                <p className="text-[13px] font-semibold leading-tight text-ink">{p.titulo}</p>
-                <p className={`mt-0.5 text-xs ${p.ok ? "text-emerald-700" : "text-ink/50"}`}>{p.estado}</p>
-              </div>
+            <li key={p.titulo} className={`rounded-2xl border px-3 py-2.5 ${p.ok ? "border-emerald-300 bg-emerald-50/70" : "border-linha bg-white"}`}>
+              <p className="flex items-center gap-1.5 text-[13px] font-semibold leading-tight text-ink">
+                <span
+                  className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full font-mono text-[10px] ${p.ok ? "bg-emerald-600 text-white" : "border border-ink/30 text-ink/45"}`}
+                  aria-hidden
+                >
+                  {p.ok ? "✓" : i + 1}
+                </span>
+                {p.titulo}
+              </p>
+              <p className={`mt-1 text-[11px] leading-snug ${p.ok ? "text-emerald-800" : "text-ink/50"}`}>{p.estado}</p>
             </li>
           ))}
         </ol>
+
+        {proximoPasso && (
+          <p className="flex items-start gap-2 rounded-2xl bg-pitanga/10 px-3.5 py-2.5 text-[13px] leading-snug text-ink/85">
+            <span className="mt-px shrink-0 font-mono text-[10px] font-semibold uppercase tracking-wider text-pitanga">Próximo</span>
+            {proximoPasso}
+          </p>
+        )}
       </section>
 
       {/* Aprovação do cliente */}
       {aprovacao ? (
         <div className="rounded-2xl border border-emerald-600 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
-          <span className="rotulo-tec block text-emerald-800">Programa aprovado</span>
+          <span className="rotulo-tec block text-emerald-800">Escopo aprovado</span>
           <strong>{aprovacao.nome}</strong> aprovou em {new Date(aprovacao.em).toLocaleDateString("pt-BR")}.
         </div>
       ) : !vazio && ehCliente ? (
         <div className="prancha space-y-3 p-4">
           <p className="rotulo-tec text-ink/55">Sua aprovação</p>
-          <p className="text-sm text-ink/80">Confira os ambientes e requisitos abaixo. Ao aprovar, seu nome e a data ficam registrados.</p>
+          <p className="text-sm text-ink/80">Confira os ambientes e os pedidos abaixo. Ao aprovar, seu nome e a data ficam registrados.</p>
           <input className={campo} value={nomeAprov} onChange={(e) => setNomeAprov(e.target.value)} placeholder="Seu nome" />
           <button className="btn btn-primario w-full px-4 py-3 text-sm" disabled={!nomeAprov.trim()} onClick={() => aprovarPrograma(nomeAprov.trim())}>
-            Aprovar programa de necessidades
+            Aprovar o escopo
           </button>
         </div>
       ) : !vazio ? (
         <p className="rounded-2xl border border-dashed border-ink/30 bg-white/70 px-3 py-2.5 text-[13px] leading-snug text-ink/70">
-          <strong className="font-semibold text-ink">Aguardando o cliente.</strong> Ele aprova pela aba Programa, usando o link e o código do projeto. Qualquer
-          alteração nos ambientes ou requisitos pede nova aprovação.
+          <strong className="font-semibold text-ink">Aguardando o cliente.</strong> Ele aprova pela aba Escopo, usando o link e a chave do projeto. Qualquer mudança nos
+          ambientes ou pedidos pede nova aprovação.
         </p>
       ) : null}
 
-      {/* Dados do projeto */}
-      <section>
-        <Secao
-          titulo="Dados do projeto"
-          descricao={ehCliente ? undefined : "Identificam o projeto no cabeçalho do documento em PDF."}
-          acao={!ehCliente ? <button className="btn btn-linha rounded-full px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-wider" onClick={() => setDlgProjeto(true)}>Editar</button> : undefined}
-        />
-        <dl className="prancha grid gap-px overflow-hidden bg-linha sm:grid-cols-2">
-          {([
-            ["Cliente(s)", projeto.cliente],
-            ["Tipo de projeto", projeto.tipo],
-            ["Endereço", projeto.endereco],
-            ["Responsável técnico", [projeto.responsavel, projeto.registro].filter(Boolean).join(" · ")],
-          ] as [string, string][]).map(([k, v]) => (
-            <div key={k} className="bg-white px-4 py-3">
-              <dt className="rotulo-tec text-ink/45">{k}</dt>
-              <dd className="mt-1 text-sm text-ink">{v || <span className="text-ink/35">{ehCliente ? "—" : "não informado"}</span>}</dd>
+      {/* Dados do projeto: recolhidos, porque são o menos mexido */}
+      <details className="prancha group overflow-hidden">
+        <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
+          <span className="rotulo-tec text-ink">Dados do projeto</span>
+          <span className="min-w-0 flex-1 truncate text-xs text-ink/50">
+            {dadosResumo || (ehCliente ? "" : "Cliente, endereço, responsável e a marca que vai nos PDFs")}
+          </span>
+          <span aria-hidden className="text-ink/40 transition-transform group-open:rotate-180">
+            ▾
+          </span>
+        </summary>
+        <div className="border-t border-linha">
+          <dl className="grid gap-px bg-linha sm:grid-cols-2">
+            {([
+              ["Cliente(s)", projeto.cliente],
+              ["Tipo de projeto", projeto.tipo],
+              ["Endereço", projeto.endereco],
+              ["Responsável técnico", [projeto.responsavel, projeto.registro].filter(Boolean).join(" · ")],
+            ] as [string, string][]).map(([k, v]) => (
+              <div key={k} className="bg-white px-4 py-3">
+                <dt className="rotulo-tec text-ink/45">{k}</dt>
+                <dd className="mt-1 text-sm text-ink">{v || <span className="text-ink/35">{ehCliente ? "—" : "não informado"}</span>}</dd>
+              </div>
+            ))}
+          </dl>
+          {!ehCliente && (
+            <div className="flex items-center justify-between gap-3 border-t border-linha px-4 py-3">
+              <p className="text-xs text-ink/50">Aparecem no cabeçalho dos PDFs, junto com a marca do escritório.</p>
+              <button className={botaoSecao} onClick={() => setDlgProjeto(true)}>
+                Editar dados
+              </button>
             </div>
-          ))}
-        </dl>
-      </section>
+          )}
+        </div>
+      </details>
 
-      {/* Vazio: escolher modelo */}
+      {/* Vazio: escolher um modelo */}
       {vazio && (
         <section>
-          <Secao titulo="Começar" descricao={ehCliente ? undefined : "Escolha um modelo para já vir com ambientes e requisitos sugeridos. Tudo pode ser editado depois."} />
+          <Secao titulo="Comece por um modelo" descricao={ehCliente ? undefined : "Já vem com ambientes e pedidos sugeridos. Tudo pode ser editado depois. Ou, se preferir, adicione os ambientes direto, logo abaixo."} />
           {ehCliente ? (
-            <p className="prancha px-4 py-10 text-center text-sm text-ink/60">O arquiteto ainda não preencheu o programa de necessidades.</p>
+            <p className="prancha px-4 py-10 text-center text-sm text-ink/60">O arquiteto ainda não preencheu o escopo do projeto.</p>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               {MODELOS_PROGRAMA.map((m) => (
@@ -235,16 +383,19 @@ export function ProgramaTab({ gruposEtapa }: { gruposEtapa: Grupo[] }) {
       )}
 
       {/* Ambientes */}
-      {(!vazio || programa.ambientes.length > 0) && (
+      {(!ehCliente || programa.ambientes.length > 0) && (
         <section>
           <Secao
             titulo="Ambientes"
-            descricao="Os espaços do projeto e quantos de cada um. A área e a proximidade entre eles são opcionais."
+            descricao={
+              ehCliente
+                ? "Os espaços do projeto e quantos de cada um."
+                : "Os espaços do projeto e quantos de cada um. Para informar função, área ou proximidade, toque em Editar."
+            }
             contagem={programa.ambientes.length}
-            acao={!ehCliente ? <button className="btn btn-linha rounded-full px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-wider" onClick={() => setAmb("novo")}>+ Ambiente</button> : undefined}
           />
           {programa.ambientes.length === 0 ? (
-            <p className="prancha px-4 py-8 text-center text-sm text-ink/50">Nenhum ambiente ainda. Use “+ Ambiente” para começar.</p>
+            <p className="prancha px-4 py-6 text-center text-sm text-ink/50">Nenhum ambiente ainda.</p>
           ) : (
             <ul className="prancha divide-y divide-linha overflow-hidden">
               {programa.ambientes.map((a) => (
@@ -263,46 +414,68 @@ export function ProgramaTab({ gruposEtapa }: { gruposEtapa: Grupo[] }) {
               ))}
             </ul>
           )}
+          {!ehCliente && <AdicionarRapido rotulo="Novo ambiente" placeholder="Novo ambiente (ex.: Suíte) e Enter" botao="Adicionar" sugestoes={sugestoesAmbiente} onAdicionar={adicionarAmbiente} />}
         </section>
       )}
 
-      {/* Requisitos */}
-      {(!vazio || programa.requisitos.length > 0) && (
+      {/* Pedidos do cliente */}
+      {(!ehCliente || programa.requisitos.length > 0) && (
         <section>
           <Secao
-            titulo="Requisitos específicos"
-            descricao="Necessidades de uso que viram itens do projeto (ex.: carregador de carro elétrico, infraestrutura de wi-fi). Ligue cada uma à etapa do orçamento onde ela é atendida."
+            titulo="Pedidos do cliente"
+            descricao={
+              ehCliente
+                ? "O que você precisa no projeto, e como cada pedido está no orçamento."
+                : "O que o cliente precisa e que vira item de obra (ex.: carregador de carro elétrico, infraestrutura de wi-fi). Ligue cada pedido aos itens do orçamento que o atendem."
+            }
             contagem={programa.requisitos.length}
-            acao={!ehCliente ? <button className="btn btn-linha rounded-full px-3 py-1.5 font-mono text-[11px] font-semibold uppercase tracking-wider" onClick={() => setReq("novo")}>+ Requisito</button> : undefined}
           />
 
-          {/* Legenda dos status */}
-          <ul className="mb-3 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-ink/60">
-            {(Object.keys(STATUS) as StatusRequisito[]).map((k) => (
-              <li key={k} className="flex items-center gap-1.5">
-                <span className={`h-2 w-2 ${STATUS[k].ponto}`} />
-                <strong className="font-semibold text-ink/80">{STATUS[k].rotulo}:</strong> {STATUS[k].dica}
-              </li>
-            ))}
-          </ul>
-          {!ehCliente && programa.requisitos.length > 0 && (
-            <p className="mb-3 text-xs text-ink/50">Dica: toque na etiqueta de status de um requisito para avançar (Pendente → Previsto → Atendido).</p>
+          {programa.requisitos.length > 0 && (
+            <>
+              {/* Legenda: o que cada situação quer dizer */}
+              <ul className="mb-3 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-ink/60">
+                {(Object.keys(STATUS) as StatusRequisito[]).map((k) => (
+                  <li key={k} className="flex items-center gap-1.5">
+                    <span className={`h-2 w-2 ${STATUS[k].ponto}`} />
+                    <strong className="font-semibold text-ink/80">{STATUS[k].rotulo}:</strong> {STATUS[k].dica}
+                  </li>
+                ))}
+              </ul>
+              {!ehCliente && <p className="mb-3 text-xs text-ink/50">Com itens ligados, a situação se atualiza sozinha. Sem itens, você marca à mão.</p>}
+
+              {programa.requisitos.length >= 4 && (
+                <div className="mb-3 flex flex-wrap gap-1.5" role="tablist" aria-label="Filtrar pedidos por situação">
+                  {([
+                    ["todos", "Todos"],
+                    ["pendente", STATUS.pendente.rotulo],
+                    ["previsto", STATUS.previsto.rotulo],
+                    ["atendido", STATUS.atendido.rotulo],
+                  ] as [Filtro, string][]).map(([k, nome]) => (
+                    <button
+                      key={k}
+                      role="tab"
+                      aria-selected={filtro === k}
+                      onClick={() => setFiltro(k)}
+                      className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors ${filtro === k ? "bg-ink text-white" : "bg-ink/[0.07] text-ink/65 hover:text-ink"}`}
+                    >
+                      {nome} <span className={filtro === k ? "text-white/60" : "text-ink/40"}>{contagem[k]}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
           )}
 
           {programa.requisitos.length === 0 ? (
-            <p className="prancha px-4 py-8 text-center text-sm text-ink/50">Nenhum requisito ainda. Use “+ Requisito” para começar.</p>
+            <p className="prancha px-4 py-6 text-center text-sm text-ink/50">Nenhum pedido ainda.</p>
+          ) : visiveis.length === 0 ? (
+            <p className="prancha px-4 py-6 text-center text-sm text-ink/50">Nenhum pedido nesta situação.</p>
           ) : (
             <ul className="prancha divide-y divide-linha overflow-hidden">
-              {programa.requisitos.map((r) => {
+              {visiveis.map(({ r, status, automatico }) => {
                 const e = r.etapa ? etapaInfo(r.etapa) : undefined;
                 const vinc = vinculoDoRequisito(r.itensIds, itens);
-                const st = STATUS[r.status];
-                const etiqueta = (
-                  <>
-                    <span className={`h-2 w-2 shrink-0 ${st.ponto}`} />
-                    {st.rotulo}
-                  </>
-                );
                 return (
                   <li key={r.id} className="linha-hover flex flex-col gap-2.5 px-4 py-3 sm:flex-row sm:items-start sm:gap-4">
                     <div className="min-w-0 flex-1">
@@ -319,15 +492,18 @@ export function ProgramaTab({ gruposEtapa }: { gruposEtapa: Grupo[] }) {
                         </p>
                       )}
                       {vinc.lista.length > 0 ? (
-                        <div className="mt-2 rounded-xl border border-linha bg-papel/60 px-3 py-2">
-                          <p className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 text-xs text-ink/65">
-                            <strong className="font-semibold text-ink/85">
-                              {vinc.lista.length} {vinc.lista.length === 1 ? "item" : "itens"} do orçamento
-                            </strong>
-                            <span className="font-mono">{brlInt(vinc.previsto)}</span>
-                            <span>{vinc.concluidos} de {vinc.lista.length} concluídos · {Math.round(vinc.previsto > 0 ? (vinc.pago / vinc.previsto) * 100 : 0)}% pago</span>
-                          </p>
-                          <ul className="mt-1 space-y-0.5 text-xs text-ink/55">
+                        <details className="group mt-2 rounded-xl border border-linha bg-papel/60 px-3 py-2">
+                          <summary className="flex cursor-pointer list-none items-baseline gap-x-3 gap-y-0.5 text-xs text-ink/65 [&::-webkit-details-marker]:hidden">
+                            <span className="flex flex-1 flex-wrap items-baseline gap-x-3 gap-y-0.5">
+                              <strong className="font-semibold text-ink/85">
+                                {vinc.lista.length} {vinc.lista.length === 1 ? "item" : "itens"} do orçamento
+                              </strong>
+                              <span className="font-mono">{brlInt(vinc.previsto)}</span>
+                              <span>{vinc.concluidos} de {vinc.lista.length} concluídos · {Math.round(vinc.previsto > 0 ? (vinc.pago / vinc.previsto) * 100 : 0)}% pago</span>
+                            </span>
+                            <span aria-hidden className="shrink-0 text-ink/40 transition-transform group-open:rotate-180">▾</span>
+                          </summary>
+                          <ul className="mt-1.5 space-y-0.5 text-xs text-ink/55">
                             {vinc.lista.map((it) => (
                               <li key={it.id} className="flex items-center gap-1.5">
                                 <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${it.feito && it.pago ? "bg-emerald-600" : it.feito || it.pago ? "bg-amber-500" : "bg-ink/25"}`} />
@@ -335,37 +511,42 @@ export function ProgramaTab({ gruposEtapa }: { gruposEtapa: Grupo[] }) {
                               </li>
                             ))}
                           </ul>
-                        </div>
+                        </details>
                       ) : (
-                        !ehCliente && itens.length > 0 && (
-                          <p className="mt-1.5 text-xs text-ink/40">Nenhum item ligado. Edite o requisito para ligar o que atende a ele.</p>
+                        !ehCliente &&
+                        itens.length > 0 && (
+                          <button onClick={() => setReq(r)} className="mt-1.5 text-xs font-semibold text-pitanga hover:underline">
+                            Ligar a itens do orçamento
+                          </button>
                         )
                       )}
                     </div>
                     <div className="flex shrink-0 items-center justify-between gap-2 sm:justify-end">
-                      {ehCliente ? (
-                        <span title={st.dica} className={`flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-wider ${st.classe}`}>
-                          {etiqueta}
-                        </span>
+                      {ehCliente || automatico ? (
+                        <PilulaStatus status={status} automatico={automatico} />
                       ) : (
-                        <>
-                          <button
-                            onClick={() => ciclarStatus(r)}
-                            title={`${st.dica}. Toque para avançar o status.`}
-                            className={`btn clicavel h-9 shrink-0 gap-1.5 rounded-full border px-3 font-mono text-[10px] font-semibold uppercase tracking-wider hover:shadow-[0_6px_14px_-8px_rgba(20,17,15,0.5)] ${st.classe}`}
-                          >
-                            {etiqueta}
-                            <span aria-hidden className="text-ink/40">↻</span>
-                          </button>
-                          <Acoes nome="requisito" onEditar={() => setReq(r)} onRemover={() => removerRequisito(r)} />
-                        </>
+                        <select
+                          value={r.status}
+                          onChange={(ev) => marcarSituacao(r, ev.target.value as StatusRequisito)}
+                          aria-label="Situação do pedido"
+                          title="Situação do pedido. Sem itens ligados, você marca à mão."
+                          className={`h-9 shrink-0 cursor-pointer rounded-full border px-3 font-mono text-[10px] font-semibold uppercase tracking-wider outline-none ${STATUS[r.status].classe}`}
+                        >
+                          {(Object.keys(STATUS) as StatusRequisito[]).map((k) => (
+                            <option key={k} value={k}>
+                              {STATUS[k].rotulo}
+                            </option>
+                          ))}
+                        </select>
                       )}
+                      {!ehCliente && <Acoes nome="pedido" onEditar={() => setReq(r)} onRemover={() => removerRequisito(r)} />}
                     </div>
                   </li>
                 );
               })}
             </ul>
           )}
+          {!ehCliente && <AdicionarRapido rotulo="Novo pedido" placeholder="Novo pedido do cliente e Enter" botao="Adicionar" onAdicionar={adicionarPedido} />}
         </section>
       )}
 
@@ -373,7 +554,7 @@ export function ProgramaTab({ gruposEtapa }: { gruposEtapa: Grupo[] }) {
       {!vazio && (
         <div className="flex flex-col gap-3 sm:flex-row">
           <button className="btn btn-primario px-4 py-3 text-sm sm:flex-1" onClick={() => setDocumento(true)}>
-            Ver documento / gerar PDF
+            Gerar PDF do escopo
           </button>
           {!ehCliente && (
             <details className="relative sm:flex-1">
@@ -655,9 +836,9 @@ function RequisitoDialog({ aberto, onFechar, requisito, ambientes, etapas, itens
   }
 
   return (
-    <Modal aberto={aberto} onFechar={onFechar} titulo={requisito ? "Editar requisito" : "Novo requisito"}>
+    <Modal aberto={aberto} onFechar={onFechar} titulo={requisito ? "Editar pedido" : "Novo pedido"}>
       <div className="space-y-4">
-        <Campo nome="Requisito" dica="Descreva a necessidade em uma frase.">
+        <Campo nome="Pedido do cliente" dica="Descreva o que ele precisa, em uma frase.">
           <textarea className={`${campo} resize-none`} rows={3} value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Ex.: Pré-instalação de cabeamento de rede wi-fi" />
         </Campo>
         <Campo nome="Ambiente" dica="Escolha “Geral” se vale para o projeto todo.">
@@ -668,7 +849,7 @@ function RequisitoDialog({ aberto, onFechar, requisito, ambientes, etapas, itens
             ))}
           </select>
         </Campo>
-        <Campo nome="Etapa do orçamento onde é atendido" dica="Liga o pedido do cliente ao custo e ao andamento daquela etapa.">
+        <Campo nome="Etapa do orçamento (opcional)" dica="Só para organizar. O que conta para custo e andamento são os itens ligados, logo abaixo.">
           <select className={campo} value={etapa} onChange={(e) => setEtapa(e.target.value)} disabled={etapas.length === 0}>
             <option value="">{etapas.length === 0 ? "Cadastre o orçamento para vincular" : "Não vinculado"}</option>
             {etapas.map((e) => (
@@ -706,7 +887,7 @@ function RequisitoDialog({ aberto, onFechar, requisito, ambientes, etapas, itens
             </>
           )}
         </Campo>
-        <button className={btnSalvar} disabled={!texto.trim()} onClick={salvar}>Salvar requisito</button>
+        <button className={btnSalvar} disabled={!texto.trim()} onClick={salvar}>Salvar pedido</button>
       </div>
     </Modal>
   );

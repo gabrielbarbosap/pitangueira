@@ -103,10 +103,10 @@ export function ObraDialog({ aberto, onFechar }: { aberto: boolean; onFechar: ()
         <div role="radiogroup" aria-label="Como começar">
           <p className={rotulo}>Como começar</p>
           <div className="space-y-2">
-            <Opcao ativa={origem === null} onClick={() => setOrigem(null)} titulo="Do zero" dica="Projeto vazio. Você monta o orçamento e o programa." />
+            <Opcao ativa={origem === null} onClick={() => setOrigem(null)} titulo="Do zero" dica="Projeto vazio. Você monta o orçamento e o escopo." />
             {obras.length > 0 && (
               <>
-                <p className="pt-1 text-xs text-ink/50">Ou parta de um projeto seu. Leva os itens do orçamento e o programa de necessidades, sem pagamentos, aprovação, cliente nem endereço.</p>
+                <p className="pt-1 text-xs text-ink/50">Ou parta de um projeto seu. Leva os itens do orçamento e o escopo, sem pagamentos, aprovação, cliente nem endereço.</p>
                 <ul className="max-h-52 space-y-2 overflow-y-auto pr-0.5">
                   {obras.map((o) => {
                     const n = o.resumo?.itens ?? 0;
