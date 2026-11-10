@@ -117,6 +117,7 @@ export function Dashboard() {
           texto: "Aqui você vê o orçamento, o andamento e o programa de necessidades que o seu arquiteto preparou. Vamos conhecer cada área.",
         },
         passoProgresso,
+        passoAbas,
         {
           alvo: "prazo",
           opcional: true,
@@ -124,7 +125,6 @@ export function Dashboard() {
           texto: "Veja quando o projeto deve terminar. Se o arquiteto replanejar, a nova previsão aparece ao lado do prazo original, que nunca muda.",
           aoEntrar: irPara("resumo"),
         },
-        passoAbas,
         {
           alvo: "lista-itens",
           opcional: true,
@@ -144,20 +144,20 @@ export function Dashboard() {
     : [
         { titulo: "Este é o seu projeto", texto: "Aqui ficam o orçamento, o andamento e o programa de necessidades. Vou mostrar cada área." },
         passoProgresso,
-        {
-          alvo: "prazo",
-          opcional: true,
-          titulo: "Prazo do projeto",
-          texto:
-            "Registre o prazo previsto no começo: depois de salvo, ele não pode ser editado. Se mudar, você registra uma nova previsão, e o cliente vê as duas lado a lado, a original e a nova.",
-          aoEntrar: irPara("resumo"),
-        },
         passoAbas,
         {
           alvo: "em-andamento",
           opcional: true,
           titulo: "O que está em andamento",
           texto: "As etapas com itens feitos ou pagos aparecem aqui, com o progresso. Toque num cartão para ver os itens daquela etapa.",
+          aoEntrar: irPara("resumo"),
+        },
+        {
+          alvo: "prazo",
+          opcional: true,
+          titulo: "Prazo do projeto",
+          texto:
+            "Registre o prazo previsto no começo: depois de salvo, ele não pode ser editado. Se mudar, você registra uma nova previsão, e o cliente vê as duas lado a lado, a original e a nova.",
           aoEntrar: irPara("resumo"),
         },
         {
@@ -203,6 +203,10 @@ export function Dashboard() {
     setItemDialog(true);
   }
 
+  // O primeiro bloco do Resumo só flutua sobre o topo laranja quando é um cartão (projeto ainda sem itens, com o
+  // cartão de prazo). Com itens, o primeiro bloco é o título "Em andamento", que precisa ficar sobre o fundo claro.
+  const flutua = aba === "resumo" && !loading && itens.length === 0;
+
   const vazio = (
     <div className="prancha px-6 py-14 text-center" data-tour="acoes-itens">
       <p className="text-lg font-semibold text-ink">Nenhum item neste projeto ainda</p>
@@ -225,7 +229,7 @@ export function Dashboard() {
   return (
     <div className="grade min-h-dvh">
       {/* Topo colorido: a obra, quem está vendo e o progresso geral */}
-      <header className={`rounded-b-[32px] bg-pitanga text-white transition-[padding] ${aba === "resumo" ? "pb-16" : "pb-7"}`}>
+      <header className={`rounded-b-[32px] bg-pitanga text-white transition-[padding] ${flutua ? "pb-16" : "pb-7"}`}>
         <div className="mx-auto max-w-3xl px-4 pt-4">
           <div className="flex items-center justify-between gap-3">
             <button
@@ -267,7 +271,7 @@ export function Dashboard() {
         </div>
       </header>
 
-      <main className={`mx-auto max-w-3xl space-y-5 px-4 pb-32 ${aba === "resumo" ? "-mt-9" : "pt-5"}`}>
+      <main className={`mx-auto max-w-3xl space-y-5 px-4 pb-32 ${flutua ? "-mt-9" : "pt-5"}`}>
         {loading ? (
           <div className="prancha px-6 py-16 text-center font-mono text-xs uppercase tracking-wider text-ink/40">Carregando…</div>
         ) : aba === "programa" ? (
@@ -280,8 +284,7 @@ export function Dashboard() {
           </>
         ) : aba === "resumo" ? (
           <>
-            {/* Primeiro o que está acontecendo agora (prazo e andamento); o dinheiro vem depois */}
-            <PrazoCard previsoes={previsoes} pctConcluido={pct} ehCliente={ehCliente} onRegistrar={registrarPrevisao} />
+            {/* Primeiro o que está acontecendo agora (itens em andamento e prazo); o dinheiro vem depois */}
             <div data-tour="em-andamento">
               <EmAndamento
                 gruposEtapa={gruposEtapa}
@@ -299,6 +302,7 @@ export function Dashboard() {
                 }}
               />
             </div>
+            <PrazoCard previsoes={previsoes} pctConcluido={pct} ehCliente={ehCliente} onRegistrar={registrarPrevisao} />
             <ResumoTopo resumo={resumo} />
             <SummaryCards resumo={resumo} />
             <ChartComposicao grupos={gruposGrafico} />
