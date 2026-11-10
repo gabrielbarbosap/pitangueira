@@ -280,7 +280,7 @@ export function Dashboard() {
           </>
         ) : aba === "resumo" ? (
           <>
-            <ResumoTopo resumo={resumo} />
+            {/* Primeiro o que está acontecendo agora (prazo e andamento); o dinheiro vem depois */}
             <PrazoCard previsoes={previsoes} pctConcluido={pct} ehCliente={ehCliente} onRegistrar={registrarPrevisao} />
             <div data-tour="em-andamento">
               <EmAndamento
@@ -299,6 +299,7 @@ export function Dashboard() {
                 }}
               />
             </div>
+            <ResumoTopo resumo={resumo} />
             <SummaryCards resumo={resumo} />
             <ChartComposicao grupos={gruposGrafico} />
           </>

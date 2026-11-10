@@ -161,13 +161,13 @@ export function PrazoCard({
   if (!s) {
     if (ehCliente) {
       return (
-        <p data-tour="prazo" className="rounded-2xl border border-dashed border-ink/30 bg-white/70 px-4 py-3 text-[13px] text-ink/60">
+        <p data-tour="prazo" className="relative z-10 rounded-2xl border border-dashed border-ink/30 bg-white px-4 py-3 text-[13px] text-ink/60">
           O arquiteto ainda não registrou o prazo previsto deste projeto.
         </p>
       );
     }
     return (
-      <section data-tour="prazo" aria-label="Prazo do projeto" className="rounded-3xl border border-dashed border-ink/30 bg-white/70 p-5">
+      <section data-tour="prazo" aria-label="Prazo do projeto" className="relative z-10 rounded-3xl border border-dashed border-ink/30 bg-white p-5">
         <p className="rotulo-tec text-ink/50">Prazo do projeto</p>
         <p className="mt-1 text-lg font-semibold text-ink">Defina quanto tempo a obra deve levar</p>
         <p className="mt-1 text-sm leading-snug text-ink/65">
@@ -191,7 +191,7 @@ export function PrazoCard({
         : `Passaram ${s.pctTempo}% do tempo previsto e ${s.pctConcluido}% do projeto está concluído.`;
 
   return (
-    <section data-tour="prazo" aria-label="Prazo do projeto" className="prancha space-y-5 p-5">
+    <section data-tour="prazo" aria-label="Prazo do projeto" className="prancha relative z-10 space-y-5 p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="rotulo-tec text-ink/50">Prazo do projeto</p>
