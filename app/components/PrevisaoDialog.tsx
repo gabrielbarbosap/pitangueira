@@ -63,8 +63,10 @@ export function PrevisaoDialog({
     try {
       await onRegistrar({ inicio: ini, termino, motivo });
       onFechar();
-    } catch {
-      setErro("Não consegui registrar agora. Nada foi alterado; tente de novo.");
+    } catch (e) {
+      // O código (ex.: permission-denied) ajuda a achar o motivo quando a gravação é recusada.
+      const codigo = (e as { code?: string })?.code;
+      setErro(`Não consegui registrar agora. Nada foi alterado; tente de novo.${codigo ? ` (${codigo})` : ""}`);
     } finally {
       setOcupado(false);
     }

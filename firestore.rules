@@ -37,8 +37,12 @@ service cloud.firestore {
     function previsoesOk() {
       let antigo = resource.data.get('previsoes', []);
       let novo = request.resource.data.get('previsoes', []);
+      // Igual, ou com exatamente uma previsão a mais: todas as antigas seguem na lista (hasAll)
+      // e a primeira, a original, é idêntica. Sem fatiar a lista (corte vazio dá erro de avaliação).
       return novo == antigo
-        || (novo.size() == antigo.size() + 1 && novo[0:antigo.size()] == antigo);
+        || (novo.size() == antigo.size() + 1
+            && novo.hasAll(antigo)
+            && (antigo.size() == 0 || novo[0] == antigo[0]));
     }
 
     // Catálogo e marca pessoais do arquiteto: só o próprio uid lê e escreve.
