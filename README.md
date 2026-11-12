@@ -76,6 +76,7 @@ Os testes simulam um arquiteto novo usando o app de verdade no navegador (Playwr
 
 - `e2e/fluxo-completo.spec.ts`: cria o projeto, registra o prazo, monta o orçamento, gera o PDF, escreve o escopo, copia o link e o cliente entra com a chave.
 - `e2e/permissoes.spec.ts`: só o arquiteto tem a aba Escopo e cria orçamento; o cliente só acompanha.
+- `e2e/relatorio-mensal.spec.ts`: o relatório mensal de andamento (escolher o mês, o que entra, gerar o documento; o cliente não vê).
 - `e2e/tutorial.spec.ts`: o tutorial da primeira visita.
 
 ```bash

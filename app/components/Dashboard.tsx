@@ -21,6 +21,7 @@ import { EmAndamento } from "./EmAndamento";
 import { ComposicoesDialog } from "./ComposicoesDialog";
 import { BotaoOlho } from "./BotaoOlho";
 import { PrazoCard } from "./PrazoVisual";
+import { RelatorioCard, RelatorioDialog } from "./RelatorioMensal";
 import { Tour, useTour, type PassoTour } from "./Tour";
 import { OrcamentoDocumento, type ConfigOrcamentoPdf } from "./OrcamentoDocumento";
 import { OrcamentoPdfDialog } from "./OrcamentoPdfDialog";
@@ -55,6 +56,7 @@ export function Dashboard() {
   const { user, logout } = useAuth();
   const { obraId, itens, config, loading, ehCliente, addItem, previsoes, registrarPrevisao } = useData();
   const [catalogoAberto, setCatalogoAberto] = useState(false);
+  const [relatorio, setRelatorio] = useState<number | null>(null);
   const [composicoesAberto, setComposicoesAberto] = useState(false);
   const [pdfDialog, setPdfDialog] = useState(false);
   const [cfgPdf, setCfgPdf] = useState<ConfigOrcamentoPdf | null>(null);
@@ -154,6 +156,13 @@ export function Dashboard() {
           titulo: "Prazo do projeto",
           texto:
             "Registre o prazo previsto no começo: depois de salvo, ele não pode ser editado. Se mudar, você registra uma nova previsão, e o cliente vê as duas lado a lado, a original e a nova.",
+          aoEntrar: irPara("resumo"),
+        },
+        {
+          alvo: "relatorio",
+          opcional: true,
+          titulo: "Relatório do mês",
+          texto: "No fim do mês, gere o relatório de andamento: o app reúne o que foi executado e pago, você escolhe o que entra e manda o PDF ao cliente.",
           aoEntrar: irPara("resumo"),
         },
         {
@@ -299,6 +308,8 @@ export function Dashboard() {
               />
             </div>
             <PrazoCard previsoes={previsoes} pctConcluido={pct} ehCliente={ehCliente} onRegistrar={registrarPrevisao} />
+            {/* O relatório mensal é do arquiteto: o cliente recebe o PDF, não gera */}
+            {!ehCliente && <RelatorioCard itens={itens} onAbrir={() => setRelatorio(Date.now())} />}
             <ResumoTopo resumo={resumo} />
             <SummaryCards resumo={resumo} />
             <ChartComposicao grupos={gruposGrafico} />
@@ -422,6 +433,7 @@ export function Dashboard() {
         </div>
       </nav>
 
+      {!ehCliente && relatorio !== null && <RelatorioDialog key={relatorio} aberto onFechar={() => setRelatorio(null)} itens={itens} />}
       <Tour passos={passosTour} aberto={tour.aberto} onFechar={tour.fechar} />
       <ItemDialog aberto={itemDialog} onFechar={() => setItemDialog(false)} item={itemEdicao} etapas={etapas} ambientes={ambientes} />
       {!ehCliente && (

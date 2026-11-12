@@ -82,5 +82,16 @@ export async function adicionarItem(page: Page, item: NovoItem) {
   await expect(dialogo).toBeHidden();
 }
 
+/** Marca um item como feito e/ou pago pela aba Itens (a busca abre a etapa dele). A data fica registrada no momento. */
+export async function marcarItem(page: Page, descricao: string, marcas: { feito?: boolean; pago?: boolean }) {
+  await page.getByRole("tab", { name: "Itens" }).click();
+  const busca = page.getByPlaceholder(/Buscar serviço/);
+  await busca.fill(descricao);
+  const linha = page.locator(".linha-hover").filter({ hasText: descricao });
+  if (marcas.feito) await linha.getByRole("button", { name: "Feito" }).click();
+  if (marcas.pago) await linha.getByRole("button", { name: "Pago" }).click();
+  await busca.fill("");
+}
+
 /** "R$ 2.600,00" com o espaço que o navegador usa (não quebrável): aceita qualquer espaço. */
 export const reais = (valor: string) => new RegExp(`R\\$\\s*${valor.replace(/\./g, "\\.")}`);
