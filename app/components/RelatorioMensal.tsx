@@ -14,19 +14,21 @@ import {
   progressoDoMes,
   rotuloCurto,
   rotuloDoMes,
-  semDataRegistrada,
   totalPago,
   type Mes,
   type Progresso,
 } from "@/lib/relatorio";
 import { limitesDoMes } from "@/lib/relatorio";
 import type { Item } from "@/lib/types";
+import { filtrarItens } from "@/lib/calc";
+import { IconeBusca } from "./Icones";
 import { Modal } from "./Modal";
 import { DocumentoBase, TituloSecao } from "./DocumentoBase";
 import { useHoje } from "./PrazoVisual";
 
 const campo = "campo-pit w-full border border-ink/25 bg-white px-3 py-2.5 text-sm text-ink outline-none";
 const dia = (ms?: number) => (ms ? new Date(ms).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) : "—");
+const diaAno = (ms: number) => new Date(ms).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit" });
 const maiuscula = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 // ---------- Cartão no Resumo ----------
@@ -71,17 +73,69 @@ function Numero({ n, children }: { n: number; children: ReactNode }) {
   );
 }
 
-function Selo({ cor, children }: { cor: string; children: ReactNode }) {
-  return <span className={`shrink-0 rounded-full px-2 py-0.5 font-mono text-[10px] font-semibold ${cor}`}>{children}</span>;
+/** Uma linha da lista: marcar para entrar no relatório e, se faltar, marcar o item como feito/pago (isso vale no projeto todo). */
+function LinhaDoItem({
+  item,
+  incluido,
+  comAno,
+  onIncluir,
+  onFeito,
+  onPago,
+}: {
+  item: Item;
+  incluido: boolean;
+  comAno: boolean;
+  onIncluir: () => void;
+  onFeito: () => void;
+  onPago: () => void;
+}) {
+  const data = (ms?: number) => (!ms ? "sem data" : comAno ? diaAno(ms) : dia(ms));
+  const botao = (ativo: boolean) =>
+    `rounded-full border px-2.5 py-1 font-mono text-[10px] font-semibold transition-colors ${ativo ? "border-transparent" : "border-ink/25 bg-white text-ink/60 hover:border-ink/50"}`;
+  return (
+    <li className="flex flex-wrap items-start gap-x-3 gap-y-1.5 px-3.5 py-2.5">
+      <label className="flex min-w-0 flex-1 basis-48 cursor-pointer items-start gap-3">
+        <input type="checkbox" className="mt-0.5 h-4 w-4 shrink-0 accent-[#d23a1f]" checked={incluido} onChange={onIncluir} />
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm leading-snug text-ink">{item.descricao}</span>
+          {item.ambiente && item.ambiente !== "Geral" && <span className="block text-xs text-ink/45">{item.ambiente}</span>}
+        </span>
+      </label>
+      <span className="ml-7 flex shrink-0 items-center gap-1.5 sm:ml-0">
+        <button
+          type="button"
+          aria-pressed={item.feito}
+          aria-label={`${item.feito ? "Desmarcar" : "Marcar"} ${item.descricao} como feito`}
+          title={item.feito ? "Tirar a marca de feito (muda também na aba Itens)" : "Marcar como feito (muda também na aba Itens)"}
+          onClick={onFeito}
+          className={`${botao(item.feito)} ${item.feito ? "bg-ink text-white" : ""}`}
+        >
+          {item.feito ? `Feito ${data(item.feitoEm)}` : "Feito"}
+        </button>
+        <button
+          type="button"
+          aria-pressed={item.pago}
+          aria-label={`${item.pago ? "Desmarcar" : "Marcar"} ${item.descricao} como pago`}
+          title={item.pago ? "Tirar a marca de pago (muda também na aba Itens)" : "Marcar como pago (muda também na aba Itens)"}
+          onClick={onPago}
+          className={`${botao(item.pago)} ${item.pago ? "bg-emerald-100 text-emerald-800" : ""}`}
+        >
+          {item.pago ? `Pago ${data(item.pagoEm)}` : "Pago"}
+        </button>
+      </span>
+    </li>
+  );
 }
 
 /**
- * Janela do relatório: 1) escolher o mês, 2) escolher o que entra (tudo marcado por padrão, é só desmarcar o que
- * não vale), 3) contar o que importa. O documento abre por cima e, ao fechar, a escolha continua aqui.
+ * Janela do relatório: 1) escolher o mês, 2) escolher o que entra (o que aconteceu no mês já vem marcado; os demais
+ * itens do projeto ficam logo abaixo, e marcar um como feito/pago aqui atualiza o item na aba Itens), 3) contar o que
+ * importa. O documento abre por cima e, ao fechar, a escolha continua aqui.
  * É montada de novo a cada abertura (o pai usa `key`), então começa sempre limpa.
  */
 export function RelatorioDialog({ aberto, onFechar, itens }: { aberto: boolean; onFechar: () => void; itens: Item[] }) {
   const hoje = useHoje();
+  const { updateItem } = useData();
   const meses = useMemo(() => mesesDisponiveis(itens, hoje), [itens, hoje]);
 
   // Começa no mês atual se já houve movimento; senão no último mês que teve.
@@ -90,51 +144,50 @@ export function RelatorioDialog({ aberto, onFechar, itens }: { aberto: boolean; 
     const comMovimento = mesesDisponiveis(itens, hoje).filter((m) => m.qtd > 0);
     return comMovimento.some((m) => mesmoMes(m.mes, atual)) || comMovimento.length === 0 ? atual : comMovimento[comMovimento.length - 1].mes;
   });
-  const [fora, setFora] = useState<Set<string>>(new Set()); // desmarcados do mês
-  const [incluirSemData, setIncluirSemData] = useState<Set<string>>(new Set());
+  // O que o arquiteto mudou à mão. Sem mudança, entra no relatório o que aconteceu no mês.
+  const [escolha, setEscolha] = useState<Record<string, boolean>>({});
   const [destaques, setDestaques] = useState("");
   const [proximos, setProximos] = useState("");
   const [comValores, setComValores] = useState(true);
   const [gerando, setGerando] = useState(false);
+  const [busca, setBusca] = useState("");
 
   const movimentos = useMemo(() => movimentosDoMes(itens, mes), [itens, mes]);
   const grupos = useMemo(() => porEtapa(movimentos), [movimentos]);
-  const semData = useMemo(() => semDataRegistrada(itens), [itens]);
   const progresso = useMemo(() => progressoDoMes(itens, mes), [itens, mes]);
 
-  const selecionados = movimentos.filter((m) => !fora.has(m.item.id));
-  const semDataEscolhidos = semData.filter((i) => incluirSemData.has(i.id));
-  const executados = [...selecionados.filter((m) => m.feitoNoMes).map((m) => m.item), ...semDataEscolhidos.filter((i) => i.feito)];
-  const pagos = [...selecionados.filter((m) => m.pagoNoMes).map((m) => m.item), ...semDataEscolhidos.filter((i) => i.pago)];
+  const doMes = new Map(movimentos.map((m) => [m.item.id, m]));
+  const incluido = (id: string) => escolha[id] ?? doMes.has(id);
+  const outros = itens.filter((i) => !doMes.has(i.id));
+  const buscando = busca.trim() !== "";
+  const outrosVisiveis = buscando ? filtrarItens(outros, busca) : outros;
+  const gruposOutros = porEtapa(outrosVisiveis.map((item) => ({ item })));
+
+  // No documento: do mês vale o que aconteceu no mês; os demais valem o que o item já tem marcado.
+  const entram = itens.filter((i) => incluido(i.id));
+  const executados = entram.filter((i) => (doMes.has(i.id) ? doMes.get(i.id)!.feitoNoMes : i.feito));
+  const pagos = entram.filter((i) => (doMes.has(i.id) ? doMes.get(i.id)!.pagoNoMes : i.pago));
   const nada = executados.length === 0 && pagos.length === 0 && !destaques.trim();
 
   const trocarMes = (m: Mes) => {
     setMes(m);
-    setFora(new Set());
+    setEscolha({});
   };
-  const alternar = (id: string) =>
-    setFora((f) => {
-      const n = new Set(f);
-      if (n.has(id)) n.delete(id);
-      else n.add(id);
+  const definir = (ids: string[], valor: boolean) =>
+    setEscolha((e) => {
+      const n = { ...e };
+      for (const id of ids) n[id] = valor;
       return n;
     });
-  const marcarGrupo = (ids: string[], marcar: boolean) =>
-    setFora((f) => {
-      const n = new Set(f);
-      for (const id of ids) {
-        if (marcar) n.delete(id);
-        else n.add(id);
-      }
-      return n;
-    });
-  const alternarSemData = (id: string) =>
-    setIncluirSemData((s) => {
-      const n = new Set(s);
-      if (n.has(id)) n.delete(id);
-      else n.add(id);
-      return n;
-    });
+  const alternar = (id: string) => definir([id], !incluido(id));
+  // Marcar na janela muda o item de verdade (aba Itens) e já o inclui no relatório.
+  const marcar = (item: Item, campo: "feito" | "pago") => {
+    const novo = !item[campo];
+    void updateItem(item.id, { [campo]: novo });
+    if (novo) definir([item.id], true);
+  };
+  const idsDoMes = movimentos.map((m) => m.item.id);
+  const doMesTodos = idsDoMes.every((id) => incluido(id));
 
   return (
     <Modal aberto={aberto} onFechar={onFechar} titulo="Relatório mensal de andamento" largo>
@@ -189,82 +242,110 @@ export function RelatorioDialog({ aberto, onFechar, itens }: { aberto: boolean; 
         <section>
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
             <Numero n={2}>Escolha o que entra</Numero>
-            {movimentos.length > 0 && (
+            {itens.length > 0 && (
               <div className="flex gap-3 text-xs">
                 <span className="text-ink/50">
-                  {selecionados.length} de {movimentos.length} incluídos
+                  {entram.length} de {itens.length} incluídos
                 </span>
-                <button type="button" className="font-semibold text-pitanga hover:underline" onClick={() => setFora(new Set())}>
-                  Todos
+                <button type="button" className="font-semibold text-pitanga hover:underline" onClick={() => definir(idsDoMes, true)}>
+                  Todos do mês
                 </button>
-                <button type="button" className="font-semibold text-ink/55 hover:underline" onClick={() => setFora(new Set(movimentos.map((m) => m.item.id)))}>
+                <button type="button" className="font-semibold text-ink/55 hover:underline" onClick={() => definir(itens.map((i) => i.id), false)}>
                   Nenhum
                 </button>
               </div>
             )}
           </div>
+          <p className="mb-3 text-xs leading-snug text-ink/50">
+            Aqui estão todos os itens do projeto. Se algo ainda não está como feito ou pago, marque aqui mesmo: o item também é atualizado na aba Itens, com a data de hoje.
+          </p>
 
           {movimentos.length === 0 ? (
             <p className="rounded-2xl border border-dashed border-ink/30 px-4 py-7 text-center text-sm leading-snug text-ink/55">
-              Nenhum serviço foi marcado como feito ou pago em {rotuloDoMes(mes)}. Escolha outro mês acima, ou escreva só os destaques abaixo.
+              Nenhum serviço foi marcado como feito ou pago em {rotuloDoMes(mes)}. Escolha outro mês acima, marque itens na lista abaixo, ou escreva só os destaques.
             </p>
           ) : (
             <div className="space-y-3">
-              {grupos.map((g) => {
-                const ids = g.itens.map((x) => x.item.id);
-                const todos = ids.every((id) => !fora.has(id));
-                return (
-                  <div key={g.etapa} className="overflow-hidden rounded-2xl border border-linha">
-                    <div className="flex items-center justify-between gap-3 bg-ink/[0.04] px-3.5 py-2">
-                      <p className="min-w-0 truncate text-[13px] font-semibold text-ink">
-                        {g.etapa} <span className="font-normal text-ink/45">· {g.itens.length}</span>
-                      </p>
-                      <button type="button" className="shrink-0 text-xs font-semibold text-pitanga hover:underline" onClick={() => marcarGrupo(ids, !todos)}>
-                        {todos ? "Desmarcar a etapa" : "Marcar a etapa"}
-                      </button>
-                    </div>
-                    <ul className="divide-y divide-linha">
-                      {g.itens.map(({ item, feitoNoMes, pagoNoMes }) => (
-                        <li key={item.id}>
-                          <label className="linha-hover flex cursor-pointer items-start gap-3 px-3.5 py-2.5">
-                            <input type="checkbox" className="mt-0.5 h-4 w-4 shrink-0 accent-[#d23a1f]" checked={!fora.has(item.id)} onChange={() => alternar(item.id)} />
-                            <span className="min-w-0 flex-1">
-                              <span className="block text-sm leading-snug text-ink">{item.descricao}</span>
-                              {item.ambiente && item.ambiente !== "Geral" && <span className="block text-xs text-ink/45">{item.ambiente}</span>}
-                            </span>
-                            <span className="flex shrink-0 flex-col items-end gap-1 sm:flex-row sm:items-center">
-                              {feitoNoMes && <Selo cor="bg-ink text-white">Executado {dia(item.feitoEm)}</Selo>}
-                              {pagoNoMes && <Selo cor="bg-emerald-100 text-emerald-800">Pago {dia(item.pagoEm)}</Selo>}
-                            </span>
-                          </label>
-                        </li>
-                      ))}
-                    </ul>
+              <p className="flex items-center justify-between text-[13px] font-semibold text-ink">
+                <span>Do mês</span>
+                <button type="button" className="text-xs font-semibold text-pitanga hover:underline" onClick={() => definir(idsDoMes, !doMesTodos)}>
+                  {doMesTodos ? "Desmarcar todos" : "Marcar todos"}
+                </button>
+              </p>
+              {grupos.map((g) => (
+                <div key={g.etapa} className="overflow-hidden rounded-2xl border border-linha">
+                  <div className="bg-ink/[0.04] px-3.5 py-2">
+                    <p className="truncate text-[13px] font-semibold text-ink">
+                      {g.etapa} <span className="font-normal text-ink/45">· {g.itens.length}</span>
+                    </p>
                   </div>
-                );
-              })}
+                  <ul className="divide-y divide-linha">
+                    {g.itens.map(({ item }) => (
+                      <LinhaDoItem
+                        key={item.id}
+                        item={item}
+                        incluido={incluido(item.id)}
+                        comAno={false}
+                        onIncluir={() => alternar(item.id)}
+                        onFeito={() => marcar(item, "feito")}
+                        onPago={() => marcar(item, "pago")}
+                      />
+                    ))}
+                  </ul>
+                </div>
+              ))}
             </div>
           )}
 
-          {semData.length > 0 && (
-            <details className="mt-3 rounded-2xl border border-dashed border-ink/30 px-3.5 py-2.5">
-              <summary className="cursor-pointer text-[13px] font-medium text-ink/70">
-                {semData.length} {semData.length === 1 ? "item marcado" : "itens marcados"} antes de o app guardar a data
-              </summary>
-              <p className="mt-2 text-xs leading-snug text-ink/50">Não dá para saber em que mês aconteceram. Marque os que você quer incluir neste relatório.</p>
-              <ul className="mt-2 max-h-48 divide-y divide-linha overflow-y-auto">
-                {semData.map((item) => (
-                  <li key={item.id}>
-                    <label className="flex cursor-pointer items-start gap-3 py-2">
-                      <input type="checkbox" className="mt-0.5 h-4 w-4 shrink-0 accent-[#d23a1f]" checked={incluirSemData.has(item.id)} onChange={() => alternarSemData(item.id)} />
-                      <span className="min-w-0 flex-1 text-sm leading-snug text-ink">
-                        {item.descricao} <span className="text-xs text-ink/45">· {item.etapa}</span>
-                      </span>
-                    </label>
-                  </li>
-                ))}
-              </ul>
-            </details>
+          {/* Todos os outros itens do projeto */}
+          {outros.length > 0 && (
+            <div className="mt-5">
+              <p className="mb-2 text-[13px] font-semibold text-ink">
+                Outros itens do projeto <span className="font-normal text-ink/45">· {outros.length}</span>
+              </p>
+              <label className="sr-only" htmlFor="rel-busca">
+                Buscar outro item
+              </label>
+              <div className="relative">
+                <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink/40">
+                  <IconeBusca />
+                </span>
+                <input
+                  id="rel-busca"
+                  className="campo-pit w-full border border-ink/20 bg-white py-2.5 pl-11 pr-3 text-sm text-ink outline-none"
+                  value={busca}
+                  onChange={(e) => setBusca(e.target.value)}
+                  placeholder="Buscar pelo nome, etapa ou ambiente…"
+                  autoComplete="off"
+                />
+              </div>
+              {buscando && outrosVisiveis.length === 0 ? (
+                <p className="mt-2 text-xs text-ink/50">Nenhum item encontrado para “{busca}”.</p>
+              ) : (
+                <div className="mt-2 space-y-2">
+                  {gruposOutros.map((g) => (
+                    <details key={`${g.etapa}-${buscando}`} open={buscando} className="overflow-hidden rounded-2xl border border-linha">
+                      <summary className="cursor-pointer bg-ink/[0.04] px-3.5 py-2 text-[13px] font-semibold text-ink">
+                        {g.etapa} <span className="font-normal text-ink/45">· {g.itens.length}</span>
+                      </summary>
+                      <ul className="divide-y divide-linha">
+                        {g.itens.map(({ item }) => (
+                          <LinhaDoItem
+                            key={item.id}
+                            item={item}
+                            incluido={incluido(item.id)}
+                            comAno
+                            onIncluir={() => alternar(item.id)}
+                            onFeito={() => marcar(item, "feito")}
+                            onPago={() => marcar(item, "pago")}
+                          />
+                        ))}
+                      </ul>
+                    </details>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
         </section>
 
@@ -364,6 +445,8 @@ function RelatorioDocumento({ onFechar, mes, executados, pagos, progresso, desta
   const hoje = useHoje();
   const rotulo = maiuscula(rotuloDoMes(mes));
   const { inicio, fim } = limitesDoMes(mes);
+  // Itens de outro mês (incluídos pela busca) mostram a data completa, para não parecerem do mês do relatório.
+  const dataDoItem = (ms?: number) => (!ms ? "sem data" : ms >= inicio && ms < fim ? dia(ms) : diaAno(ms));
 
   const concluidos = itens.filter((i) => i.feito && i.pago).length;
   const pctConcluido = itens.length > 0 ? Math.round((concluidos / itens.length) * 100) : 0;
@@ -440,7 +523,7 @@ function RelatorioDocumento({ onFechar, mes, executados, pagos, progresso, desta
                         {item.descricao}
                         {item.ambiente && item.ambiente !== "Geral" && <span className="block text-xs text-ink/50">{item.ambiente}</span>}
                       </td>
-                      <td className="w-20 py-1.5 text-right font-mono text-ink/60">{item.feitoEm ? dia(item.feitoEm) : "sem data"}</td>
+                      <td className="w-20 py-1.5 text-right font-mono text-ink/60">{dataDoItem(item.feitoEm)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -461,7 +544,7 @@ function RelatorioDocumento({ onFechar, mes, executados, pagos, progresso, desta
                     {item.descricao}
                     <span className="block text-xs text-ink/50">{item.etapa}</span>
                   </td>
-                  <td className="w-16 py-1.5 text-right font-mono text-ink/60">{item.pagoEm ? dia(item.pagoEm) : "sem data"}</td>
+                  <td className="w-20 py-1.5 text-right font-mono text-ink/60">{dataDoItem(item.pagoEm)}</td>
                   {comValores && <td className="w-28 py-1.5 text-right font-mono">{brl(item.valorReal > 0 ? item.valorReal : item.valorOrcado)}</td>}
                 </tr>
               ))}

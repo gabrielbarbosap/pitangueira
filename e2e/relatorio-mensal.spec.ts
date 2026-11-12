@@ -1,6 +1,79 @@
 import { expect, test } from "@playwright/test";
 import { adicionarItem, criarProjeto, entrarComoArquiteto, marcarItem, sair, semTutorial } from "./ajudas";
 
+/** A janela lista todos os itens do projeto. O que não é do mês fica logo abaixo, e marcar um item ali também o atualiza na aba Itens. */
+test("o arquiteto inclui itens de outro mês e marca pendentes na própria janela do relatório", async ({ page }) => {
+  test.slow();
+  await semTutorial(page);
+  await entrarComoArquiteto(page);
+  const projeto = await criarProjeto(page, "Casa do Lago");
+
+  await adicionarItem(page, { etapa: "Pintura", descricao: "Tinta acrílica 18L", quantidade: 4, unitario: 350 });
+  await adicionarItem(page, { etapa: "Pintura", descricao: "Rolo de lã", quantidade: 2, unitario: 25 });
+  await adicionarItem(page, { etapa: "Alvenaria", descricao: "Tijolo cerâmico", quantidade: 500, unitario: 2 }); // nunca marcado
+  await marcarItem(page, "Tinta acrílica 18L", { feito: true, pago: true });
+  await marcarItem(page, "Rolo de lã", { feito: true });
+
+  await test.step("a tinta passa a ser de 40 dias atrás (outro mês), e o arquiteto volta ao projeto", async () => {
+    const id = projeto.url.split("/").pop() as string;
+    await page.evaluate((idProjeto) => {
+      const chave = `reforma:itens:v4:${idProjeto}`;
+      const itens = JSON.parse(localStorage.getItem(chave) ?? "[]");
+      const antigo = Date.now() - 40 * 86_400_000;
+      for (const i of itens) if (i.descricao === "Tinta acrílica 18L") Object.assign(i, { feitoEm: antigo, pagoEm: antigo });
+      localStorage.setItem(chave, JSON.stringify(itens));
+    }, id);
+    await entrarComoArquiteto(page); // recarrega a página e entra de novo, já com as datas novas
+    await page.locator('article a[href^="/obra/"]').first().click();
+    await expect(page.getByRole("heading", { level: 1, name: projeto.nome })).toBeVisible();
+    await page.getByRole("button", { name: "Gerar relatório" }).click();
+  });
+
+  const janela = page.getByRole("dialog", { name: "Relatório mensal de andamento" });
+
+  await test.step("o rolo, do mês, já vem marcado; os outros itens do projeto aparecem, sem marca", async () => {
+    await expect(janela.getByRole("checkbox", { name: /Rolo de lã/ })).toBeChecked();
+    await expect(janela.getByText("1 de 3 incluídos")).toBeVisible();
+    await janela.getByLabel("Buscar outro item").fill("Tijolo"); // nunca foi feito nem pago, e mesmo assim aparece
+    await expect(janela.getByRole("checkbox", { name: /Tijolo cerâmico/ })).not.toBeChecked();
+    await janela.getByLabel("Buscar outro item").fill("Tinta");
+    await expect(janela.getByRole("checkbox", { name: /Tinta acrílica 18L/ })).not.toBeChecked();
+    await expect(janela.getByRole("button", { name: /Desmarcar Tinta acrílica 18L como feito/ })).toContainText(/Feito \d{2}\/\d{2}\/\d{2}/); // com o ano: não é deste mês
+  });
+
+  await test.step("marcar a tinta a inclui no relatório", async () => {
+    await janela.getByRole("checkbox", { name: /Tinta acrílica 18L/ }).check();
+    await expect(janela.getByText("2 de 3 incluídos")).toBeVisible();
+  });
+
+  await test.step("marcar o tijolo como feito na janela o inclui e o atualiza no projeto", async () => {
+    await janela.getByLabel("Buscar outro item").fill("Tijolo");
+    await janela.getByRole("button", { name: /Marcar Tijolo cerâmico como feito/ }).click();
+    await expect(janela.getByText("3 de 3 incluídos")).toBeVisible();
+    await expect(janela.getByRole("checkbox", { name: /Tijolo cerâmico/ })).toBeChecked();
+  });
+
+  await test.step("o documento traz os três, o item de outro mês com a data completa", async () => {
+    await janela.getByLabel("Destaques do mês (opcional)").fill("Pintura concluída.");
+    await page.getByRole("button", { name: /Gerar relatório de/ }).click();
+    const documento = page.locator(".print-area");
+    await expect(documento).toContainText("Tinta acrílica 18L");
+    await expect(documento).toContainText("Rolo de lã");
+    await expect(documento).toContainText("Tijolo cerâmico");
+    await expect(documento).toContainText(/\d{2}\/\d{2}\/\d{2}/); // a data da tinta, com ano
+    await expect(documento).toContainText(/R\$\s*1\.400,00/); // a tinta paga entra nos pagamentos
+    await documento.getByRole("button", { name: /Fechar/ }).click();
+  });
+
+  await test.step("a aba Itens já mostra o tijolo como feito", async () => {
+    await janela.getByRole("button", { name: "Cancelar" }).click();
+    await page.getByRole("tab", { name: "Itens" }).click();
+    await page.getByPlaceholder(/Buscar serviço/).fill("Tijolo");
+    const linha = page.locator(".linha-hover").filter({ hasText: "Tijolo cerâmico" });
+    await expect(linha.getByRole("button", { name: "Feito" })).toHaveAttribute("aria-pressed", "true");
+  });
+});
+
 /** O arquiteto reúne o que foi feito no mês, escolhe o que entra e gera o relatório de andamento para o cliente. */
 test("o arquiteto gera o relatório mensal de andamento", async ({ page }) => {
   test.slow();
