@@ -27,7 +27,7 @@ import { db, isFirebaseConfigured } from "./firebase";
 import { useAuth } from "./auth";
 import type { AprovacaoPrograma, Config, Item, ItemInput, Previsao, Programa, Projeto } from "./types";
 import { CONFIG_PADRAO, PROGRAMA_VAZIO, PROJETO_VAZIO } from "./types";
-import { LS_OBRAS, lsItensKey } from "./demo";
+import { LS_OBRAS, avisarObrasMudaram, lsItensKey } from "./demo";
 
 // O Firestore não aceita `undefined`. Em criação removemos; em edição viram deleteField().
 function semUndefined(obj: Record<string, unknown>) {
@@ -164,6 +164,7 @@ export function DataProvider({ obraId, children }: { obraId: string; children: R
         const atual = obras.find((o) => o.id === obraId);
         if (!atual || JSON.stringify(atual.resumo ?? null) === novo) return;
         localStorage.setItem(LS_OBRAS, JSON.stringify(obras.map((o) => (o.id === obraId ? { ...o, resumo } : o))));
+        avisarObrasMudaram();
       } catch {
         /* ignore */
       }
@@ -243,6 +244,7 @@ export function DataProvider({ obraId, children }: { obraId: string; children: R
             : o,
         );
         localStorage.setItem(LS_OBRAS, JSON.stringify(novas));
+        avisarObrasMudaram();
       } catch {
         /* ignore */
       }
@@ -254,6 +256,7 @@ export function DataProvider({ obraId, children }: { obraId: string; children: R
     try {
       const obras = JSON.parse(localStorage.getItem(LS_OBRAS) ?? "[]") as { id: string }[];
       localStorage.setItem(LS_OBRAS, JSON.stringify(obras.map((o) => (o.id === obraId ? { ...o, ...patch } : o))));
+      avisarObrasMudaram();
     } catch {
       /* ignore */
     }

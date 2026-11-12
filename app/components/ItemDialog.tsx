@@ -203,7 +203,7 @@ export function ItemDialog({
         <div className="grid grid-cols-[1fr_0.8fr_1.2fr_1.2fr] gap-2">
           <div>
             <label className={rotulo}>Qtd.</label>
-            <input type="number" inputMode="decimal" className={campo} value={form.quantidade} onChange={(e) => setQtdUnit("quantidade", e.target.value)} />
+            <input type="number" inputMode="decimal" aria-label="Quantidade" className={campo} value={form.quantidade} onChange={(e) => setQtdUnit("quantidade", e.target.value)} />
           </div>
           <div>
             <label className={rotulo}>Unid.</label>
@@ -212,18 +212,18 @@ export function ItemDialog({
           </div>
           <div>
             <label className={rotulo}>Valor unit.</label>
-            <input type="number" inputMode="decimal" className={campo} placeholder="0,00" value={form.valorUnitario} onChange={(e) => setQtdUnit("valorUnitario", e.target.value)} />
+            <input type="number" inputMode="decimal" aria-label="Valor unitário" className={campo} placeholder="0,00" value={form.valorUnitario} onChange={(e) => setQtdUnit("valorUnitario", e.target.value)} />
           </div>
           <div>
             <label className={rotulo}>Orçado</label>
-            <input type="number" inputMode="decimal" className={campo} placeholder="0,00" value={form.valorOrcado} onChange={(e) => setForm({ ...form, valorOrcado: e.target.value })} />
+            <input type="number" inputMode="decimal" aria-label="Valor orçado" className={campo} placeholder="0,00" value={form.valorOrcado} onChange={(e) => setForm({ ...form, valorOrcado: e.target.value })} />
           </div>
         </div>
         <p className={`${dica} -mt-2`}>O valor orçado é calculado (quantidade × unitário), mas você pode ajustar.</p>
 
         <div>
           <label className={rotulo}>Valor real (R$)</label>
-          <input type="number" inputMode="decimal" className={campo} placeholder="0,00" value={form.valorReal} onChange={(e) => setForm({ ...form, valorReal: e.target.value })} />
+          <input type="number" inputMode="decimal" aria-label="Valor real" className={campo} placeholder="0,00" value={form.valorReal} onChange={(e) => setForm({ ...form, valorReal: e.target.value })} />
           <p className={dica}>Quanto realmente custou. Se ficar vazio, vale o valor orçado.</p>
         </div>
 

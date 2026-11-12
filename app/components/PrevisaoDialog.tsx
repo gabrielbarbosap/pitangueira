@@ -106,13 +106,13 @@ export function PrevisaoDialog({
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
             <label className={rotulo}>Início da obra</label>
-            <input type="date" className={campo} value={inicio} onChange={(e) => setInicio(e.target.value)} />
+            <input type="date" aria-label="Início da obra" className={campo} value={inicio} onChange={(e) => setInicio(e.target.value)} />
           </div>
           {inicial ? (
             <div>
               <label className={rotulo}>Duração prevista</label>
               <div className="flex gap-2">
-                <input type="number" inputMode="numeric" min={1} className={`${campo} min-w-0`} value={quantidade} onChange={(e) => setQuantidade(e.target.value)} placeholder="Ex.: 6" />
+                <input type="number" inputMode="numeric" min={1} aria-label="Duração prevista" className={`${campo} min-w-0`} value={quantidade} onChange={(e) => setQuantidade(e.target.value)} placeholder="Ex.: 6" />
                 <select className={`${campo} w-auto`} value={unidade} onChange={(e) => setUnidade(e.target.value as UnidadePrazo)} aria-label="Unidade da duração">
                   <option value="dias">dias</option>
                   <option value="semanas">semanas</option>
@@ -123,7 +123,7 @@ export function PrevisaoDialog({
           ) : (
             <div>
               <label className={rotulo}>Novo término previsto</label>
-              <input type="date" className={campo} value={novoTermino} onChange={(e) => setNovoTermino(e.target.value)} />
+              <input type="date" aria-label="Novo término previsto" className={campo} value={novoTermino} onChange={(e) => setNovoTermino(e.target.value)} />
             </div>
           )}
         </div>

@@ -93,10 +93,12 @@ export function Dashboard() {
   // Tutorial do projeto: um roteiro para o arquiteto e outro para o cliente, cada um abre sozinho na primeira visita.
   const tour = useTour(ehCliente ? "projeto-cliente" : "projeto", { auto: true, pronto: !loading });
   const irPara = (a: Aba) => () => setAba(a);
+  // O escopo (ambientes, pedidos e dados do projeto) é só do arquiteto: o cliente nem vê a aba.
+  const abas = ehCliente ? ABAS.filter((a) => a.id !== "programa") : ABAS;
   const passoAbas: PassoTour = {
     alvo: "abas",
-    titulo: "Quatro áreas",
-    texto: "Resumo, Itens, Gráficos e Escopo. Toque nas abas para navegar. O botão de voltar leva ao início do projeto e, de lá, à sua home.",
+    titulo: ehCliente ? "Três áreas" : "Quatro áreas",
+    texto: `${ehCliente ? "Resumo, Itens e Gráficos" : "Resumo, Itens, Gráficos e Escopo"}. Toque nas abas para navegar. O botão de voltar leva ao início do projeto e, de lá, à sua home.`,
     aoEntrar: irPara("resumo"),
   };
   const passoProgresso: PassoTour = {
@@ -114,7 +116,7 @@ export function Dashboard() {
     ? [
         {
           titulo: "Acompanhe o seu projeto",
-          texto: "Aqui você vê o orçamento, o andamento e o escopo que o seu arquiteto preparou. Vamos conhecer cada área.",
+          texto: "Aqui você vê o orçamento e o andamento que o seu arquiteto preparou. Vamos conhecer cada área.",
         },
         passoProgresso,
         passoAbas,
@@ -131,12 +133,6 @@ export function Dashboard() {
           titulo: "Marque o que foi feito e pago",
           texto: "Em cada item você pode marcar Feito e Pago. Fica registrado quem marcou e quando. Os itens em andamento aparecem primeiro.",
           aoEntrar: irPara("itens"),
-        },
-        {
-          alvo: "programa-passos",
-          titulo: "Aprove o escopo",
-          texto: "Confira os ambientes e os pedidos do projeto. Ao aprovar, o seu nome e a data ficam registrados.",
-          aoEntrar: irPara("programa"),
         },
         { ...passoOlho, aoEntrar: irPara("resumo") },
         { titulo: "Pronto!", texto: "Reveja este tutorial quando quiser, pelo botão ? no topo.", aoEntrar: irPara("resumo") },
@@ -274,7 +270,7 @@ export function Dashboard() {
       <main className={`mx-auto max-w-3xl space-y-5 px-4 pb-32 ${flutua ? "-mt-9" : "pt-5"}`}>
         {loading ? (
           <div className="prancha px-6 py-16 text-center font-mono text-xs uppercase tracking-wider text-ink/40">Carregando…</div>
-        ) : aba === "programa" ? (
+        ) : aba === "programa" && !ehCliente ? (
           <ProgramaTab gruposEtapa={gruposEtapa} />
         ) : itens.length === 0 ? (
           <>
@@ -406,7 +402,7 @@ export function Dashboard() {
       {/* Menu em pílula: ao alcance do polegar */}
       <nav aria-label="Seções do projeto" className="pb-seguro pointer-events-none fixed inset-x-0 bottom-0 z-30 flex justify-center px-4">
         <div role="tablist" data-tour="abas" className="pointer-events-auto flex w-full max-w-md items-center justify-between gap-1 rounded-full bg-ink p-1.5 shadow-[0_14px_30px_-10px_rgba(20,17,15,0.55)]">
-          {ABAS.map(({ id, rotulo, Icone }) => {
+          {abas.map(({ id, rotulo, Icone }) => {
             const ativa = aba === id;
             return (
               <button

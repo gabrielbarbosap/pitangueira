@@ -166,19 +166,23 @@ export function PrazoCard({
         </p>
       );
     }
+    // A janela fica FORA do cartão: o cartão tem z-index (para flutuar sobre o topo) e prenderia a janela
+    // numa camada abaixo do menu de abas, escondendo os botões dela no celular.
     return (
-      <section data-tour="prazo" aria-label="Prazo do projeto" className="relative z-10 rounded-3xl border border-dashed border-ink/30 bg-white p-5">
-        <p className="rotulo-tec text-ink/50">Prazo do projeto</p>
-        <p className="mt-1 text-lg font-semibold text-ink">Defina quanto tempo a obra deve levar</p>
-        <p className="mt-1 text-sm leading-snug text-ink/65">
-          Registre o prazo previsto no começo. Ele fica guardado como referência e <strong className="font-semibold text-ink">não pode ser editado</strong>. Se mudar, você registra uma nova previsão ao lado
-          dele, e o cliente vê as duas.
-        </p>
-        <button className="btn btn-primario mt-4 px-5 py-2.5 text-sm" onClick={() => setDialogo(Date.now())}>
-          Registrar previsão inicial
-        </button>
+      <>
+        <section data-tour="prazo" aria-label="Prazo do projeto" className="relative z-10 rounded-3xl border border-dashed border-ink/30 bg-white p-5">
+          <p className="rotulo-tec text-ink/50">Prazo do projeto</p>
+          <p className="mt-1 text-lg font-semibold text-ink">Defina quanto tempo a obra deve levar</p>
+          <p className="mt-1 text-sm leading-snug text-ink/65">
+            Registre o prazo previsto no começo. Ele fica guardado como referência e <strong className="font-semibold text-ink">não pode ser editado</strong>. Se mudar, você registra uma nova previsão ao lado
+            dele, e o cliente vê as duas.
+          </p>
+          <button className="btn btn-primario mt-4 px-5 py-2.5 text-sm" onClick={() => setDialogo(Date.now())}>
+            Registrar previsão inicial
+          </button>
+        </section>
         {dialogoAberto}
-      </section>
+      </>
     );
   }
 
@@ -191,6 +195,7 @@ export function PrazoCard({
         : `Passaram ${s.pctTempo}% do tempo previsto e ${s.pctConcluido}% do projeto está concluído.`;
 
   return (
+    <>
     <section data-tour="prazo" aria-label="Prazo do projeto" className="prancha relative z-10 space-y-5 p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -239,8 +244,9 @@ export function PrazoCard({
       </p>
 
       {historico && <Historico previsoes={previsoes} />}
-      {dialogoAberto}
     </section>
+    {dialogoAberto}
+    </>
   );
 }
 

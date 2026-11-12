@@ -80,13 +80,13 @@ export function ObraDialog({ aberto, onFechar }: { aberto: boolean; onFechar: ()
       <div className="space-y-4">
         <div>
           <label className={rotulo}>Nome do projeto</label>
-          <input className={campo} placeholder="Ex.: Casa Pitanga" value={nome} onChange={(e) => setNome(e.target.value)} />
+          <input className={campo} aria-label="Nome do projeto" placeholder="Ex.: Casa Pitanga" value={nome} onChange={(e) => setNome(e.target.value)} />
         </div>
 
         <div>
           <label className={rotulo}>Chave de acesso (para os clientes)</label>
           <div className="flex gap-2">
-            <input className={`${campo} font-mono tracking-widest`} value={codigo} onChange={(e) => setCodigo(e.target.value.toUpperCase())} />
+            <input className={`${campo} font-mono tracking-widest`} aria-label="Chave de acesso" value={codigo} onChange={(e) => setCodigo(e.target.value.toUpperCase())} />
             <button type="button" onClick={() => setCodigo(geraCodigo())} className="btn btn-linha shrink-0 px-3 font-mono text-[11px] font-semibold uppercase tracking-wider" title="Gerar uma chave nova">
               Gerar
             </button>
@@ -96,7 +96,7 @@ export function ObraDialog({ aberto, onFechar }: { aberto: boolean; onFechar: ()
 
         <div>
           <label className={rotulo}>Orçamento disponível (R$) — opcional</label>
-          <input type="number" inputMode="decimal" className={campo} placeholder="0,00" value={teto} onChange={(e) => setTeto(e.target.value)} />
+          <input type="number" inputMode="decimal" aria-label="Orçamento disponível" className={campo} placeholder="0,00" value={teto} onChange={(e) => setTeto(e.target.value)} />
           <p className="mt-1 text-xs text-ink/50">O teto do projeto. Pode ser definido depois, em Ajustes.</p>
         </div>
 

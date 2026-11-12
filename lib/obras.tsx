@@ -26,7 +26,7 @@ import { useAuth } from "./auth";
 import { PROJETO_VAZIO, type Item, type Obra, type ObraInput, type Programa, type Projeto } from "./types";
 import { SEED_ITENS } from "./seed";
 import { resumoDeItens } from "./calc";
-import { CASA_PITANGA_EMAILS, LS_OBRAS, lsItensKey } from "./demo";
+import { CASA_PITANGA_EMAILS, EVENTO_OBRAS, LS_OBRAS, lsItensKey } from "./demo";
 
 interface ObrasContextValue {
   obras: Obra[];
@@ -127,9 +127,12 @@ export function ObrasProvider({ children }: { children: ReactNode }) {
       return;
     }
     if (!configured || !db) {
-      setObras(minhasObras(lerObrasDemo(), user.uid, user.email));
+      // Demo: relê do navegador agora e sempre que algum projeto mudar (a nuvem faz isso sozinha, ao vivo).
+      const recarregar = () => setObras(minhasObras(lerObrasDemo(), user.uid, user.email));
+      recarregar();
       setLoading(false);
-      return;
+      window.addEventListener(EVENTO_OBRAS, recarregar);
+      return () => window.removeEventListener(EVENTO_OBRAS, recarregar);
     }
     setLoading(true);
     // Duas consultas: obras que sou dono (uid) e obras onde sou co-dono (e-mail).

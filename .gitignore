@@ -45,3 +45,9 @@ next-env.d.ts
 dadosfirebate.txt
 .claude/
 .firebase/
+
+# testes e2e (Playwright)
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

@@ -69,3 +69,19 @@ lib/
 firestore.rules       regras de segurança multi-tenant
 docs/                 análise de concorrência e roadmap
 ```
+
+## Testes automatizados (ponta a ponta)
+
+Os testes simulam um arquiteto novo usando o app de verdade no navegador (Playwright), em computador e em celular:
+
+- `e2e/fluxo-completo.spec.ts`: cria o projeto, registra o prazo, monta o orçamento, gera o PDF, escreve o escopo, copia o link e o cliente entra com a chave.
+- `e2e/permissoes.spec.ts`: só o arquiteto tem a aba Escopo e cria orçamento; o cliente só acompanha.
+- `e2e/tutorial.spec.ts`: o tutorial da primeira visita.
+
+```bash
+npm run test:e2e          # compila, sobe o app em modo demo (porta 3412) e roda tudo
+npm run test:e2e:ui       # o mesmo, com a interface do Playwright
+```
+
+Usam o Chrome instalado (`E2E_CHANNEL=msedge` troca o navegador). Sem Chrome, rode antes `npx playwright install chromium`.
+O app roda em **modo demo**, com os dados no navegador de cada teste: as regras do Firestore não são exercitadas aqui.
