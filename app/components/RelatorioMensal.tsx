@@ -90,8 +90,10 @@ function LinhaDoItem({
   onPago: () => void;
 }) {
   const data = (ms?: number) => (!ms ? "sem data" : comAno ? diaAno(ms) : dia(ms));
+  // Marcado para entrar, mas ainda sem feito nem pago: não apareceria no relatório. Avisa e destaca os botões.
+  const pendente = incluido && !item.feito && !item.pago;
   const botao = (ativo: boolean) =>
-    `rounded-full border px-2.5 py-1 font-mono text-[10px] font-semibold transition-colors ${ativo ? "border-transparent" : "border-ink/25 bg-white text-ink/60 hover:border-ink/50"}`;
+    `rounded-full border px-2.5 py-1 font-mono text-[10px] font-semibold transition-colors ${ativo ? "border-transparent" : pendente ? "border-pitanga bg-white text-pitanga ring-2 ring-pitanga/25 hover:bg-pitanga/10" : "border-ink/25 bg-white text-ink/60 hover:border-ink/50"}`;
   return (
     <li className="flex flex-wrap items-start gap-x-3 gap-y-1.5 px-3.5 py-2.5">
       <label className="flex min-w-0 flex-1 basis-48 cursor-pointer items-start gap-3">
@@ -123,6 +125,11 @@ function LinhaDoItem({
           {item.pago ? `Pago ${data(item.pagoEm)}` : "Pago"}
         </button>
       </span>
+      {pendente && (
+        <p role="status" className="ml-7 basis-full text-xs font-medium leading-snug text-pitanga">
+          Este item ainda não está como feito nem pago, então não aparece no relatório. Marque <strong>Feito</strong> e/ou <strong>Pago</strong> ao lado (isso também atualiza a aba Itens).
+        </p>
+      )}
     </li>
   );
 }
@@ -167,6 +174,8 @@ export function RelatorioDialog({ aberto, onFechar, itens }: { aberto: boolean; 
   const entram = itens.filter((i) => incluido(i.id));
   const executados = entram.filter((i) => (doMes.has(i.id) ? doMes.get(i.id)!.feitoNoMes : i.feito));
   const pagos = entram.filter((i) => (doMes.has(i.id) ? doMes.get(i.id)!.pagoNoMes : i.pago));
+  const pendentes = entram.filter((i) => !i.feito && !i.pago);
+  const contam = entram.length - pendentes.length;
   const nada = executados.length === 0 && pagos.length === 0 && !destaques.trim();
 
   const trocarMes = (m: Mes) => {
@@ -245,7 +254,7 @@ export function RelatorioDialog({ aberto, onFechar, itens }: { aberto: boolean; 
             {itens.length > 0 && (
               <div className="flex gap-3 text-xs">
                 <span className="text-ink/50">
-                  {entram.length} de {itens.length} incluídos
+                  {contam} de {itens.length} incluídos
                 </span>
                 <button type="button" className="font-semibold text-pitanga hover:underline" onClick={() => definir(idsDoMes, true)}>
                   Todos do mês
@@ -392,6 +401,11 @@ export function RelatorioDialog({ aberto, onFechar, itens }: { aberto: boolean; 
             Gerar relatório de {rotuloDoMes(mes)}
           </button>
         </div>
+        {pendentes.length > 0 && (
+          <p role="alert" className="-mt-3 rounded-2xl bg-pitanga/10 px-3.5 py-2.5 text-center text-xs font-medium leading-snug text-pitanga">
+            {pendentes.length === 1 ? "1 item marcado ainda não está" : `${pendentes.length} itens marcados ainda não estão`} como feito nem pago e não vai aparecer no relatório. Marque Feito ou Pago nele.
+          </p>
+        )}
         {nada && <p className="-mt-3 text-center text-xs text-ink/45">Inclua pelo menos um item ou escreva os destaques para gerar.</p>}
       </div>
 

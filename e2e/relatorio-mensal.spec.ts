@@ -48,7 +48,13 @@ test("o arquiteto inclui itens de outro mês e marca pendentes na própria janel
 
   await test.step("marcar o tijolo como feito na janela o inclui e o atualiza no projeto", async () => {
     await janela.getByLabel("Buscar outro item").fill("Tijolo");
+    await janela.getByRole("checkbox", { name: /Tijolo cerâmico/ }).check();
+    // Incluído sem estar feito nem pago: a janela avisa que assim ele não entraria
+    await expect(janela.getByText(/Este item ainda não está como feito nem pago/)).toBeVisible();
+    await expect(janela.getByText(/1 item marcado ainda não está como feito nem pago/)).toBeVisible();
+    await expect(janela.getByText("2 de 3 incluídos")).toBeVisible();
     await janela.getByRole("button", { name: /Marcar Tijolo cerâmico como feito/ }).click();
+    await expect(janela.getByText(/Este item ainda não está/)).toHaveCount(0);
     await expect(janela.getByText("3 de 3 incluídos")).toBeVisible();
     await expect(janela.getByRole("checkbox", { name: /Tijolo cerâmico/ })).toBeChecked();
   });
