@@ -166,7 +166,8 @@ export function RelatorioDialog({ aberto, onFechar, itens }: { aberto: boolean; 
 
   const doMes = new Map(movimentos.map((m) => [m.item.id, m]));
   const incluido = (id: string) => escolha[id] ?? doMes.has(id);
-  const outros = itens.filter((i) => !doMes.has(i.id));
+  // Só entram aqui os que ainda não foram feitos nem pagos (o que já aconteceu está na lista do mês). Quem acabou de ser marcado na janela fica visível.
+  const outros = itens.filter((i) => !doMes.has(i.id) && ((!i.feito && !i.pago) || escolha[i.id] === true));
   const buscando = busca.trim() !== "";
   const outrosVisiveis = buscando ? filtrarItens(outros, busca) : outros;
   const gruposOutros = porEtapa(outrosVisiveis.map((item) => ({ item })));
@@ -268,7 +269,7 @@ export function RelatorioDialog({ aberto, onFechar, itens }: { aberto: boolean; 
             )}
           </div>
           <p className="mb-3 text-xs leading-snug text-ink/50">
-            Aqui estão todos os itens do projeto. Se algo ainda não está como feito ou pago, marque aqui mesmo: o item também é atualizado na aba Itens, com a data de hoje.
+            Os itens que ainda não foram feitos nem pagos aparecem abaixo. Para incluir um deles, marque Feito ou Pago aqui mesmo: o item também é atualizado na aba Itens, com a data de hoje.
           </p>
 
           {movimentos.length === 0 ? (
@@ -312,7 +313,7 @@ export function RelatorioDialog({ aberto, onFechar, itens }: { aberto: boolean; 
           {outros.length > 0 && (
             <div className="mt-5">
               <p className="mb-2 text-[13px] font-semibold text-ink">
-                Outros itens do projeto <span className="font-normal text-ink/45">· {outros.length}</span>
+                Itens ainda não feitos nem pagos <span className="font-normal text-ink/45">· {outros.length}</span>
               </p>
               <label className="sr-only" htmlFor="rel-busca">
                 Buscar outro item

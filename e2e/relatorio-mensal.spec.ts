@@ -36,14 +36,9 @@ test("o arquiteto inclui itens de outro mês e marca pendentes na própria janel
     await expect(janela.getByText("1 de 3 incluídos")).toBeVisible();
     await janela.getByLabel("Buscar outro item").fill("Tijolo"); // nunca foi feito nem pago, e mesmo assim aparece
     await expect(janela.getByRole("checkbox", { name: /Tijolo cerâmico/ })).not.toBeChecked();
+    // A tinta já está feita e paga (em outro mês): não é um item a adicionar, então não aparece na lista
     await janela.getByLabel("Buscar outro item").fill("Tinta");
-    await expect(janela.getByRole("checkbox", { name: /Tinta acrílica 18L/ })).not.toBeChecked();
-    await expect(janela.getByRole("button", { name: /Desmarcar Tinta acrílica 18L como feito/ })).toContainText(/Feito \d{2}\/\d{2}\/\d{2}/); // com o ano: não é deste mês
-  });
-
-  await test.step("marcar a tinta a inclui no relatório", async () => {
-    await janela.getByRole("checkbox", { name: /Tinta acrílica 18L/ }).check();
-    await expect(janela.getByText("2 de 3 incluídos")).toBeVisible();
+    await expect(janela.getByRole("checkbox", { name: /Tinta acrílica 18L/ })).toHaveCount(0);
   });
 
   await test.step("marcar o tijolo como feito na janela o inclui e o atualiza no projeto", async () => {
@@ -59,24 +54,22 @@ test("o arquiteto inclui itens de outro mês e marca pendentes na própria janel
     await gerar.click({ force: true }); // aria-disabled: o Playwright não clicaria sem forçar
     await expect(page.locator(".print-area")).toHaveCount(0);
     await expect(aviso).toBeVisible();
-    await expect(janela.getByText("2 de 3 incluídos")).toBeVisible();
+    await expect(janela.getByText("1 de 3 incluídos")).toBeVisible(); // pendente não conta
     await janela.getByRole("button", { name: /Marcar Tijolo cerâmico como feito/ }).click();
     await expect(janela.getByText(/Este item ainda não está/)).toHaveCount(0);
     await expect(janela.getByRole("alert")).toHaveCount(0);
     await expect(gerar).toHaveAttribute("aria-disabled", "false");
-    await expect(janela.getByText("3 de 3 incluídos")).toBeVisible();
+    await expect(janela.getByText("2 de 3 incluídos")).toBeVisible();
     await expect(janela.getByRole("checkbox", { name: /Tijolo cerâmico/ })).toBeChecked();
   });
 
-  await test.step("o documento traz os três, o item de outro mês com a data completa", async () => {
+  await test.step("o documento traz o rolo e o tijolo, e não a tinta de outro mês", async () => {
     await janela.getByLabel("Destaques do mês (opcional)").fill("Pintura concluída.");
     await page.getByRole("button", { name: /Gerar relatório de/ }).click();
     const documento = page.locator(".print-area");
-    await expect(documento).toContainText("Tinta acrílica 18L");
+    await expect(documento).not.toContainText("Tinta acrílica 18L");
     await expect(documento).toContainText("Rolo de lã");
     await expect(documento).toContainText("Tijolo cerâmico");
-    await expect(documento).toContainText(/\d{2}\/\d{2}\/\d{2}/); // a data da tinta, com ano
-    await expect(documento).toContainText(/R\$\s*1\.400,00/); // a tinta paga entra nos pagamentos
     await documento.getByRole("button", { name: /Fechar/ }).click();
   });
 
