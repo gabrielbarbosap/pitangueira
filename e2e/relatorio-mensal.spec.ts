@@ -51,10 +51,19 @@ test("o arquiteto inclui itens de outro mês e marca pendentes na própria janel
     await janela.getByRole("checkbox", { name: /Tijolo cerâmico/ }).check();
     // Incluído sem estar feito nem pago: a janela avisa que assim ele não entraria
     await expect(janela.getByText(/Este item ainda não está como feito nem pago/)).toBeVisible();
-    await expect(janela.getByText(/1 item marcado ainda não está como feito nem pago/)).toBeVisible();
+    const aviso = janela.getByRole("alert");
+    await expect(aviso).toContainText("Tijolo cerâmico");
+    // O botão de gerar fica bloqueado: clicar não abre o documento e só destaca o aviso
+    const gerar = page.getByRole("button", { name: /Gerar relatório de/ });
+    await expect(gerar).toHaveAttribute("aria-disabled", "true");
+    await gerar.click({ force: true }); // aria-disabled: o Playwright não clicaria sem forçar
+    await expect(page.locator(".print-area")).toHaveCount(0);
+    await expect(aviso).toBeVisible();
     await expect(janela.getByText("2 de 3 incluídos")).toBeVisible();
     await janela.getByRole("button", { name: /Marcar Tijolo cerâmico como feito/ }).click();
     await expect(janela.getByText(/Este item ainda não está/)).toHaveCount(0);
+    await expect(janela.getByRole("alert")).toHaveCount(0);
+    await expect(gerar).toHaveAttribute("aria-disabled", "false");
     await expect(janela.getByText("3 de 3 incluídos")).toBeVisible();
     await expect(janela.getByRole("checkbox", { name: /Tijolo cerâmico/ })).toBeChecked();
   });

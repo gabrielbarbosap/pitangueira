@@ -158,6 +158,7 @@ export function RelatorioDialog({ aberto, onFechar, itens }: { aberto: boolean; 
   const [comValores, setComValores] = useState(true);
   const [gerando, setGerando] = useState(false);
   const [busca, setBusca] = useState("");
+  const [tentou, setTentou] = useState(false); // clicou em gerar com itens pendentes: destaca o aviso
 
   const movimentos = useMemo(() => movimentosDoMes(itens, mes), [itens, mes]);
   const grupos = useMemo(() => porEtapa(movimentos), [movimentos]);
@@ -176,6 +177,7 @@ export function RelatorioDialog({ aberto, onFechar, itens }: { aberto: boolean; 
   const pagos = entram.filter((i) => (doMes.has(i.id) ? doMes.get(i.id)!.pagoNoMes : i.pago));
   const pendentes = entram.filter((i) => !i.feito && !i.pago);
   const contam = entram.length - pendentes.length;
+  const bloqueado = executados.length === 0 && pagos.length === 0 && !destaques.trim() ? true : pendentes.length > 0;
   const nada = executados.length === 0 && pagos.length === 0 && !destaques.trim();
 
   const trocarMes = (m: Mes) => {
@@ -397,14 +399,33 @@ export function RelatorioDialog({ aberto, onFechar, itens }: { aberto: boolean; 
           <button className="btn btn-linha flex-1 px-4 py-3 text-sm" onClick={onFechar}>
             Cancelar
           </button>
-          <button className="btn btn-primario flex-1 px-4 py-3 text-sm" disabled={nada} onClick={() => setGerando(true)}>
+          <button
+            className={`btn btn-primario flex-1 px-4 py-3 text-sm ${bloqueado ? "cursor-not-allowed opacity-45" : ""}`}
+            aria-disabled={bloqueado}
+            title={pendentes.length > 0 ? "Marque como feito ou pago os itens avisados abaixo para gerar o relatório" : undefined}
+            onClick={() => {
+              if (bloqueado) setTentou(true);
+              else setGerando(true);
+            }}
+          >
             Gerar relatório de {rotuloDoMes(mes)}
           </button>
         </div>
         {pendentes.length > 0 && (
-          <p role="alert" className="-mt-3 rounded-2xl bg-pitanga/10 px-3.5 py-2.5 text-center text-xs font-medium leading-snug text-pitanga">
-            {pendentes.length === 1 ? "1 item marcado ainda não está" : `${pendentes.length} itens marcados ainda não estão`} como feito nem pago e não vai aparecer no relatório. Marque Feito ou Pago nele.
-          </p>
+          <div
+            role="alert"
+            className={`-mt-3 rounded-2xl px-3.5 py-2.5 text-xs leading-snug text-pitanga ${tentou ? "bg-pitanga/20 ring-2 ring-pitanga" : "bg-pitanga/10"}`}
+          >
+            <p className="font-semibold">
+              Para gerar o relatório, marque Feito ou Pago {pendentes.length === 1 ? "neste item" : "nestes itens"}:
+            </p>
+            <ul className="mt-1 list-disc pl-4">
+              {pendentes.map((i) => (
+                <li key={i.id}>{i.descricao}</li>
+              ))}
+            </ul>
+            <p className="mt-1 text-ink/60">Ou tire a marca de incluir nos que não devem entrar.</p>
+          </div>
         )}
         {nada && <p className="-mt-3 text-center text-xs text-ink/45">Inclua pelo menos um item ou escreva os destaques para gerar.</p>}
       </div>
