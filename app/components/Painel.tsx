@@ -332,6 +332,14 @@ export function Painel() {
             >
               Financeiro
             </Link>
+            <a
+              href="/docs"
+              target="_blank"
+              rel="noreferrer"
+              className="rotulo-tec rounded-full border border-white/40 px-3 py-1.5 text-white transition-colors hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              Documentação
+            </a>
             {!configured && (
               <p className="rotulo-tec inline-block rounded-full bg-white/15 px-3 py-1.5 text-white">Modo demo · dados só neste navegador</p>
             )}

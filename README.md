@@ -70,6 +70,19 @@ firestore.rules       regras de segurança multi-tenant
 docs/                 análise de concorrência e roadmap
 ```
 
+## Documentação do produto
+
+A documentação para o usuário fica em **`/docs`** (pública, sem login), no estilo de documentação de linguagens: menu lateral com busca, páginas com seções, índice "Nesta página" e navegação anterior/próxima.
+
+```
+app/docs/
+  paginas.ts        lista, em ordem, de todas as páginas (é o menu)
+  conteudo/*.tsx    uma página por arquivo: { slug, grupo, titulo, resumo, secoes[] }
+  ui.tsx            peças de texto: P, H3, Btn (nome de botão), Passos, Aviso, Tabela, Ir (link interno)
+```
+
+**Regra do projeto: tudo que for criado ou alterado no app entra na documentação na mesma entrega.** Para documentar uma funcionalidade nova: crie `app/docs/conteudo/<nome>.tsx` (ou acrescente uma seção a uma página existente), registre em `paginas.ts` e use os nomes exatos de botões e campos da tela (componente `Btn`). O teste `e2e/docs.spec.ts` abre todas as páginas.
+
 ## Testes automatizados (ponta a ponta)
 
 Os testes simulam um arquiteto novo usando o app de verdade no navegador (Playwright), em computador e em celular:
@@ -78,6 +91,7 @@ Os testes simulam um arquiteto novo usando o app de verdade no navegador (Playwr
 - `e2e/permissoes.spec.ts`: só o arquiteto tem a aba Escopo e cria orçamento; o cliente só acompanha.
 - `e2e/relatorio-mensal.spec.ts`: o relatório mensal de andamento (escolher o mês, o que entra, gerar o documento; o cliente não vê).
 - `e2e/tutorial.spec.ts`: o tutorial da primeira visita.
+- `e2e/docs.spec.ts`: a documentação (todas as páginas abrem, a busca filtra, os atalhos do app existem).
 
 ```bash
 npm run test:e2e          # compila, sobe o app em modo demo (porta 3412) e roda tudo

@@ -247,6 +247,12 @@ export function Dashboard() {
             </button>
             <Logo claro />
             <div className="flex gap-2">
+              <a href="/docs" target="_blank" rel="noreferrer" className={botaoTopo} aria-label="Documentação (abre em outra aba)" title="Documentação">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5Z" />
+                  <path d="M4 19a2 2 0 0 1 2-2h13" />
+                </svg>
+              </a>
               <button onClick={tour.iniciar} className={botaoTopo} aria-label="Ver o tutorial" title="Ver o tutorial">
                 <IconeAjuda />
               </button>

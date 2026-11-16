@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useAuth } from "@/lib/auth";
 import { LogoMark } from "./Logo";
 
@@ -30,6 +31,13 @@ export function LoginScreen() {
           </svg>
           Entrar com Google
         </button>
+
+        <p className="mt-5 text-center text-sm text-ink/60">
+          Quer entender como funciona?{" "}
+          <Link href="/docs" className="font-medium text-pitanga underline underline-offset-2">
+            Veja a documentação
+          </Link>
+        </p>
 
         {erro && (
           <p className="mt-4 rounded-xl border border-pitanga bg-pitanga/[0.07] px-3 py-2 text-center text-sm font-medium text-pitanga-escuro" role="alert">
