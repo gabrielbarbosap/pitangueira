@@ -30,7 +30,7 @@ export function HomeCliente() {
             <Logo claro />
             <button
               onClick={sair}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white transition-colors hover:bg-white/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="btn-topo"
               aria-label="Sair"
               title="Sair"
             >

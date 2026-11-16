@@ -16,8 +16,7 @@ import { Painel, tooltipStyle } from "./BudgetCharts";
 import { IconeEditar, IconeLixo, IconeMais, IconeVoltar } from "./Icones";
 
 const DIA = 86_400_000;
-const botaoTopo =
-  "flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white transition-colors hover:bg-white/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
+const botaoTopo = "btn-topo";
 
 const data = (ms: number) => new Date(ms).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
 

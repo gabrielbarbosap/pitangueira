@@ -7,8 +7,8 @@ import { dataDoCampo, meiaNoite, paraCampo } from "@/lib/financeiro";
 import { dataCurta, dataLonga, diasEntre, terminoPrevisto, textoDeDesvio, type UnidadePrazo } from "@/lib/prazo";
 import type { Previsao } from "@/lib/types";
 
-const campo = "campo-pit w-full border border-ink/25 bg-white px-3 py-2.5 text-sm text-ink outline-none";
-const rotulo = "rotulo-tec mb-1 block text-ink/55";
+const campo = "input-pit";
+const rotulo = "rotulo-campo";
 
 const MIN_MOTIVO = 8;
 

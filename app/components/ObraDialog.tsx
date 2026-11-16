@@ -72,8 +72,8 @@ export function ObraDialog({ aberto, onFechar }: { aberto: boolean; onFechar: ()
     }
   }
 
-  const campo = "campo-pit w-full border border-ink/25 bg-white px-3 py-2.5 text-sm text-ink outline-none";
-  const rotulo = "rotulo-tec mb-1 block text-ink/55";
+  const campo = "input-pit";
+  const rotulo = "rotulo-campo";
 
   return (
     <Modal aberto={aberto} onFechar={onFechar} titulo="Novo projeto">

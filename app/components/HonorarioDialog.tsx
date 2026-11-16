@@ -8,9 +8,9 @@ import { useDinheiro } from "@/lib/privacidade";
 import { dataDoCampo, gerarParcelas, meiaNoite, paraCampo, ROTULO_PERIODICIDADE, type Periodicidade } from "@/lib/financeiro";
 import type { Honorario, Parcela } from "@/lib/types";
 
-const campo = "campo-pit w-full border border-ink/25 bg-white px-3 py-2.5 text-sm text-ink outline-none";
-const campoPeq = "campo-pit w-full border border-ink/25 bg-white px-2.5 py-2 text-sm text-ink outline-none";
-const rotulo = "rotulo-tec mb-1 block text-ink/55";
+const campo = "input-pit";
+const campoPeq = "input-pit input-pit-peq";
+const rotulo = "rotulo-campo";
 
 const num = (s: string) => Number(String(s).replace(",", ".")) || 0;
 

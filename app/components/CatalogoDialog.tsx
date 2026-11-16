@@ -8,8 +8,8 @@ import { catalogoDeItem, useArquiteto } from "@/lib/arquiteto";
 import { useDinheiro } from "@/lib/privacidade";
 import type { CatalogoItem, Item } from "@/lib/types";
 
-const campo = "campo-pit w-full border border-ink/25 bg-white px-3 py-2.5 text-sm text-ink outline-none";
-const rotulo = "rotulo-tec mb-1 block text-ink/55";
+const campo = "input-pit";
+const rotulo = "rotulo-campo";
 
 const UNIDADES = ["un", "m²", "m", "m³", "kg", "vb", "h", "dia", "pç"];
 
@@ -167,7 +167,7 @@ export function CatalogoDialog({
         {catalogo.length > 0 && (
           <div className="relative">
             <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink/40"><IconeBusca /></span>
-            <input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar no catálogo…" className="campo-pit w-full border border-ink/20 bg-white py-2.5 pl-11 pr-3 text-sm text-ink outline-none" />
+            <input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar no catálogo…" className="input-pit input-pit-busca" />
           </div>
         )}
 
@@ -200,7 +200,7 @@ export function CatalogoDialog({
                       type="number"
                       inputMode="decimal"
                       aria-label={`Quantidade de ${c.descricao}`}
-                      className="campo-pit w-24 border border-ink/25 bg-white px-3 py-2 text-sm text-ink outline-none"
+                      className="input-pit input-pit-peq w-24"
                       value={qtds[c.id] ?? "1"}
                       onChange={(e) => setQtds((s) => ({ ...s, [c.id]: e.target.value }))}
                     />

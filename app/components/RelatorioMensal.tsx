@@ -26,7 +26,7 @@ import { Modal } from "./Modal";
 import { DocumentoBase, TituloSecao } from "./DocumentoBase";
 import { useHoje } from "./PrazoVisual";
 
-const campo = "campo-pit w-full border border-ink/25 bg-white px-3 py-2.5 text-sm text-ink outline-none";
+const campo = "input-pit";
 const dia = (ms?: number) => (ms ? new Date(ms).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) : "—");
 const diaAno = (ms: number) => new Date(ms).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit" });
 const maiuscula = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -324,7 +324,7 @@ export function RelatorioDialog({ aberto, onFechar, itens }: { aberto: boolean; 
                 </span>
                 <input
                   id="rel-busca"
-                  className="campo-pit w-full border border-ink/20 bg-white py-2.5 pl-11 pr-3 text-sm text-ink outline-none"
+                  className="input-pit input-pit-busca"
                   value={busca}
                   onChange={(e) => setBusca(e.target.value)}
                   placeholder="Buscar pelo nome, etapa ou ambiente…"
@@ -365,7 +365,7 @@ export function RelatorioDialog({ aberto, onFechar, itens }: { aberto: boolean; 
         <section className="space-y-3">
           <Numero n={3}>Conte o que importa</Numero>
           <div>
-            <label className="rotulo-tec mb-1 block text-ink/55" htmlFor="rel-destaques">
+            <label className="rotulo-campo" htmlFor="rel-destaques">
               Destaques do mês (opcional)
             </label>
             <textarea
@@ -378,7 +378,7 @@ export function RelatorioDialog({ aberto, onFechar, itens }: { aberto: boolean; 
             />
           </div>
           <div>
-            <label className="rotulo-tec mb-1 block text-ink/55" htmlFor="rel-proximos">
+            <label className="rotulo-campo" htmlFor="rel-proximos">
               Próximos passos (opcional)
             </label>
             <textarea

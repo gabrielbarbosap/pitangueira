@@ -38,7 +38,7 @@ export function DocsNav({ indice }: { indice: ItemDoIndice[] }) {
           onChange={(e) => setBusca(e.target.value)}
           placeholder="Buscar na documentação…"
           autoComplete="off"
-          className="campo-pit w-full border border-ink/20 bg-white px-3.5 py-2.5 text-sm text-ink outline-none"
+          className="input-pit"
         />
       </div>
       {grupos.length === 0 && <p className="text-sm text-ink/50">Nada encontrado para “{busca}”.</p>}

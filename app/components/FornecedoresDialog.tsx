@@ -10,8 +10,8 @@ import { useItensDeTodosOsProjetos } from "@/lib/historico";
 import { useDinheiro } from "@/lib/privacidade";
 import type { Fornecedor } from "@/lib/types";
 
-const campo = "campo-pit w-full border border-ink/25 bg-white px-3 py-2.5 text-sm text-ink outline-none";
-const rotulo = "rotulo-tec mb-1 block text-ink/55";
+const campo = "input-pit";
+const rotulo = "rotulo-campo";
 
 const CATEGORIAS = ["Pedreiro", "Eletricista", "Encanador", "Pintor", "Marceneiro", "Marmoraria", "Vidraceiro", "Gesseiro", "Serralheiro", "Paisagista", "Loja de material"];
 
@@ -255,7 +255,7 @@ export function FornecedoresDialog({ aberto, onFechar }: { aberto: boolean; onFe
           {desempenhos.length > 0 && (
             <div className="relative">
               <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink/40"><IconeBusca /></span>
-              <input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar fornecedor ou especialidade…" className="campo-pit w-full border border-ink/20 bg-white py-2.5 pl-11 pr-3 text-sm text-ink outline-none" />
+              <input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar fornecedor ou especialidade…" className="input-pit input-pit-busca" />
             </div>
           )}
 

@@ -4,6 +4,10 @@
 :root {
   --background: #f4f2ee;
   --foreground: #14110f;
+  /* Forma: cantos. Cartão 20px, controle (botão/campo) 14px, botão de ícone 12px. */
+  --radius-cartao: 20px;
+  --radius-controle: 14px;
+  --radius-icone: 12px;
 }
 
 @theme inline {
@@ -38,7 +42,7 @@ body {
     position: relative;
     background: #fff;
     border: 1px solid var(--color-linha);
-    border-radius: 20px;
+    border-radius: var(--radius-cartao);
   }
 }
 
@@ -83,7 +87,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  border-radius: 14px;
+  border-radius: var(--radius-controle);
   cursor: pointer;
   user-select: none;
   transition:
@@ -140,7 +144,7 @@ body {
 /* Botão de ícone discreto (editar/remover). */
 .btn-icone {
   border: 1px solid var(--color-linha);
-  border-radius: 12px;
+  border-radius: var(--radius-icone);
   background: #fff;
   color: rgba(20, 17, 15, 0.6);
 }
@@ -194,6 +198,163 @@ body {
 .campo-pit:focus {
   border-color: var(--color-pitanga);
   box-shadow: 0 0 0 3px rgba(210, 58, 31, 0.15);
+}
+
+/* ====================================================================
+   DESIGN SYSTEM — peças padrão. O catálogo vivo está em /design.
+   Novas telas usam estas classes; não repita as sequências de utilitários.
+   ==================================================================== */
+
+/* Campo de formulário completo (input, select, textarea). */
+.input-pit {
+  width: 100%;
+  border: 1px solid rgba(20, 17, 15, 0.25);
+  border-radius: var(--radius-controle);
+  background: #fff;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--color-ink);
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.input-pit::placeholder {
+  color: rgba(20, 17, 15, 0.4);
+}
+.input-pit:hover {
+  border-color: rgba(20, 17, 15, 0.45);
+}
+.input-pit:focus {
+  border-color: var(--color-pitanga);
+  box-shadow: 0 0 0 3px rgba(210, 58, 31, 0.15);
+}
+.input-pit:disabled {
+  background: rgba(20, 17, 15, 0.04);
+  cursor: not-allowed;
+}
+.input-pit[aria-invalid="true"] {
+  border-color: var(--color-pitanga);
+}
+/* Campos menores (dentro de linhas de tabela e de composição). */
+.input-pit-peq {
+  padding: 0.5rem 0.625rem;
+}
+
+/* Campo de busca: espaço à esquerda para o ícone de lupa. */
+.input-pit-busca {
+  padding-left: 2.75rem;
+}
+
+/* Rótulo de campo: mono, caixa alta, pequeno. */
+.rotulo-campo {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(20, 17, 15, 0.55);
+}
+
+/* Botões redondos do topo laranja (ajuda, olhinho, sair...). */
+.btn-topo {
+  display: flex;
+  height: 2.5rem;
+  width: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  transition: background-color 0.15s ease;
+}
+.btn-topo:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+.btn-topo:focus-visible,
+.pilula-topo:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+/* Atalhos em pílula no topo laranja. */
+.pilula-topo {
+  display: inline-block;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 0.375rem 0.75rem;
+  color: #fff;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transition: background-color 0.15s ease;
+}
+.pilula-topo:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Chips e selos: status e etiquetas pequenas. */
+.chip {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 9999px;
+  padding: 0.125rem 0.5rem;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.4;
+  background: rgba(20, 17, 15, 0.08);
+  color: rgba(20, 17, 15, 0.75);
+}
+.chip-ink {
+  background: var(--color-ink);
+  color: #fff;
+}
+.chip-ok {
+  background: #d1fae5;
+  color: #065f46;
+}
+.chip-aviso {
+  background: #fef3c7;
+  color: #78350f;
+}
+.chip-perigo {
+  background: rgba(210, 58, 31, 0.12);
+  color: var(--color-pitanga-escuro);
+}
+.chip-info {
+  background: #e0f2fe;
+  color: #0c4a6e;
+}
+
+/* Caixa de aviso: nota, dica, atenção e erro. */
+.alerta {
+  border: 1px solid rgba(20, 17, 15, 0.15);
+  border-radius: 16px;
+  background: rgba(20, 17, 15, 0.04);
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: rgba(20, 17, 15, 0.8);
+}
+.alerta-ok {
+  border-color: rgba(5, 150, 105, 0.3);
+  background: #ecfdf5;
+  color: #064e3b;
+}
+.alerta-aviso {
+  border-color: rgba(217, 119, 6, 0.35);
+  background: #fffbeb;
+  color: #78350f;
+}
+.alerta-perigo {
+  border-color: rgba(210, 58, 31, 0.35);
+  background: rgba(210, 58, 31, 0.07);
+  color: var(--color-pitanga-escuro);
 }
 }
 

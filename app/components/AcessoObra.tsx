@@ -88,7 +88,7 @@ export function AcessoObra({ obraId, onAcesso }: { obraId: string; onAcesso: () 
     return <div className="grade flex min-h-dvh items-center justify-center font-mono text-xs uppercase tracking-wider text-ink/40">Carregando…</div>;
   }
 
-  const campo = "campo-pit w-full border border-ink/25 bg-white px-3 py-3 text-sm text-ink outline-none";
+  const campo = "input-pit py-3";
 
   return (
     <div className="grade flex min-h-dvh items-center justify-center p-5">
@@ -102,7 +102,7 @@ export function AcessoObra({ obraId, onAcesso }: { obraId: string; onAcesso: () 
 
         <div className="space-y-3">
           <div>
-            <label className="rotulo-tec mb-1 block text-ink/55">Código</label>
+            <label className="rotulo-campo">Código</label>
             <input
               className={`${campo} text-center font-mono text-base tracking-[0.3em]`}
               placeholder="ABC123"
@@ -113,7 +113,7 @@ export function AcessoObra({ obraId, onAcesso }: { obraId: string; onAcesso: () 
             />
           </div>
           <div>
-            <label className="rotulo-tec mb-1 block text-ink/55">Seu nome</label>
+            <label className="rotulo-campo">Seu nome</label>
             <input
               className={campo}
               placeholder="Como devemos te chamar"

@@ -125,7 +125,7 @@ export function GerenciarObraDialog({
             onChange={(e) => setConfirmacao(e.target.value)}
             placeholder={obra.nome}
             autoComplete="off"
-            className="campo-pit w-full border border-ink/25 bg-white px-3 py-2.5 text-sm text-ink outline-none"
+            className="input-pit"
           />
           <button onClick={excluir} disabled={!nomeConfere || ocupado !== null} className="btn btn-primario mt-3 w-full px-4 py-3 text-sm">
             {ocupado === "excluir" ? "Excluindo…" : "Excluir projeto para sempre"}

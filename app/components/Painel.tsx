@@ -277,7 +277,7 @@ export function Painel() {
               </span>
               <button
                 onClick={tour.iniciar}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white transition-colors hover:bg-white/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                className="btn-topo"
                 aria-label="Ver o tutorial"
                 title="Ver o tutorial"
               >
@@ -285,11 +285,11 @@ export function Painel() {
               </button>
               <BotaoOlho
                 tour="olhinho"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white transition-colors hover:bg-white/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                className="btn-topo"
               />
               <button
                 onClick={logout}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white transition-colors hover:bg-white/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                className="btn-topo"
                 aria-label="Sair"
                 title="Sair"
               >
@@ -310,25 +310,25 @@ export function Painel() {
           <div className="mt-3 flex flex-wrap items-center gap-2" data-tour="atalhos">
             <button
               onClick={() => setCatalogo(true)}
-              className="rotulo-tec rounded-full bg-white/15 px-3 py-1.5 text-white transition-colors hover:bg-white/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="pilula-topo"
             >
               Meu catálogo
             </button>
             <button
               onClick={() => setComposicoes(true)}
-              className="rotulo-tec rounded-full bg-white/15 px-3 py-1.5 text-white transition-colors hover:bg-white/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="pilula-topo"
             >
               Composições
             </button>
             <button
               onClick={() => setFornecedores(true)}
-              className="rotulo-tec rounded-full bg-white/15 px-3 py-1.5 text-white transition-colors hover:bg-white/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="pilula-topo"
             >
               Fornecedores
             </button>
             <Link
               href="/financeiro"
-              className="rotulo-tec rounded-full bg-white/15 px-3 py-1.5 text-white transition-colors hover:bg-white/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="pilula-topo"
             >
               Financeiro
             </Link>
@@ -336,12 +336,12 @@ export function Painel() {
               href="/docs"
               target="_blank"
               rel="noreferrer"
-              className="rotulo-tec rounded-full border border-white/40 px-3 py-1.5 text-white transition-colors hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="pilula-topo"
             >
               Documentação
             </a>
             {!configured && (
-              <p className="rotulo-tec inline-block rounded-full bg-white/15 px-3 py-1.5 text-white">Modo demo · dados só neste navegador</p>
+              <p className="pilula-topo">Modo demo · dados só neste navegador</p>
             )}
           </div>
         </div>

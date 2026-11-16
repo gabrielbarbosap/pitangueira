@@ -49,8 +49,7 @@ const ABAS: readonly { id: Aba; rotulo: string; Icone: ComponentType }[] = [
   { id: "programa", rotulo: "Escopo", Icone: IconePrograma },
 ];
 
-const botaoTopo =
-  "flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white transition-colors hover:bg-white/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white";
+const botaoTopo = "btn-topo";
 
 export function Dashboard() {
   const { user, logout } = useAuth();
@@ -355,7 +354,7 @@ export function Dashboard() {
                   value={busca}
                   onChange={(e) => setBusca(e.target.value)}
                   placeholder="Buscar serviço, fornecedor, etapa ou valor…"
-                  className="campo-pit w-full border border-ink/20 bg-white py-3 pl-11 pr-11 text-sm text-ink outline-none"
+                  className="input-pit input-pit-busca pr-11"
                 />
                 {busca && (
                   <button

@@ -10,9 +10,9 @@ import { calcularComposicao, valorDoInsumo } from "@/lib/composicoes";
 import { useDinheiro } from "@/lib/privacidade";
 import { ROTULO_INSUMO, type CatalogoItem, type Composicao, type InsumoComposicao, type TipoInsumo } from "@/lib/types";
 
-const campo = "campo-pit w-full border border-ink/25 bg-white px-3 py-2.5 text-sm text-ink outline-none";
-const campoPeq = "campo-pit w-full border border-ink/25 bg-white px-2.5 py-2 text-sm text-ink outline-none";
-const rotulo = "rotulo-tec mb-1 block text-ink/55";
+const campo = "input-pit";
+const campoPeq = "input-pit input-pit-peq";
+const rotulo = "rotulo-campo";
 
 const UNIDADES = ["m²", "m", "m³", "un", "kg", "vb", "h", "dia", "pç"];
 const num = (s: string) => Number(String(s).replace(",", ".")) || 0;
@@ -327,7 +327,7 @@ export function ComposicoesDialog({
           {composicoes.length > 0 && (
             <div className="relative">
               <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink/40"><IconeBusca /></span>
-              <input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar composição…" className="campo-pit w-full border border-ink/20 bg-white py-2.5 pl-11 pr-3 text-sm text-ink outline-none" />
+              <input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar composição…" className="input-pit input-pit-busca" />
             </div>
           )}
 
@@ -363,7 +363,7 @@ export function ComposicoesDialog({
                           type="number"
                           inputMode="decimal"
                           aria-label={`Quantidade de ${c.nome}`}
-                          className="campo-pit w-24 border border-ink/25 bg-white px-3 py-2 text-sm text-ink outline-none"
+                          className="input-pit input-pit-peq w-24"
                           value={qtds[c.id] ?? "1"}
                           onChange={(e) => setQtds((s) => ({ ...s, [c.id]: e.target.value }))}
                         />
