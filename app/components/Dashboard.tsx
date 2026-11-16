@@ -19,6 +19,8 @@ import { ProgramaTab } from "./ProgramaTab";
 import { CatalogoDialog } from "./CatalogoDialog";
 import { EmAndamento } from "./EmAndamento";
 import { ComposicoesDialog } from "./ComposicoesDialog";
+import { ImportarDialog } from "./ImportarDialog";
+import { OrcamentoBarra } from "./OrcamentoBarra";
 import { BotaoOlho } from "./BotaoOlho";
 import { PrazoCard } from "./PrazoVisual";
 import { RelatorioCard, RelatorioDialog } from "./RelatorioMensal";
@@ -51,6 +53,9 @@ const ABAS: readonly { id: Aba; rotulo: string; Icone: ComponentType }[] = [
 
 const botaoTopo = "btn-topo";
 
+/** Atalhos do projeto vazio: etapas comuns de obra, para o arquiteto começar já com a etapa preenchida. */
+const ETAPAS_SUGERIDAS = ["Demolição", "Alvenaria", "Elétrica", "Hidráulica", "Gesso", "Revestimentos", "Pintura", "Marcenaria", "Limpeza"];
+
 export function Dashboard() {
   const { user, logout } = useAuth();
   const { obraId, itens, config, loading, ehCliente, addItem, previsoes, registrarPrevisao } = useData();
@@ -73,6 +78,9 @@ export function Dashboard() {
   const [itemDialog, setItemDialog] = useState(false);
   const [configDialog, setConfigDialog] = useState(false);
   const [itemEdicao, setItemEdicao] = useState<Item | null>(null);
+  // Etapa/ambiente que o novo item já traz (botão "+" de um grupo, atalhos de etapa do projeto vazio).
+  const [itemInicial, setItemInicial] = useState<{ etapa?: string; ambiente?: string } | null>(null);
+  const [importar, setImportar] = useState<number | null>(null);
   const [agrupamento, setAgrupamento] = useState<Agrupamento>("etapa");
   const [busca, setBusca] = useState("");
   const [aba, setAba] = useState<Aba>("resumo");
@@ -168,7 +176,7 @@ export function Dashboard() {
           alvo: "acoes-itens",
           titulo: "Monte o orçamento",
           texto:
-            "Adicione itens à mão, do seu catálogo ou de uma composição de custo. Em cada item você marca Feito e Pago e informa fornecedor e prazo. E gera o orçamento em PDF por etapa ou ambiente.",
+            "Adicione itens à mão (use o “+” de cada etapa e “Adicionar e lançar outro” para ir rápido), cole de uma planilha, ou use seu catálogo e suas composições. O total fica sempre à vista. Depois marque Feito e Pago e gere o orçamento em PDF.",
           aoEntrar: irPara("itens"),
         },
         {
@@ -198,11 +206,18 @@ export function Dashboard() {
     router.push("/");
   }
 
-  function abrirNovo() {
+  function abrirNovo(inicial: { etapa?: string; ambiente?: string } | null = null) {
     setItemEdicao(null);
+    setItemInicial(inicial);
     setItemDialog(true);
   }
+  /** O "+" de um grupo: novo item já na etapa (ou ambiente) dele. "Sem definição" não preenche nada. */
+  function novoNoGrupo(nome: string) {
+    if (nome === "Sem definição") return abrirNovo();
+    abrirNovo(agrupamento === "etapa" ? { etapa: nome } : { ambiente: nome });
+  }
   function abrirEdicao(item: Item) {
+    setItemInicial(null);
     setItemEdicao(item);
     setItemDialog(true);
   }
@@ -212,20 +227,41 @@ export function Dashboard() {
   const flutua = aba === "resumo" && !loading && itens.length === 0;
 
   const vazio = (
-    <div className="prancha px-6 py-14 text-center" data-tour="acoes-itens">
+    <div className="prancha px-5 py-10 text-center sm:px-6 sm:py-12" data-tour="acoes-itens">
       <p className="text-lg font-semibold text-ink">Nenhum item neste projeto ainda</p>
-      <p className="mx-auto mt-1 max-w-xs text-sm text-ink/60">
-        {ehCliente ? "O arquiteto ainda não cadastrou o orçamento." : "Cadastre os itens do orçamento para acompanhar valores e andamento."}
+      <p className="mx-auto mt-1 max-w-sm text-sm text-ink/60">
+        {ehCliente ? "O arquiteto ainda não cadastrou o orçamento." : "Escolha como quer montar o orçamento. Dá para misturar os jeitos depois."}
       </p>
       {!ehCliente && (
-        <div className="mt-5 flex flex-wrap justify-center gap-2">
-          <button onClick={abrirNovo} className="btn btn-primario px-5 py-2.5 text-sm">
-            <IconeMais /> Adicionar primeiro item
-          </button>
-          <button onClick={() => setCatalogoAberto(true)} className="btn btn-linha px-5 py-2.5 text-sm">
-            Usar meu catálogo
-          </button>
-        </div>
+        <>
+          <div className="mx-auto mt-6 grid max-w-xl gap-3 text-left sm:grid-cols-3">
+            <button onClick={() => abrirNovo()} className="prancha prancha-clicavel p-4 text-left">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-pitanga text-white"><IconeMais /></span>
+              <span className="mt-2 block text-sm font-semibold text-ink">Adicionar primeiro item</span>
+              <span className="mt-0.5 block text-xs leading-snug text-ink/55">Um por um, ou vários em sequência.</span>
+            </button>
+            <button onClick={() => setImportar(Date.now())} className="prancha prancha-clicavel p-4 text-left">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ink font-mono text-xs font-semibold text-white">XLS</span>
+              <span className="mt-2 block text-sm font-semibold text-ink">Colar da planilha</span>
+              <span className="mt-0.5 block text-xs leading-snug text-ink/55">Já tem no Excel? Copie e cole as linhas.</span>
+            </button>
+            <button onClick={() => setCatalogoAberto(true)} className="prancha prancha-clicavel p-4 text-left">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ink font-mono text-xs font-semibold text-white">CAT</span>
+              <span className="mt-2 block text-sm font-semibold text-ink">Usar meu catálogo</span>
+              <span className="mt-0.5 block text-xs leading-snug text-ink/55">Reaproveite itens e preços salvos.</span>
+            </button>
+          </div>
+          <div className="mx-auto mt-6 max-w-xl">
+            <p className="rotulo-tec text-ink/45">Ou comece por uma etapa</p>
+            <div className="mt-2 flex flex-wrap justify-center gap-1.5">
+              {ETAPAS_SUGERIDAS.map((e) => (
+                <button key={e} onClick={() => abrirNovo({ etapa: e })} className="clicavel rounded-full border border-ink/20 bg-white px-3 py-1.5 text-xs font-medium text-ink/75 transition-colors hover:border-ink/50 hover:text-ink">
+                  {e}
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
       )}
     </div>
   );
@@ -324,15 +360,21 @@ export function Dashboard() {
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-xl font-semibold text-ink">Itens do orçamento</h2>
               {!ehCliente && (
-                <button onClick={abrirNovo} className="btn btn-primario gap-1.5 px-4 py-2.5 text-sm">
+                <button onClick={() => abrirNovo()} className="btn btn-primario gap-1.5 px-4 py-2.5 text-sm">
                   <IconeMais /> Item
                 </button>
               )}
             </div>
-            <div className="-mt-2 flex flex-wrap gap-2" data-tour="acoes-itens">
+            <OrcamentoBarra resumo={resumo} etapas={etapas.length} semValor={itens.filter((i) => i.valorOrcado <= 0 && i.valorReal <= 0).length} />
+            <div className="flex flex-wrap gap-2" data-tour="acoes-itens">
               {!ehCliente && (
                 <button onClick={() => setCatalogoAberto(true)} className="btn btn-linha rounded-full px-3.5 py-2 font-mono text-[11px] font-semibold uppercase tracking-wider">
                   Catálogo
+                </button>
+              )}
+              {!ehCliente && (
+                <button onClick={() => setImportar(Date.now())} className="btn btn-linha rounded-full px-3.5 py-2 font-mono text-[11px] font-semibold uppercase tracking-wider">
+                  Colar da planilha
                 </button>
               )}
               {!ehCliente && (
@@ -407,7 +449,7 @@ export function Dashboard() {
             {gruposLista.length === 0 ? (
               <div className="prancha py-12 text-center text-sm text-ink/55">{busca.trim() ? `Nenhum serviço encontrado para “${busca}”.` : "Nenhum serviço nesta etapa."}</div>
             ) : (
-              <ItemsList grupos={gruposLista} onEditar={abrirEdicao} expandir={busca.trim().length > 0 || etapaFoco !== null} />
+              <ItemsList grupos={gruposLista} onEditar={abrirEdicao} onNovoNoGrupo={ehCliente ? undefined : novoNoGrupo} expandir={busca.trim().length > 0 || etapaFoco !== null} />
             )}
           </>
         ) : (
@@ -440,7 +482,8 @@ export function Dashboard() {
 
       {!ehCliente && relatorio !== null && <RelatorioDialog key={relatorio} aberto onFechar={() => setRelatorio(null)} itens={itens} />}
       <Tour passos={passosTour} aberto={tour.aberto} onFechar={tour.fechar} />
-      <ItemDialog aberto={itemDialog} onFechar={() => setItemDialog(false)} item={itemEdicao} etapas={etapas} ambientes={ambientes} />
+      <ItemDialog aberto={itemDialog} onFechar={() => setItemDialog(false)} item={itemEdicao} etapas={etapas} ambientes={ambientes} inicial={itemInicial} />
+      {!ehCliente && importar !== null && <ImportarDialog key={importar} aberto onFechar={() => setImportar(null)} />}
       {!ehCliente && (
         <CatalogoDialog
           aberto={catalogoAberto}

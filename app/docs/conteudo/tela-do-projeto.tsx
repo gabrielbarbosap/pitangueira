@@ -44,7 +44,7 @@ export const telaDoProjeto: PaginaDoc = {
               ["Escopo", "Ambientes e pedidos do cliente, ligados ao orçamento.", "Só o arquiteto"],
             ]}
           />
-          <P>Em um projeto sem itens, o Resumo mostra o cartão de prazo e o convite “Nenhum item neste projeto ainda”, com os botões <Btn>Adicionar primeiro item</Btn> e <Btn>Usar meu catálogo</Btn>. O cliente vê “O arquiteto ainda não cadastrou o orçamento.”</P>
+          <P>Em um projeto sem itens, o Resumo mostra o cartão de prazo e o convite “Nenhum item neste projeto ainda”, com três caminhos (<Btn>Adicionar primeiro item</Btn>, <Btn>Colar da planilha</Btn> e <Btn>Usar meu catálogo</Btn>) e atalhos de etapa. O cliente vê “O arquiteto ainda não cadastrou o orçamento.”</P>
         </>
       ),
     },

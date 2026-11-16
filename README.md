@@ -99,6 +99,7 @@ Os testes simulam um arquiteto novo usando o app de verdade no navegador (Playwr
 - `e2e/permissoes.spec.ts`: só o arquiteto tem a aba Escopo e cria orçamento; o cliente só acompanha.
 - `e2e/relatorio-mensal.spec.ts`: o relatório mensal de andamento (escolher o mês, o que entra, gerar o documento; o cliente não vê).
 - `e2e/tutorial.spec.ts`: o tutorial da primeira visita.
+- `e2e/orcamento-rapido.spec.ts`: montar o orçamento rápido (etapas, itens em sequência, colar da planilha, total à vista; o cliente não vê as ferramentas).
 - `e2e/design.spec.ts`: o catálogo do design system e as classes padrão valendo no app (campos e topo).
 - `e2e/docs.spec.ts`: a documentação (todas as páginas abrem, a busca filtra, os atalhos do app existem).
 

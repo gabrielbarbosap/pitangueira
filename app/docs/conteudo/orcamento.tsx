@@ -59,6 +59,16 @@ export const orcamento: PaginaDoc = {
       ),
     },
     {
+      id: "total-a-vista",
+      titulo: "O total à vista",
+      papel: "todos",
+      corpo: (
+        <P>
+          Na aba Itens, o cartão <strong>Total do orçamento</strong> fica sempre no topo: o total (soma dos valores efetivos), a quantidade de itens e etapas, a folga ou o estouro em relação ao teto e um aviso se houver itens sem valor.
+        </P>
+      ),
+    },
+    {
       id: "ferramentas",
       titulo: "Ferramentas para montar o orçamento",
       papel: "arquiteto",
@@ -66,7 +76,8 @@ export const orcamento: PaginaDoc = {
         <>
           <H3>Do seu jeito</H3>
           <Lista>
-            <li>Digitar item por item (<Ir para="itens">Itens do orçamento</Ir>).</li>
+            <li>Digitar item por item, em sequência, com o <Btn>+</Btn> de cada etapa (<Ir para="itens">Itens do orçamento</Ir>).</li>
+            <li>Colar as linhas de uma planilha do Excel ou Google Planilhas (<Btn>Colar da planilha</Btn>).</li>
             <li>Reaproveitar do seu catálogo e das suas composições (<Ir para="catalogo-e-composicoes">Catálogo e composições</Ir>).</li>
             <li>Começar a partir de outro projeto seu (<Ir para="criar-e-gerenciar-projetos">Criar e gerenciar projetos</Ir>).</li>
           </Lista>

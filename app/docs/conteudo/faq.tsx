@@ -36,6 +36,12 @@ export const faq: PaginaDoc = {
           <P>O orçado só se recalcula ao mexer em quantidade ou valor unitário. O real não altera o orçado; ele passa a valer como valor efetivo.</P>
           <H3>Criei um item já marcado como feito, mas ele não aparece no relatório mensal.</H3>
           <P>Itens criados já marcados não ganham a data de execução. Desmarque e marque Feito (e Pago) de novo na lista de itens.</P>
+          <H3>Já tenho o orçamento numa planilha. Preciso digitar tudo de novo?</H3>
+          <P>Não. Em <Btn>Colar da planilha</Btn> você copia as linhas do Excel e cola. Veja a ordem das colunas e as regras em <Ir para="itens">Itens do orçamento</Ir>.</P>
+          <H3>Quero lançar vários itens da mesma etapa.</H3>
+          <P>Abra o novo item pelo <Btn>+</Btn> da etapa e use <Btn>Adicionar e lançar outro</Btn>: a etapa continua e o resto é limpo.</P>
+          <H3>Cadê os campos de ambiente, fornecedor e prazo?</H3>
+          <P>Estão em <Btn>Mais detalhes</Btn>, na própria janela do item.</P>
           <H3>“Elétrica” e “Eletrica” aparecem como etapas diferentes.</H3>
           <P>Etapas e ambientes são texto livre; a grafia precisa ser igual. Edite os itens para uniformizar.</P>
         </>

@@ -5,7 +5,8 @@ import { percentual } from "@/lib/format";
 import { useDinheiro } from "@/lib/privacidade";
 import { useData } from "@/lib/data";
 import { useConfirm } from "./ConfirmProvider";
-import { IconeEditar, IconeLixo, IconeSeta } from "./Icones";
+import { IconeEditar, IconeLixo, IconeMais, IconeSeta } from "./Icones";
+import { Chip } from "./ui/Chip";
 import { statusGrupo, type Grupo } from "@/lib/calc";
 import type { Item } from "@/lib/types";
 
@@ -82,7 +83,11 @@ function Linha({ item, onEditar }: { item: Item; onEditar: (i: Item) => void }) 
 
       <div className="flex items-center justify-between gap-4 sm:justify-end">
         <div className="text-right">
-          <p className="font-mono text-sm font-semibold tabular-nums text-ink">{brl(item.valorReal > 0 ? item.valorReal : item.valorOrcado)}</p>
+          {item.valorReal <= 0 && item.valorOrcado <= 0 ? (
+            <Chip tom="aviso">Sem valor</Chip>
+          ) : (
+            <p className="font-mono text-sm font-semibold tabular-nums text-ink">{brl(item.valorReal > 0 ? item.valorReal : item.valorOrcado)}</p>
+          )}
           {item.valorReal > 0 && item.valorReal !== item.valorOrcado && (
             <p className="font-mono text-xs tabular-nums text-ink/40 line-through">{brl(item.valorOrcado)}</p>
           )}
@@ -115,7 +120,17 @@ function Linha({ item, onEditar }: { item: Item; onEditar: (i: Item) => void }) 
   );
 }
 
-function GrupoCard({ grupo, onEditar, forcarAberto }: { grupo: Grupo; onEditar: (i: Item) => void; forcarAberto?: boolean }) {
+function GrupoCard({
+  grupo,
+  onEditar,
+  onNovoNoGrupo,
+  forcarAberto,
+}: {
+  grupo: Grupo;
+  onEditar: (i: Item) => void;
+  onNovoNoGrupo?: (nome: string) => void;
+  forcarAberto?: boolean;
+}) {
   const { updateMany } = useData();
   const { brl } = useDinheiro();
   const confirmar = useConfirm();
@@ -171,6 +186,16 @@ function GrupoCard({ grupo, onEditar, forcarAberto }: { grupo: Grupo; onEditar: 
           </span>
         </button>
         <div className="flex shrink-0 items-center gap-1.5 py-3 pr-3">
+          {onNovoNoGrupo && (
+            <button
+              onClick={() => onNovoNoGrupo(grupo.nome)}
+              className="btn btn-icone h-8 w-8 rounded-full"
+              aria-label={`Adicionar item em ${grupo.nome}`}
+              title={`Adicionar item em ${grupo.nome}`}
+            >
+              <IconeMais size={14} />
+            </button>
+          )}
           <Etiqueta
             ativo={todosFeitos}
             onClick={() => marcarTodos("feito", todosFeitos)}
@@ -208,16 +233,19 @@ function GrupoCard({ grupo, onEditar, forcarAberto }: { grupo: Grupo; onEditar: 
 export function ItemsList({
   grupos,
   onEditar,
+  onNovoNoGrupo,
   expandir,
 }: {
   grupos: Grupo[];
   onEditar: (i: Item) => void;
+  /** Só para o arquiteto: o botão "+" de cada grupo, que abre o novo item já na etapa (ou ambiente) dele. */
+  onNovoNoGrupo?: (nome: string) => void;
   expandir?: boolean;
 }) {
   return (
     <section className="space-y-3" aria-label="Itens do orçamento">
       {grupos.map((g) => (
-        <GrupoCard key={g.nome} grupo={g} onEditar={onEditar} forcarAberto={expandir} />
+        <GrupoCard key={g.nome} grupo={g} onEditar={onEditar} onNovoNoGrupo={onNovoNoGrupo} forcarAberto={expandir} />
       ))}
     </section>
   );

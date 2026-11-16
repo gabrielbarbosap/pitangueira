@@ -25,7 +25,7 @@ export const primeirosPassos: PaginaDoc = {
               <strong>Registre o prazo.</strong> No Resumo, toque em <Btn>Registrar previsão inicial</Btn>, informe o início e a duração, confirme e registre. Essa previsão não poderá ser editada depois.
             </Passo>
             <Passo>
-              <strong>Monte o orçamento.</strong> Na aba <Btn>Itens</Btn>, toque em <Btn>Adicionar primeiro item</Btn> (ou <Btn>Usar meu catálogo</Btn>). Preencha etapa, descrição, quantidade e valor unitário.
+              <strong>Monte o orçamento.</strong> Na aba <Btn>Itens</Btn>, escolha um caminho: <Btn>Adicionar primeiro item</Btn>, <Btn>Colar da planilha</Btn> ou <Btn>Usar meu catálogo</Btn>. Para lançar vários itens, use <Btn>Adicionar e lançar outro</Btn>.
             </Passo>
             <Passo>
               <strong>Escreva o escopo.</strong> Na aba <Btn>Escopo</Btn>, comece por um modelo ou adicione os ambientes e os pedidos do cliente. Ligue cada pedido aos itens do orçamento.
