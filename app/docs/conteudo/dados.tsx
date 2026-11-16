@@ -70,7 +70,7 @@ export const dados: PaginaDoc = {
       corpo: (
         <>
           <P>
-            Ao marcar Feito ou Pago, o app guarda o nome de quem marcou e a data. As datas aparecem no relatório mensal, no gráfico de ritmo de pagamento e no histórico dos fornecedores. O nome de quem marcou fica guardado, mas ainda não há uma tela que o mostre.
+            Ao marcar Feito ou Pago, o app guarda o nome de quem marcou e a data, e mostra os dois embaixo do item (“Pago por Marina (cliente) em 13/11 09:10”) e no cartão Atividade recente do Resumo. Marcações do cliente levam “(cliente)” no nome. As datas também alimentam o relatório mensal, o gráfico de ritmo de pagamento e o histórico dos fornecedores.
           </P>
           <H3>Prazo</H3>
           <P>

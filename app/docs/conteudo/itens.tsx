@@ -49,15 +49,15 @@ export const itens: PaginaDoc = {
             <Passo>Toque em <Btn>Pago</Btn> quando o valor for pago. Cada botão mostra ✓ quando está ativo.</Passo>
             <Passo>Para desfazer, toque de novo no botão.</Passo>
           </Passos>
-          <Aviso tipo="nota" titulo="Data e autor ficam registrados">
-            Ao marcar, o app guarda quem marcou (o nome de quem está logado) e a data e hora. Ao desmarcar, apaga esses dados. Se marcar de novo, vale a nova data. Essas datas alimentam o relatório mensal, o gráfico de ritmo de pagamento e o histórico dos fornecedores.
+          <Aviso tipo="nota" titulo="Data e autor ficam registrados, e aparecem">
+            Ao marcar, o app guarda quem marcou e a data e hora, e mostra isso embaixo do item: “Feito por Gabriel em 12/11 14:30 · Pago por Marina (cliente) em 13/11 09:10”. Quando quem marcou é o cliente, o nome vem com “(cliente)”. Ao desmarcar, os dados são apagados; se marcar de novo, vale a nova data e o novo autor. As datas alimentam o relatório mensal, o gráfico de ritmo de pagamento e o histórico dos fornecedores. Os itens mais recentes também aparecem em <Ir para="tela-do-projeto">Atividade recente</Ir>, no Resumo.
           </Aviso>
           <H3>Marcar a seção inteira</H3>
           <P>
             No cabeçalho de cada seção há também <Btn>Feito</Btn> e <Btn>Pago</Btn>. Ao tocar, o app pede confirmação (“Marcar todos os N itens de ‘X’ como feitos?”) e marca todos de uma vez. Se todos já estão marcados, o botão desmarca. Com uma busca ativa, vale só para os itens visíveis daquela seção.
           </P>
-          <Aviso tipo="atencao" titulo="Item criado já marcado">
-            Se você criar um item já com Feito ou Pago marcados no formulário, ele não recebe a data de execução ou de pagamento. Para ter a data (necessária para entrar em um mês do relatório), marque Feito e Pago na lista depois de criar o item.
+          <Aviso tipo="dica" titulo="Item criado já marcado">
+            Se você criar um item já com Feito ou Pago marcados no formulário, ele também recebe a data e o autor, como se tivesse sido marcado na lista. Itens marcados há muito tempo, antes de o app guardar datas, ficam sem data e não entram em nenhum mês do relatório.
           </Aviso>
         </>
       ),

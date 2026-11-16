@@ -27,6 +27,7 @@ import { PROJETO_VAZIO, type Item, type Obra, type ObraInput, type Programa, typ
 import { SEED_ITENS } from "./seed";
 import { resumoDeItens } from "./calc";
 import { CASA_PITANGA_EMAILS, EVENTO_OBRAS, LS_OBRAS, lsItensKey } from "./demo";
+import { registrarEvento } from "./telemetria";
 
 interface ObrasContextValue {
   obras: Obra[];
@@ -190,6 +191,7 @@ export function ObrasProvider({ children }: { children: ReactNode }) {
       if (!origem) throw new Error("Projeto de origem não encontrado");
       clone = clonarProjeto(origem, await lerItens(origemId));
     }
+    registrarEvento("projeto_criado", { origem: origemId ? "copia" : "zero" });
     return criar({ ...data }, false, undefined, clone);
   }
 

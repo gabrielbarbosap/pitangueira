@@ -1,6 +1,7 @@
 "use client";
 
-import type { CSSProperties, ReactNode } from "react";
+import { useEffect, type CSSProperties, type ReactNode } from "react";
+import { registrarEvento } from "@/lib/telemetria";
 import { useData } from "@/lib/data";
 import type { AprovacaoPrograma } from "@/lib/types";
 import { LogoMark } from "./Logo";
@@ -38,7 +39,13 @@ export function DocumentoBase({
 }) {
   const { config, projeto } = useData();
 
+  // Um documento foi aberto (medimos só o tipo: orçamento, escopo, relatório).
+  useEffect(() => {
+    registrarEvento("documento_aberto", { tipo: titulo });
+  }, [titulo]);
+
   function imprimir() {
+    registrarEvento("pdf_impresso", { tipo: titulo });
     if (nomeArquivo) {
       const antigo = document.title;
       document.title = nomeArquivo;

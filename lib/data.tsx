@@ -28,6 +28,7 @@ import { useAuth } from "./auth";
 import type { AprovacaoPrograma, Config, Item, ItemInput, Previsao, Programa, Projeto } from "./types";
 import { CONFIG_PADRAO, PROGRAMA_VAZIO, PROJETO_VAZIO } from "./types";
 import { LS_OBRAS, avisarObrasMudaram, lsItensKey } from "./demo";
+import { registrarEvento } from "./telemetria";
 
 // O Firestore não aceita `undefined`. Em criação removemos; em edição viram deleteField().
 function semUndefined(obj: Record<string, unknown>) {
@@ -176,12 +177,14 @@ export function DataProvider({ obraId, children }: { obraId: string; children: R
   /** Acrescenta auditoria (quem/quando) quando feito/pago mudam. */
   function comAuditoria(patch: Partial<ItemInput>): Record<string, unknown> {
     const dados: Record<string, unknown> = { ...patch };
+    // O cliente aparece como "Nome (cliente)": o arquiteto vê de relance o que foi marcado por quem.
+    const autor = ehCliente ? `${ator} (cliente)` : ator;
     if (patch.feito !== undefined) {
-      dados.feitoPor = patch.feito ? ator : undefined;
+      dados.feitoPor = patch.feito ? autor : undefined;
       dados.feitoEm = patch.feito ? Date.now() : undefined;
     }
     if (patch.pago !== undefined) {
-      dados.pagoPor = patch.pago ? ator : undefined;
+      dados.pagoPor = patch.pago ? autor : undefined;
       dados.pagoEm = patch.pago ? Date.now() : undefined;
     }
     return dados;
@@ -189,7 +192,10 @@ export function DataProvider({ obraId, children }: { obraId: string; children: R
 
   // ---------- Mutações ----------
   async function addItem(data: Omit<ItemInput, "ordem">) {
-    const base = { ...data, ordem: proximaOrdem() };
+    // Item criado já como feito/pago também registra quem marcou e quando (senão ele some do relatório mensal e dos gráficos).
+    const auditoria = comAuditoria({ ...(data.feito ? { feito: true } : {}), ...(data.pago ? { pago: true } : {}) });
+    const base = { ...data, ...auditoria, ordem: proximaOrdem() };
+    registrarEvento("item_adicionado");
     if (configured && db) {
       await addDoc(collection(db, "obras", obraId, "itens"), semUndefined({ ...base, createdAt: Date.now(), updatedAt: Date.now() }));
     } else {
@@ -199,6 +205,8 @@ export function DataProvider({ obraId, children }: { obraId: string; children: R
 
   async function updateItem(id: string, patch: Partial<ItemInput>) {
     const dados = comAuditoria(patch);
+    if (patch.feito !== undefined) registrarEvento("item_marcado", { campo: "feito", valor: patch.feito });
+    if (patch.pago !== undefined) registrarEvento("item_marcado", { campo: "pago", valor: patch.pago });
     if (configured && db) {
       await updateDoc(doc(db, "obras", obraId, "itens", id), paraUpdate({ ...dados, updatedAt: Date.now() }));
     } else {
@@ -207,6 +215,8 @@ export function DataProvider({ obraId, children }: { obraId: string; children: R
   }
 
   async function updateMany(ids: string[], patch: Partial<ItemInput>) {
+    if (patch.feito !== undefined) registrarEvento("item_marcado", { campo: "feito", valor: patch.feito, lote: ids.length });
+    if (patch.pago !== undefined) registrarEvento("item_marcado", { campo: "pago", valor: patch.pago, lote: ids.length });
     if (ids.length === 0) return;
     const dados = comAuditoria(patch);
     if (configured && db) {
@@ -292,6 +302,7 @@ export function DataProvider({ obraId, children }: { obraId: string; children: R
 
   async function registrarPrevisao(p: { inicio: number; termino: number; motivo: string }) {
     if (ehCliente) throw new Error("Só o arquiteto registra previsões");
+    registrarEvento("previsao_registrada", { numero: previsoes.length + 1 });
     const nova: Previsao = {
       id: crypto.randomUUID(),
       numero: previsoes.length + 1,

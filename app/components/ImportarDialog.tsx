@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useData } from "@/lib/data";
 import { lerItensColados } from "@/lib/importar";
+import { registrarEvento } from "@/lib/telemetria";
 import { useDinheiro } from "@/lib/privacidade";
 import { Modal } from "./Modal";
 import { Alerta } from "./ui/Alerta";
@@ -51,6 +52,7 @@ export function ImportarDialog({ aberto, onFechar }: { aberto: boolean; onFechar
           pago: false,
         });
       }
+      registrarEvento("planilha_importada", { linhas: linhas.length });
       onFechar();
     } catch {
       setErro("Não consegui importar tudo agora. O que já entrou ficou no orçamento; confira a lista e tente de novo com o que faltou.");

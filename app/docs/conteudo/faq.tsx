@@ -34,8 +34,10 @@ export const faq: PaginaDoc = {
           <P>O cartão mostra a projeção: usa o valor real quando o item tem, e o orçado nos demais.</P>
           <H3>Mudei o valor real e o orçado não mudou.</H3>
           <P>O orçado só se recalcula ao mexer em quantidade ou valor unitário. O real não altera o orçado; ele passa a valer como valor efetivo.</P>
-          <H3>Criei um item já marcado como feito, mas ele não aparece no relatório mensal.</H3>
-          <P>Itens criados já marcados não ganham a data de execução. Desmarque e marque Feito (e Pago) de novo na lista de itens.</P>
+          <H3>Um item antigo marcado como feito não aparece no relatório mensal.</H3>
+          <P>Itens marcados antes de o app guardar datas não têm mês. Desmarque e marque Feito (e Pago) de novo na lista de itens para ele ganhar a data de hoje. Itens criados já marcados recebem a data automaticamente.</P>
+          <H3>Como sei quem marcou um item como pago?</H3>
+          <P>Embaixo do item aparece “Pago por {"{nome}"} em {"{data}"}”, e no Resumo o cartão Atividade recente lista as últimas marcações. Marcações do cliente trazem “(cliente)”.</P>
           <H3>Já tenho o orçamento numa planilha. Preciso digitar tudo de novo?</H3>
           <P>Não. Em <Btn>Colar da planilha</Btn> você copia as linhas do Excel e cola. Veja a ordem das colunas e as regras em <Ir para="itens">Itens do orçamento</Ir>.</P>
           <H3>Quero lançar vários itens da mesma etapa.</H3>

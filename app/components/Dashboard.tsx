@@ -18,6 +18,7 @@ import { ConfigDialog } from "./ConfigDialog";
 import { ProgramaTab } from "./ProgramaTab";
 import { CatalogoDialog } from "./CatalogoDialog";
 import { EmAndamento } from "./EmAndamento";
+import { AtividadeRecente } from "./AtividadeRecente";
 import { ComposicoesDialog } from "./ComposicoesDialog";
 import { ImportarDialog } from "./ImportarDialog";
 import { OrcamentoBarra } from "./OrcamentoBarra";
@@ -351,6 +352,7 @@ export function Dashboard() {
             <PrazoCard previsoes={previsoes} pctConcluido={pct} ehCliente={ehCliente} onRegistrar={registrarPrevisao} />
             {/* O relatório mensal é do arquiteto: o cliente recebe o PDF, não gera */}
             {!ehCliente && <RelatorioCard itens={itens} onAbrir={() => setRelatorio(Date.now())} />}
+            <AtividadeRecente itens={itens} />
             <ResumoTopo resumo={resumo} />
             <SummaryCards resumo={resumo} />
             <ChartComposicao grupos={gruposGrafico} />

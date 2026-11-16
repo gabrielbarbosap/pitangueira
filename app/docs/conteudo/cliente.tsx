@@ -46,7 +46,7 @@ export const cliente: PaginaDoc = {
       corpo: (
         <>
           <P>
-            Você pode ajudar no acompanhamento: na aba Itens, toque em <Btn>Feito</Btn> quando um serviço for concluído e em <Btn>Pago</Btn> quando o valor for pago. O seu nome e a data ficam registrados em cada marcação. Para desfazer, toque de novo.
+            Você pode ajudar no acompanhamento: na aba Itens, toque em <Btn>Feito</Btn> quando um serviço for concluído e em <Btn>Pago</Btn> quando o valor for pago. O seu nome (com a indicação “cliente”) e a data ficam registrados em cada marcação e aparecem embaixo do item e na Atividade recente, para o arquiteto ver. Para desfazer, toque de novo.
           </P>
           <Aviso tipo="atencao">
             Marcar muda o andamento para o arquiteto e para todos. Marque só o que realmente aconteceu. Você também pode alterar o orçamento disponível (o teto) nos ajustes (engrenagem), mas não pode criar nem apagar itens.

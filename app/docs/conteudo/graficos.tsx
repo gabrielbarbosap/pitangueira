@@ -77,7 +77,7 @@ export const graficos: PaginaDoc = {
             “Pago por mês e acumulado”: barras com o valor pago em cada mês e uma linha com o acumulado. Usa a data em que o item foi marcado como pago.
           </P>
           <Aviso tipo="nota" titulo="Pagamentos sem data">
-            Itens marcados como pagos antes de o app guardar datas, ou criados já marcados no formulário, ficam fora do gráfico, e um aviso diz quantos. Para incluí-los, desmarque e marque Pago de novo.
+            Itens marcados como pagos antes de o app guardar datas ficam fora do gráfico, e um aviso diz quantos. Para incluí-los, desmarque e marque Pago de novo.
           </Aviso>
         </>
       ),

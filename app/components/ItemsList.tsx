@@ -8,6 +8,7 @@ import { useConfirm } from "./ConfirmProvider";
 import { IconeEditar, IconeLixo, IconeMais, IconeSeta } from "./Icones";
 import { Chip } from "./ui/Chip";
 import { statusGrupo, type Grupo } from "@/lib/calc";
+import { quemMarcou } from "@/lib/atividade";
 import type { Item } from "@/lib/types";
 
 const TEMAS = {
@@ -50,10 +51,22 @@ function Etiqueta({
 const FEITO_ATIVO = "border-ink bg-ink text-white";
 const PAGO_ATIVO = "border-emerald-600 bg-emerald-600 text-white";
 
+const dataHora = (ms: number) =>
+  `${new Date(ms).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })} ${new Date(ms).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
+
+/** "Feito por Maria · 12/11 14:30" (o que não se sabe, como itens antigos, simplesmente não aparece). */
+function marca(rotulo: string, autor?: string, quando?: number): string {
+  const quem = autor ? quemMarcou(autor) : null;
+  const por = quem ? ` por ${quem.nome}${quem.cliente ? " (cliente)" : ""}` : "";
+  const em = quando ? ` em ${dataHora(quando)}` : "";
+  return por || em ? `${rotulo}${por}${em}` : "";
+}
+
 function Linha({ item, onEditar }: { item: Item; onEditar: (i: Item) => void }) {
   const { updateItem, removeItem, ehCliente } = useData();
   const { brl } = useDinheiro();
   const confirmar = useConfirm();
+  const autoria = [item.feito && marca("Feito", item.feitoPor, item.feitoEm), item.pago && marca("Pago", item.pagoPor, item.pagoEm)].filter(Boolean).join(" · ");
   const detalhes = [item.quantidade > 0 && `${item.quantidade} × ${brl(item.valorUnitario)}`, item.fornecedor, item.observacao].filter(Boolean).join(" · ");
 
   return (
@@ -61,6 +74,11 @@ function Linha({ item, onEditar }: { item: Item; onEditar: (i: Item) => void }) 
       <div className="min-w-0 flex-1">
         <p className={`text-sm font-medium ${item.feito ? "text-ink/50 line-through decoration-ink/30" : "text-ink"}`}>{item.descricao}</p>
         {detalhes && <p className="mt-0.5 text-xs text-ink/50">{detalhes}</p>}
+        {autoria && (
+          <p className="mt-1 text-[11px] leading-snug text-ink/45" data-testid="autoria">
+            {autoria}
+          </p>
+        )}
         <div className="mt-2 flex gap-1.5">
           <Etiqueta
             ativo={item.feito}

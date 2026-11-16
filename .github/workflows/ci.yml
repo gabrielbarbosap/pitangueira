@@ -1,0 +1,53 @@
+name: CI
+
+# Roda a cada push na main e em todo pull request: tipos, lint e os testes de ponta a ponta (desktop e celular).
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Conferir tipos
+        run: npx tsc --noEmit
+
+      # Há erros antigos de lint (setState em efeito) que ainda não foram corrigidos: aparece o aviso, mas não barra.
+      - name: Lint
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Instalar o navegador dos testes
+        run: npx playwright install --with-deps chromium
+
+      # O Playwright compila o app (npm run build) e sobe em modo demo, sem Firebase.
+      - name: Testes de ponta a ponta
+        run: npm run test:e2e
+        env:
+          CI: "true"
+
+      - name: Guardar o relatório dos testes (se algo falhar)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorio-playwright
+          path: |
+            playwright-report
+            test-results
+          retention-days: 7

@@ -66,6 +66,23 @@ export const telaDoProjeto: PaginaDoc = {
       ),
     },
     {
+      id: "atividade",
+      titulo: "Atividade recente",
+      papel: "todos",
+      corpo: (
+        <>
+          <P>
+            Logo abaixo do prazo, o cartão <strong>Atividade recente</strong> lista as últimas marcações de Feito e Pago: quem marcou, qual item, em que etapa e quando (“hoje 14:30”, “ontem 09:10” ou “12/11 14:30”).
+          </P>
+          <Lista>
+            <li>Quando quem marcou é o cliente, o nome ganha a etiqueta <strong>cliente</strong>, para o arquiteto ver de relance o que foi mexido por ele.</li>
+            <li>Aparecem as 6 marcações mais recentes. Itens marcados antes de o app guardar datas não entram aqui.</li>
+            <li>Arquiteto e cliente veem o mesmo cartão.</li>
+          </Lista>
+        </>
+      ),
+    },
+    {
       id: "cartoes",
       titulo: "Prazo e relatório",
       corpo: (
