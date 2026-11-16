@@ -48,6 +48,8 @@ interface DataContextValue {
   /** true = cliente (permissões limitadas: marca feito/pago e edita orçamento). */
   ehCliente: boolean;
   addItem: (data: Omit<ItemInput, "ordem">) => Promise<void>;
+  /** Vários itens de uma vez (importação): uma única gravação, em vez de uma por item. */
+  addItens: (lista: Omit<ItemInput, "ordem">[]) => Promise<void>;
   updateItem: (id: string, patch: Partial<ItemInput>) => Promise<void>;
   updateMany: (ids: string[], patch: Partial<ItemInput>) => Promise<void>;
   removeItem: (id: string) => Promise<void>;
@@ -203,6 +205,29 @@ export function DataProvider({ obraId, children }: { obraId: string; children: R
     }
   }
 
+  async function addItens(lista: Omit<ItemInput, "ordem">[]) {
+    if (lista.length === 0) return;
+    const primeira = proximaOrdem();
+    const agora = Date.now();
+    const prontos = lista.map((data, i) => {
+      const auditoria = comAuditoria({ ...(data.feito ? { feito: true } : {}), ...(data.pago ? { pago: true } : {}) });
+      return { ...data, ...auditoria, ordem: primeira + i };
+    });
+    registrarEvento("item_adicionado", { quantidade: lista.length });
+    if (configured && db) {
+      // O Firestore aceita até 500 gravações por lote.
+      for (let i = 0; i < prontos.length; i += 400) {
+        const lote = writeBatch(db);
+        for (const base of prontos.slice(i, i + 400)) {
+          lote.set(doc(collection(db, "obras", obraId, "itens")), semUndefined({ ...base, createdAt: agora, updatedAt: agora }));
+        }
+        await lote.commit();
+      }
+    } else {
+      setItens((prev) => [...prev, ...prontos.map((base) => ({ ...base, id: crypto.randomUUID(), createdAt: agora, updatedAt: agora }) as Item)]);
+    }
+  }
+
   async function updateItem(id: string, patch: Partial<ItemInput>) {
     const dados = comAuditoria(patch);
     if (patch.feito !== undefined) registrarEvento("item_marcado", { campo: "feito", valor: patch.feito });
@@ -327,7 +352,7 @@ export function DataProvider({ obraId, children }: { obraId: string; children: R
 
   const value = useMemo(
     () => ({
-      obraId, itens, config, loading, ator, ehCliente, addItem, updateItem, updateMany, removeItem, saveConfig,
+      obraId, itens, config, loading, ator, ehCliente, addItem, addItens, updateItem, updateMany, removeItem, saveConfig,
       projeto, programa, aprovacao, saveProjeto, savePrograma, aprovarPrograma, previsoes, registrarPrevisao,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -57,6 +57,7 @@ function dividir(linha: string): string[] {
 
 function campoDoTitulo(titulo: string): Campo | null {
   const t = semAcento(titulo);
+  if (/[0-9]/.test(t) || t.length > 24) return null; // título de coluna é curto e não tem número: "Etapa 1" é dado, não título
   if (/^etapa|^fase/.test(t)) return "etapa";
   if (/^descri|^servi|^item|^material|^nome/.test(t)) return "descricao";
   if (/^qt|^quant/.test(t)) return "quantidade";

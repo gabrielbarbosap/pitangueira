@@ -35,6 +35,7 @@ export const admin: PaginaDoc = {
               ["Itens adicionados", "Itens criados (à mão, em sequência, por planilha, catálogo ou composição), e quantas marcações de Feito/Pago houve."],
               ["Erros", "Erros que o app capturou (em laranja se houver)."],
               ["Documentos abertos", "Orçamentos, escopos e relatórios abertos para PDF."],
+              ["Enviados pelo WhatsApp", "Documentos enviados pelo botão WhatsApp (compartilhados ou baixados para anexar)."],
             ]}
           />
           <P>

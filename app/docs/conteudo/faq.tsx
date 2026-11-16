@@ -67,7 +67,9 @@ export const faq: PaginaDoc = {
       corpo: (
         <>
           <H3>Não encontro o botão de baixar o PDF.</H3>
-          <P>Não há download direto. Abra o documento e toque em <Btn>Imprimir / salvar PDF</Btn>; na janela de impressão, escolha “Salvar como PDF”.</P>
+          <P>Abra o documento e toque em <Btn>Imprimir / salvar PDF</Btn>; na janela de impressão, escolha “Salvar como PDF”. Para mandar para o cliente, use o botão <Btn>WhatsApp</Btn> do documento.</P>
+          <H3>Como mando o PDF pelo WhatsApp?</H3>
+          <P>Abra o documento, toque em <Btn>WhatsApp</Btn>, espere o “PDF pronto” e toque em <Btn>Enviar pelo WhatsApp</Btn>. No celular você escolhe a conversa; no computador o PDF é baixado e o WhatsApp Web abre na conversa do cliente para você anexá-lo. Veja <Ir para="pdfs">PDFs e marca do escritório</Ir>.</P>
           <H3>O olhinho não escondeu os valores do PDF.</H3>
           <P>Os documentos sempre trazem os valores reais. No relatório mensal, desmarque “Mostrar os valores em R$ no relatório”.</P>
           <H3>O botão de gerar o relatório está apagado.</H3>

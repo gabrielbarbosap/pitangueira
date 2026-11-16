@@ -684,6 +684,7 @@ function ProjetoDialog({ aberto, onFechar, projeto, onSalvar }: { aberto: boolea
     <Modal aberto={aberto} onFechar={onFechar} titulo="Dados do projeto">
       <div className="space-y-4">
         <Campo nome="Cliente(s)" dica="Quem contrata o projeto."><input className={campo} value={f.cliente} onChange={set("cliente")} placeholder="Ex.: Gabriel e Mariana" /></Campo>
+        <Campo nome="WhatsApp do cliente" dica="Opcional. Com DDD. Usado para abrir a conversa certa ao enviar um PDF pelo WhatsApp."><input className={campo} type="tel" inputMode="tel" value={f.telefone} onChange={set("telefone")} placeholder="Ex.: (11) 91234-5678" /></Campo>
         <Campo nome="Tipo de projeto"><input className={campo} value={f.tipo} onChange={set("tipo")} placeholder="Ex.: Reforma residencial" /></Campo>
         <Campo nome="Endereço do projeto"><input className={campo} value={f.endereco} onChange={set("endereco")} placeholder="Rua, número, bairro, cidade" /></Campo>
         <Campo nome="Responsável técnico"><input className={campo} value={f.responsavel} onChange={set("responsavel")} placeholder="Nome do arquiteto" /></Campo>

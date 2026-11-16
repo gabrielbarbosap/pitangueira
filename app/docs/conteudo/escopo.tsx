@@ -106,7 +106,7 @@ export const escopo: PaginaDoc = {
             O bloco recolhível “Dados do projeto” mostra cliente(s), tipo, endereço e responsável técnico. Toque em <Btn>Editar dados</Btn> para preencher:
           </P>
           <Lista>
-            <li><Btn>Cliente(s)</Btn>, <Btn>Tipo de projeto</Btn> e <Btn>Endereço do projeto</Btn>.</li>
+            <li><Btn>Cliente(s)</Btn>, <Btn>WhatsApp do cliente</Btn> (opcional, com DDD; abre a conversa certa ao enviar PDFs), <Btn>Tipo de projeto</Btn> e <Btn>Endereço do projeto</Btn>.</li>
             <li><Btn>Responsável técnico</Btn> e <Btn>Registro profissional (CAU/CREA)</Btn>.</li>
             <li>O bloco <strong>Marca nos PDFs</strong>: nome do escritório, contato, cor de destaque e logo. Veja <Ir para="pdfs">PDFs e marca do escritório</Ir>.</li>
           </Lista>

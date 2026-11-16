@@ -126,6 +126,7 @@ export default function Admin() {
               <Numero rotulo="Itens adicionados" valor={uso.itensAdicionados} apoio={`${uso.itensMarcados} marcações de feito/pago`} />
               <Numero rotulo="Erros" valor={uso.erros} destaque apoio={uso.erros === 0 ? "nenhum no período" : "veja a lista abaixo"} />
               <Numero rotulo="Documentos abertos" valor={uso.documentos} />
+              <Numero rotulo="Enviados pelo WhatsApp" valor={uso.whatsapp} />
             </section>
 
             <section aria-label="Atividade por dia" className="prancha p-4">

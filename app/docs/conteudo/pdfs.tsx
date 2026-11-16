@@ -21,7 +21,41 @@ export const pdfs: PaginaDoc = {
             ]}
           />
           <Aviso tipo="nota" titulo="Como o PDF é salvo">
-            O app abre o documento em tela cheia e usa a impressão do navegador. Toque em <Btn>Imprimir / salvar PDF</Btn> e, na janela de impressão, escolha “Salvar como PDF”. Não existe download direto. No celular, o navegador pode acrescentar o próprio cabeçalho de impressão.
+            O app abre o documento em tela cheia e usa a impressão do navegador. Toque em <Btn>Imprimir / salvar PDF</Btn> e, na janela de impressão, escolha “Salvar como PDF”. Para mandar pelo WhatsApp, veja a seção abaixo. No celular, o navegador pode acrescentar o próprio cabeçalho de impressão.
+          </Aviso>
+        </>
+      ),
+    },
+    {
+      id: "whatsapp",
+      titulo: "Enviar o PDF pelo WhatsApp",
+      papel: "todos",
+      corpo: (
+        <>
+          <P>
+            Em qualquer documento aberto (orçamento, escopo ou relatório mensal), o botão <Btn>WhatsApp</Btn> da barra de cima envia o PDF pronto, com uma mensagem, sem precisar salvar o arquivo antes.
+          </P>
+          <Passos>
+            <Passo>Abra o documento e toque em <Btn>WhatsApp</Btn> (no celular aparece só o ícone verde).</Passo>
+            <Passo>A janela “Enviar por WhatsApp” começa a preparar o PDF. Espere aparecer “✓ PDF pronto”.</Passo>
+            <Passo>Se quiser, preencha o <Btn>WhatsApp do cliente (opcional)</Btn>, com DDD. Se o projeto já tem esse número nos <strong>Dados do projeto</strong>, ele vem preenchido.</Passo>
+            <Passo>Confira a <Btn>Mensagem</Btn>, que já vem pronta (“Olá, {"{cliente}"}! Segue o orçamento do projeto…”) e pode ser editada.</Passo>
+            <Passo>Toque em <Btn>Enviar pelo WhatsApp</Btn>.</Passo>
+          </Passos>
+          <H3>O que acontece depois</H3>
+          <Tabela
+            colunas={["Onde você está", "Como vai"]}
+            linhas={[
+              ["Celular (e navegadores que deixam compartilhar arquivos)", "Abre a folha de compartilhamento do aparelho com o PDF e o texto. Você escolhe o WhatsApp e a conversa."],
+              ["Computador (ou navegador sem compartilhamento)", "O PDF é baixado e o WhatsApp Web abre já na conversa do cliente (se você informou o número) com o texto pronto. É só anexar o arquivo baixado, pelo clipe."],
+            ]}
+          />
+          <H3>Link e chave na mensagem</H3>
+          <P>
+            O arquiteto vê a caixa <Btn>Incluir o link do projeto e a chave de acesso</Btn>, marcada por padrão: assim o cliente já recebe o PDF e consegue acompanhar tudo no app. Desmarque se preferir mandar o link e a chave separados. O cliente, quando envia um documento, não tem essa opção.
+          </P>
+          <Aviso tipo="nota" titulo="Como o PDF é feito">
+            O PDF enviado é uma imagem das páginas do documento, com a mesma aparência da tela (marca, tabelas, assinaturas), em páginas A4, e o texto dele não é selecionável. Para um PDF com texto selecionável, use <Btn>Imprimir / salvar PDF</Btn> e “Salvar como PDF”. O app não guarda o PDF nem o número de telefone fora do projeto.
           </Aviso>
         </>
       ),

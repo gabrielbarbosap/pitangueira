@@ -80,7 +80,7 @@ export function registrarEvento(nome: string, props?: Props) {
 /** Registra um erro do app. No máximo 10 por visita e sem repetir a mesma mensagem. */
 export function registrarErro(origem: string, erro: unknown) {
   if (typeof window === "undefined") return;
-  const msg = erro instanceof Error ? `${erro.message}\n${(erro.stack ?? "").split("\n").slice(1, 4).join("\n")}` : String(erro);
+  const msg = erro instanceof Error ? `${erro.name}: ${erro.message}\n${(erro.stack ?? "").split("\n").slice(1, 4).join("\n")}` : String(erro);
   const chave = `${origem}:${msg.slice(0, 80)}`;
   if (errosEnviados.has(chave) || totalErros >= 10) return;
   errosEnviados.add(chave);

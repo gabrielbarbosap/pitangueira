@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useData } from "@/lib/data";
 import { lerItensColados } from "@/lib/importar";
-import { registrarEvento } from "@/lib/telemetria";
+import { registrarErro, registrarEvento } from "@/lib/telemetria";
 import { useDinheiro } from "@/lib/privacidade";
 import { Modal } from "./Modal";
 import { Alerta } from "./ui/Alerta";
@@ -20,7 +20,7 @@ Elétrica;Pontos de tomada;10;un;120`;
  * A janela é montada de novo a cada abertura (o pai usa `key`), então começa sempre limpa.
  */
 export function ImportarDialog({ aberto, onFechar }: { aberto: boolean; onFechar: () => void }) {
-  const { addItem } = useData();
+  const { addItens } = useData();
   const { brl } = useDinheiro();
   const [texto, setTexto] = useState("");
   const [etapaPadrao, setEtapaPadrao] = useState("");
@@ -37,8 +37,8 @@ export function ImportarDialog({ aberto, onFechar }: { aberto: boolean; onFechar
     setImportando(true);
     setErro("");
     try {
-      for (const l of linhas) {
-        await addItem({
+      await addItens(
+        linhas.map((l) => ({
           etapaNum: 0,
           etapa: l.etapa,
           ambiente: "Geral",
@@ -50,12 +50,13 @@ export function ImportarDialog({ aberto, onFechar }: { aberto: boolean; onFechar
           valorReal: 0,
           feito: false,
           pago: false,
-        });
-      }
+        })),
+      );
       registrarEvento("planilha_importada", { linhas: linhas.length });
       onFechar();
-    } catch {
-      setErro("Não consegui importar tudo agora. O que já entrou ficou no orçamento; confira a lista e tente de novo com o que faltou.");
+    } catch (e) {
+      registrarErro("importar_falhou", e);
+      setErro("Não consegui importar agora. Confira a lista de itens: se algo entrou, não importe de novo para não duplicar.");
     } finally {
       setImportando(false);
     }

@@ -31,7 +31,7 @@ export const primeirosPassos: PaginaDoc = {
               <strong>Escreva o escopo.</strong> Na aba <Btn>Escopo</Btn>, comece por um modelo ou adicione os ambientes e os pedidos do cliente. Ligue cada pedido aos itens do orçamento.
             </Passo>
             <Passo>
-              <strong>Gere o orçamento em PDF.</strong> Na aba Itens, toque em <Btn>Orçamento em PDF</Btn>, escolha o orçamento geral ou por etapa/ambiente e salve o PDF.
+              <strong>Gere o orçamento em PDF.</strong> Na aba Itens, toque em <Btn>Orçamento em PDF</Btn>, escolha o orçamento geral ou por etapa/ambiente e salve o PDF, ou mande direto pelo botão <Btn>WhatsApp</Btn> do documento.
             </Passo>
             <Passo>
               <strong>Compartilhe com o cliente.</strong> Na home, toque em <Btn>Copiar link</Btn> no cartão do projeto e envie o link. A chave de acesso (no rodapé do cartão) você envia à parte.
@@ -59,7 +59,7 @@ export const primeirosPassos: PaginaDoc = {
             </Passo>
           </Passos>
           <P>O cliente abre o link, digita a chave e o nome dele e entra. Veja o passo a passo dele em <Ir para="guia-do-cliente">Guia do cliente</Ir>.</P>
-          <Aviso tipo="dica">Mandar o link e a chave em mensagens separadas é mais seguro: quem tiver só o link não consegue entrar.</Aviso>
+          <Aviso tipo="dica">Ao enviar um PDF pelo WhatsApp, a mensagem já pode levar o link e a chave juntos (você escolhe). Se preferir mais cuidado, desmarque essa opção e mande a chave em outra mensagem: quem tiver só o link não consegue entrar.</Aviso>
         </>
       ),
     },

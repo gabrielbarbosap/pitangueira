@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { registrarEvento } from "@/lib/telemetria";
 import { useData } from "@/lib/data";
 import type { AprovacaoPrograma } from "@/lib/types";
 import { LogoMark } from "./Logo";
+import { EnviarWhatsapp } from "./EnviarWhatsapp";
 
 /** Cor de destaque do documento: a do escritório, se for um hex válido. */
 export function corMarca(cor: string): string {
@@ -38,6 +39,8 @@ export function DocumentoBase({
   children: ReactNode;
 }) {
   const { config, projeto } = useData();
+  const folha = useRef<HTMLElement>(null);
+  const [whatsapp, setWhatsapp] = useState(false);
 
   // Um documento foi aberto (medimos só o tipo: orçamento, escopo, relatório).
   useEffect(() => {
@@ -71,12 +74,27 @@ export function DocumentoBase({
           ← Fechar
         </button>
         {barra && <div className="flex min-w-0 flex-1 items-center justify-center">{barra}</div>}
-        <button onClick={imprimir} className="shrink-0 bg-pitanga px-4 py-2 text-sm font-semibold text-white active:bg-pitanga-escuro">
-          {rotuloImprimir}
-        </button>
+        <div className="flex shrink-0 items-center gap-2">
+          <button
+            onClick={() => setWhatsapp(true)}
+            aria-label="Enviar por WhatsApp"
+            title="Enviar por WhatsApp"
+            className="flex items-center gap-1.5 rounded-sm border border-emerald-700 bg-white px-3 py-2 text-sm font-semibold text-emerald-800 hover:bg-emerald-50"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+              <path d="M20.5 3.5A11.8 11.8 0 0 0 12 0 12 12 0 0 0 1.6 17.9L0 24l6.3-1.6A12 12 0 0 0 24 12c0-3.2-1.2-6.2-3.5-8.5ZM12 22a10 10 0 0 1-5.1-1.4l-.4-.2-3.7 1 1-3.6-.2-.4A10 10 0 1 1 12 22Zm5.5-7.5c-.3-.1-1.8-.9-2-1s-.5-.1-.7.1-.8 1-1 1.2-.4.2-.7.1a8.2 8.2 0 0 1-4-3.5c-.3-.5.3-.5.9-1.6.1-.2 0-.4 0-.5l-.9-2.1c-.2-.6-.5-.5-.7-.5h-.6a1.2 1.2 0 0 0-.9.4 3.8 3.8 0 0 0-1.2 2.8c0 1.7 1.2 3.3 1.4 3.5s2.4 3.7 5.8 5.1c2.1.9 2.9.9 4 .8a3.4 3.4 0 0 0 2.2-1.6 2.7 2.7 0 0 0 .2-1.6c-.1-.1-.3-.2-.6-.3Z" />
+            </svg>
+            <span className="hidden sm:inline">WhatsApp</span>
+          </button>
+          <button onClick={imprimir} className="bg-pitanga px-4 py-2 text-sm font-semibold text-white active:bg-pitanga-escuro">
+            {rotuloImprimir}
+          </button>
+        </div>
       </div>
 
-      <article className="mx-auto my-6 max-w-[800px] bg-white p-8 text-ink shadow-sm print:my-0 print:max-w-none print:p-0 print:shadow-none sm:p-12">
+      {whatsapp && <EnviarWhatsapp alvo={folha} tipo={titulo} rotulo={etapaRotulo} nomeArquivo={nomeArquivo ?? titulo} onFechar={() => setWhatsapp(false)} />}
+
+      <article ref={folha} className="mx-auto my-6 max-w-[800px] bg-white p-8 text-ink shadow-sm print:my-0 print:max-w-none print:p-0 print:shadow-none sm:p-12">
         <header className="flex items-start justify-between gap-4 border-b-2 pb-4" style={{ borderColor: cor }}>
           <div className="min-w-0">
             <p className="rotulo-tec" style={{ color: cor }}>{titulo}</p>

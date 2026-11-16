@@ -5,6 +5,8 @@
 /** Dados do projeto (cabeçalho dos documentos). Strings vazias em vez de undefined (Firestore). */
 export interface Projeto {
   cliente: string;
+  /** WhatsApp do cliente (só números, com DDD): para abrir a conversa certa ao enviar um PDF. */
+  telefone: string;
   endereco: string;
   tipo: string;
   responsavel: string;
@@ -21,6 +23,7 @@ export interface Projeto {
 
 export const PROJETO_VAZIO: Projeto = {
   cliente: "",
+  telefone: "",
   endereco: "",
   tipo: "",
   responsavel: "",

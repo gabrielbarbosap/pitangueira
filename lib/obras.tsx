@@ -90,7 +90,7 @@ function clonarProjeto(origem: Obra, itensOrigem: Item[]): Clone {
         })),
       }
     : undefined;
-  const projeto: Projeto | undefined = origem.projeto ? { ...PROJETO_VAZIO, ...origem.projeto, cliente: "", endereco: "" } : undefined;
+  const projeto: Projeto | undefined = origem.projeto ? { ...PROJETO_VAZIO, ...origem.projeto, cliente: "", telefone: "", endereco: "" } : undefined;
   return { itens, programa, projeto };
 }
 
