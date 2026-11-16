@@ -243,6 +243,11 @@ export interface Parcela {
   vencimento: number;
   /** Quando foi recebida; null = a receber. */
   recebidoEm: number | null;
+  /** Quanto entrou de fato (se for diferente do valor combinado: desconto ou juros). Vazio = o valor da parcela. */
+  valorRecebido?: number;
+  /** Como foi pago: PIX, transferência, boleto… */
+  forma?: string;
+  obs?: string;
 }
 
 /** Contrato de honorários de um projeto, com as parcelas a receber. */
@@ -252,7 +257,17 @@ export interface Honorario {
   projetoNome: string;
   cliente: string;
   descricao: string;
+  /** WhatsApp do cliente (para cobrar e enviar recibos). */
+  telefone?: string;
   parcelas: Parcela[];
+  createdAt?: number;
+}
+
+/** Ajustes de cobrança do escritório (um documento só, id "cobranca"). */
+export interface ConfigCobranca {
+  id: string;
+  /** Chave PIX que vai na mensagem de cobrança. */
+  pix: string;
   createdAt?: number;
 }
 

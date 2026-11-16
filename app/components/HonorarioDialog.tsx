@@ -23,9 +23,19 @@ interface Linha {
   vencimento: string;
   recebida: boolean;
   recebidoEm: number | null;
+  /** Dados do recebimento já registrado (valor, forma, observação): preservados ao editar o contrato. */
+  extra?: Pick<Parcela, "valorRecebido" | "forma" | "obs">;
 }
 
-const daParcela = (p: Parcela): Linha => ({ id: p.id, descricao: p.descricao, valor: String(p.valor), vencimento: paraCampo(p.vencimento), recebida: p.recebidoEm !== null, recebidoEm: p.recebidoEm });
+const daParcela = (p: Parcela): Linha => ({
+  id: p.id,
+  descricao: p.descricao,
+  valor: String(p.valor),
+  vencimento: paraCampo(p.vencimento),
+  recebida: p.recebidoEm !== null,
+  recebidoEm: p.recebidoEm,
+  extra: { valorRecebido: p.valorRecebido, forma: p.forma, obs: p.obs },
+});
 
 /**
  * Contrato de honorários: a quem se refere, o valor e as parcelas a receber. O editor gera as parcelas
@@ -51,6 +61,7 @@ export function HonorarioDialog({
   const [projetoNome, setProjetoNome] = useState(honorario?.projetoNome ?? "");
   const [cliente, setCliente] = useState(honorario?.cliente ?? "");
   const [descricao, setDescricao] = useState(honorario?.descricao ?? "Honorários de projeto");
+  const [telefone, setTelefone] = useState(honorario?.telefone ?? "");
   const [total, setTotal] = useState(honorario ? String(honorario.parcelas.reduce((s, p) => s + p.valor, 0)) : "");
   const [qtd, setQtd] = useState(honorario ? String(honorario.parcelas.length) : "6");
   const [primeiro, setPrimeiro] = useState(() => paraCampo(meiaNoite(new Date())));
@@ -70,6 +81,7 @@ export function HonorarioDialog({
     if (o) {
       setProjetoNome(o.nome);
       if (!cliente.trim() && o.projeto?.cliente) setCliente(o.projeto.cliente);
+      if (!telefone.trim() && o.projeto?.telefone) setTelefone(o.projeto.telefone);
     }
   }
 
@@ -90,6 +102,7 @@ export function HonorarioDialog({
         projetoId,
         projetoNome: projetoNome.trim(),
         cliente: cliente.trim(),
+        telefone: telefone.trim() || undefined,
         descricao: descricao.trim() || "Honorários",
         parcelas: linhas.map((l) => ({
           id: l.id,
@@ -98,6 +111,7 @@ export function HonorarioDialog({
           vencimento: dataDoCampo(l.vencimento) as number,
           // Marcada agora como recebida: usa hoje; já estava recebida: mantém a data original.
           recebidoEm: l.recebida ? (l.recebidoEm ?? Date.now()) : null,
+          ...(l.recebida && l.recebidoEm !== null ? l.extra : {}),
         })),
       });
       onFechar();
@@ -128,6 +142,10 @@ export function HonorarioDialog({
           <div>
             <label className={rotulo}>Cliente</label>
             <input className={campo} value={cliente} onChange={(e) => setCliente(e.target.value)} placeholder="Quem paga os honorários" />
+          </div>
+          <div>
+            <label className={rotulo}>WhatsApp do cliente (opcional)</label>
+            <input type="tel" inputMode="tel" className={campo} value={telefone} onChange={(e) => setTelefone(e.target.value)} placeholder="(11) 91234-5678" />
           </div>
           <div>
             <label className={rotulo}>O que está sendo cobrado</label>
