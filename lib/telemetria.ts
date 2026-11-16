@@ -7,12 +7,9 @@ import { db, isFirebaseConfigured } from "./firebase";
  * - Guarda só o que é preciso para saber SE e COMO o app é usado: nome do evento, papel (arquiteto/cliente),
  *   um identificador anônimo da conta (uid), a rota e dados técnicos simples (contagens, tipo de documento).
  * - Nunca guarda nomes, e-mails, valores em dinheiro nem o conteúdo de projetos.
- * - Na nuvem vai para a coleção `telemetria` (só dá para criar; ler é só do administrador, em /admin).
+ * - Na nuvem vai para a coleção `telemetria` (qualquer conta cria; ler é de quem entrou como arquiteto, em /admin; o cliente não lê).
  * - No modo demo fica no navegador (localStorage), e o /admin mostra esse registro.
  */
-
-/** Quem pode abrir /admin (as regras do banco usam o mesmo e-mail). */
-export const ADMIN_EMAILS = ["gabriel@sistemap.com.br"];
 
 export type Papel = "arquiteto" | "cliente";
 export type Props = Record<string, string | number | boolean>;
@@ -93,7 +90,7 @@ function rotaGenerica(): string {
   return window.location.pathname.replace(/^\/obra\/[^/]+/, "/obra/[id]").slice(0, 80);
 }
 
-/** Lê o registro dos últimos `dias` dias (administrador). Na nuvem, até 2000 registros. */
+/** Lê o registro dos últimos `dias` dias (arquitetos). Na nuvem, até 2000 registros. */
 export async function lerTelemetria(dias: number): Promise<RegistroTelemetria[]> {
   const desde = Date.now() - dias * 86_400_000;
   if (!isFirebaseConfigured || !db) {

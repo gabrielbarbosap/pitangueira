@@ -16,7 +16,7 @@ export function Telemetria() {
     if (uid) registrarEvento("sessao_iniciada");
   }, [uid, papel]);
 
-  // Erros que ninguém tratou: viram registro para o administrador, sem atrapalhar quem usa.
+  // Erros que ninguém tratou: viram registro no painel de uso, sem atrapalhar quem usa.
   useEffect(() => {
     const aoErro = (e: ErrorEvent) => registrarErro("erro_janela", e.error ?? e.message);
     const aoRejeitar = (e: PromiseRejectionEvent) => registrarErro("promessa_rejeitada", e.reason);

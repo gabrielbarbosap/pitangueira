@@ -86,7 +86,7 @@ app/docs/
 ## Integração contínua e métricas
 
 - **CI** (`.github/workflows/ci.yml`): a cada push na `main` e em todo pull request roda `tsc`, o lint (por ora só avisa: há erros antigos de "setState em efeito") e os testes e2e completos. Se algo falhar, o relatório do Playwright fica anexado à execução.
-- **Métricas de uso e erros** (`lib/telemetria.ts`, painel em `/admin`): eventos e erros vão para a coleção `telemetria` do Firestore (qualquer conta logada só cria; só o administrador lê, conforme `firestore.rules`). Sem dados pessoais. Administradores: `ADMIN_EMAILS` em `lib/telemetria.ts` e a regra da coleção. **Depois de mudar as regras, publique-as no Firebase.** Teste: `e2e/autoria-e-metricas.spec.ts`.
+- **Métricas de uso e erros** (`lib/telemetria.ts`, painel em `/admin`): eventos e erros vão para a coleção `telemetria` do Firestore (qualquer conta logada só cria; quem entrou como arquiteto lê (o cliente não), conforme `firestore.rules`). Sem dados pessoais. Todo arquiteto é tratado como administrador do painel. **Depois de mudar as regras, publique-as no Firebase.** Teste: `e2e/autoria-e-metricas.spec.ts`.
 
 ## Design system
 

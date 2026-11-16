@@ -5,7 +5,7 @@ import Link from "next/link";
 import { registrarErro } from "@/lib/telemetria";
 import { Botao } from "./components/ui/Botao";
 
-/** Quando uma tela quebra: mensagem clara em português, sem perder o usuário, e o erro vai para o administrador. */
+/** Quando uma tela quebra: mensagem clara em português, sem perder o usuário, e o erro vai para o painel de uso. */
 export default function Erro({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
     registrarErro("tela_quebrou", error);

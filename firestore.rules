@@ -45,7 +45,7 @@ service cloud.firestore {
             && (antigo.size() == 0 || novo[0] == antigo[0]));
     }
 
-    // Métricas de uso e erros do app: qualquer conta logada só CRIA registros (sem dados pessoais); só o administrador lê.
+    // Métricas de uso e erros do app: qualquer conta logada só CRIA registros (sem dados pessoais); só quem entrou como arquiteto (login Google, não o acesso anônimo do cliente) lê.
     match /telemetria/{id} {
       allow create: if signedIn()
         && request.resource.data.keys().hasOnly(['tipo', 'nome', 'em', 'uid', 'papel', 'rota', 'props', 'msg'])
@@ -53,7 +53,7 @@ service cloud.firestore {
         && request.resource.data.nome is string && request.resource.data.nome.size() <= 60
         && request.resource.data.uid == request.auth.uid
         && (!('msg' in request.resource.data) || request.resource.data.msg.size() <= 500);
-      allow read: if signedIn() && request.auth.token.email == 'gabriel@sistemap.com.br';
+      allow read: if signedIn() && request.auth.token.firebase.sign_in_provider != 'anonymous';
     }
 
     // Catálogo e marca pessoais do arquiteto: só o próprio uid lê e escreve.

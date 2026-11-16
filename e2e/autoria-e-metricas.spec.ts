@@ -52,7 +52,7 @@ test("o app mostra quem marcou Feito e Pago, e o cliente aparece como cliente", 
   });
 });
 
-test("o administrador vê as métricas de uso e os erros; sem entrar, a página fica restrita", async ({ page }) => {
+test("o arquiteto vê as métricas de uso e os erros; sem entrar, a página fica restrita", async ({ page }) => {
   test.slow();
   await semTutorial(page);
   await entrarComoArquiteto(page);
@@ -64,7 +64,7 @@ test("o administrador vê as métricas de uso e os erros; sem entrar, a página 
   await page.waitForTimeout(300);
 
   await page.goto("/admin");
-  await expect(page.getByText("Esta página é só para o administrador.")).toBeVisible();
+  await expect(page.getByText("Esta página é só para arquitetos.")).toBeVisible();
   await page.getByRole("button", { name: "Entrar com Google" }).click();
 
   const resumo = page.getByRole("region", { name: "Resumo" });

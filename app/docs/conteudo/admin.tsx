@@ -5,7 +5,7 @@ export const admin: PaginaDoc = {
   slug: "uso-e-erros",
   grupo: "Recursos gerais",
   titulo: "Métricas de uso e erros",
-  resumo: "O painel do administrador: quem usa o app, o que faz e que erros apareceram, sem serviço de terceiros.",
+  resumo: "O painel de uso, aberto a todo arquiteto: quem usa o app, o que faz e que erros apareceram, sem serviço de terceiros.",
   secoes: [
     {
       id: "o-que-e",
@@ -13,7 +13,7 @@ export const admin: PaginaDoc = {
       corpo: (
         <>
           <P>
-            Em <Btn>/admin</Btn> o administrador do app vê, em números, se o produto está sendo usado: quantas contas ativas, quantos clientes voltaram ao projeto, quantos itens foram lançados, quantos PDFs foram abertos e que erros aconteceram. Só o e-mail de administrador entra; qualquer outra conta vê “Acesso restrito”.
+            Em <Btn>/admin</Btn> todo arquiteto (quem entrou com a conta Google) vê, em números, se o produto está sendo usado: quantas contas ativas, quantos clientes voltaram ao projeto, quantos itens foram lançados, quantos PDFs foram abertos e que erros aconteceram. O cliente (acesso por código) não entra: vê “Acesso restrito”. As métricas são do app inteiro, de todos os arquitetos juntos.
           </P>
           <Aviso tipo="nota" titulo="Privacidade">
             Só medimos o uso: o nome do evento, o papel (arquiteto ou cliente), um identificador anônimo da conta e a rota (sem o identificador do projeto). Não guardamos nomes, e-mails, valores em dinheiro nem o conteúdo dos projetos.
@@ -51,7 +51,7 @@ export const admin: PaginaDoc = {
         <>
           <Lista>
             <li>Se uma tela quebra, quem está usando vê “Não consegui abrir esta tela”, com os botões <Btn>Tentar de novo</Btn> e <Btn>Voltar ao início</Btn>, e uma garantia de que os dados estão salvos.</li>
-            <li>O erro é registrado para o administrador, no máximo 10 por visita e sem repetir a mesma mensagem.</li>
+            <li>O erro é registrado para o painel, no máximo 10 por visita e sem repetir a mesma mensagem.</li>
             <li>Erros que ninguém trata (de janela ou de promessa) também são registrados, sem interromper o uso.</li>
           </Lista>
           <H3>Modo demo</H3>

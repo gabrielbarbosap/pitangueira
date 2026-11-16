@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { resumirUso } from "@/lib/metricas";
-import { ADMIN_EMAILS, lerTelemetria, type RegistroTelemetria } from "@/lib/telemetria";
+import { lerTelemetria, type RegistroTelemetria } from "@/lib/telemetria";
 import { Logo } from "../components/Logo";
 import { Alerta } from "../components/ui/Alerta";
 import { Botao } from "../components/ui/Botao";
@@ -35,7 +35,7 @@ function Numero({ rotulo, valor, apoio, destaque = false }: { rotulo: string; va
   );
 }
 
-/** Painel do administrador: quem usa o app, o que faz e que erros apareceram. Só e-mails de ADMIN_EMAILS. */
+/** Painel de uso: quem usa o app, o que faz e que erros apareceram. Aberto a todo arquiteto; fechado ao cliente. */
 export default function Admin() {
   const { user, loading, login } = useAuth();
   const [dias, setDias] = useState(7);
@@ -43,7 +43,8 @@ export default function Admin() {
   const [agora, setAgora] = useState(0);
   const [falhou, setFalhou] = useState(false);
 
-  const admin = Boolean(user && !user.anonimo && ADMIN_EMAILS.includes(user.email.toLowerCase()));
+  // Todo arquiteto (quem entrou com Google) vê as métricas; o cliente (acesso anônimo) não.
+  const admin = Boolean(user && !user.anonimo);
 
   useEffect(() => {
     if (!admin) return;
@@ -88,8 +89,8 @@ export default function Admin() {
           <p className="font-mono text-xs uppercase tracking-wider text-ink/40">Carregando…</p>
         ) : !admin ? (
           <Alerta tom="aviso" titulo="Acesso restrito">
-            Esta página é só para o administrador.{" "}
-            {user ? "A conta atual não tem acesso." : "Entre com a conta autorizada para ver as métricas."}
+            Esta página é só para arquitetos.{" "}
+            {user ? "O acesso de cliente não vê as métricas." : "Entre com sua conta Google para ver as métricas."}
             {!user && (
               <span className="mt-3 block">
                 <Botao variante="solido" tamanho="pequeno" onClick={login}>
@@ -100,7 +101,7 @@ export default function Admin() {
           </Alerta>
         ) : falhou ? (
           <Alerta tom="perigo" titulo="Não consegui ler as métricas">
-            Confira se as regras do banco foram publicadas (a coleção “telemetria” precisa permitir leitura ao administrador).
+            Confira se as regras do banco foram publicadas (a coleção “telemetria” precisa permitir leitura a quem entrou como arquiteto).
           </Alerta>
         ) : !uso ? (
           <p className="font-mono text-xs uppercase tracking-wider text-ink/40">Lendo as métricas…</p>
