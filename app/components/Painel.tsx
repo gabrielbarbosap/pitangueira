@@ -268,13 +268,14 @@ export function Painel() {
           <div className="flex items-center justify-between gap-3">
             <Logo claro />
             <div className="flex items-center gap-2">
-              <span
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 font-mono text-sm font-semibold uppercase"
-                aria-hidden
-                title={user?.nome}
+              <Link
+                href="/conta"
+                className="btn-topo font-mono text-sm font-semibold uppercase"
+                aria-label="Minha conta"
+                title={user?.nome ? `Minha conta · ${user.nome}` : "Minha conta"}
               >
                 {primeiroNome.slice(0, 1)}
-              </span>
+              </Link>
               <button
                 onClick={tour.iniciar}
                 className="btn-topo"

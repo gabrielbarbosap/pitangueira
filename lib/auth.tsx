@@ -8,14 +8,20 @@ import {
   type ReactNode,
 } from "react";
 import {
+  EmailAuthProvider,
   createUserWithEmailAndPassword,
+  linkWithCredential,
+  linkWithPopup,
   onAuthStateChanged,
+  reauthenticateWithPopup,
+  sendEmailVerification,
   sendPasswordResetEmail,
   signInAnonymously,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
   updateProfile,
+  type User as FirebaseUser,
 } from "firebase/auth";
 import { auth, googleProvider, isFirebaseConfigured } from "./firebase";
 import { registrarEvento } from "./telemetria";
@@ -27,6 +33,17 @@ export interface AppUser {
   foto?: string;
   /** true = cliente (acesso anônimo por código); false/undefined = arquiteto. */
   anonimo?: boolean;
+  /** Jeitos de entrar já ligados a esta conta: "google" e/ou "senha". */
+  metodos?: MetodoLogin[];
+}
+
+export type MetodoLogin = "google" | "senha";
+
+function metodosDe(u: FirebaseUser): MetodoLogin[] {
+  const m: MetodoLogin[] = [];
+  if (u.providerData.some((p) => p.providerId === "google.com")) m.push("google");
+  if (u.providerData.some((p) => p.providerId === "password")) m.push("senha");
+  return m;
 }
 
 /** Resultado de uma ação do formulário de login: deu certo ou não, e o que dizer à pessoa. */
@@ -36,7 +53,7 @@ export interface ResultadoAuth {
 }
 
 export const SENHA_MINIMA = 6;
-const EMAIL_VALIDO = /^[^s@]+@[^s@]+.[^s@]{2,}$/;
+const EMAIL_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 /** Traduz os códigos de erro do Firebase para frases claras, sem revelar se um e-mail existe. */
 function mensagemDeErro(e: unknown): string {
@@ -46,7 +63,12 @@ function mensagemDeErro(e: unknown): string {
     case "auth/wrong-password":
     case "auth/user-not-found":
     case "auth/invalid-login-credentials":
-      return "E-mail ou senha incorretos.";
+      return "E-mail ou senha incorretos. Se você costuma entrar com o Google, entre com ele e crie uma senha em Minha conta.";
+    case "auth/credential-already-in-use":
+    case "auth/provider-already-linked":
+      return "Esse jeito de entrar já está ligado a outra conta.";
+    case "auth/requires-recent-login":
+      return "Por segurança, saia, entre de novo e tente mais uma vez.";
     case "auth/email-already-in-use":
       return "Já existe uma conta com este e-mail. Entre, ou use “Esqueci a senha”.";
     case "auth/weak-password":
@@ -64,12 +86,16 @@ function mensagemDeErro(e: unknown): string {
   }
 }
 
+const DEMO_ARQUITETO: AppUser = { uid: "demo-arq", email: "gabriel@sistemap.com.br", nome: "Gabriel (demo)", metodos: ["google"] };
+
 // ---- Contas do modo demo (só neste navegador; a senha NÃO é protegida: é só para testar o fluxo) ----
 const LS_CONTAS_DEMO = "reforma:contas-demo:v1";
 interface ContaDemo {
   email: string;
   nome: string;
   senha: string;
+  /** No demo, "vincular o Google" só marca a conta (não há Google de verdade). */
+  google?: boolean;
 }
 function lerContasDemo(): ContaDemo[] {
   try {
@@ -78,7 +104,11 @@ function lerContasDemo(): ContaDemo[] {
     return [];
   }
 }
-const usuarioDemo = (c: ContaDemo): AppUser => ({ uid: `demo-${c.email}`, email: c.email, nome: c.nome });
+/** A conta de e-mail do arquiteto de exemplo é a MESMA conta do botão do Google (mesmo uid e mesmos dados). */
+const usuarioDemo = (c: ContaDemo): AppUser =>
+  c.email === DEMO_ARQUITETO.email
+    ? { ...DEMO_ARQUITETO, metodos: ["senha", ...(c.google !== false ? (["google"] as MetodoLogin[]) : [])] }
+    : { uid: `demo-${c.email}`, email: c.email, nome: c.nome, metodos: ["senha", ...(c.google ? (["google"] as MetodoLogin[]) : [])] };
 
 interface AuthContextValue {
   user: AppUser | null;
@@ -93,12 +123,14 @@ interface AuthContextValue {
   criarConta: (nome: string, email: string, senha: string) => Promise<ResultadoAuth>;
   /** Envia o link para criar uma nova senha. */
   recuperarSenha: (email: string) => Promise<ResultadoAuth>;
+  /** Quem entrou com o Google passa a poder entrar também com e-mail e senha (mesma conta). */
+  criarSenha: (senha: string) => Promise<ResultadoAuth>;
+  /** Quem entrou com e-mail e senha passa a poder entrar também com o Google (mesma conta). */
+  vincularGoogle: () => Promise<ResultadoAuth>;
   /** Acesso do cliente: entra anônimo com um nome. Retorna o uid. */
   entrarComoCliente: (nome: string) => Promise<string>;
   logout: () => Promise<void>;
 }
-
-const DEMO_ARQUITETO: AppUser = { uid: "demo-arq", email: "gabriel@sistemap.com.br", nome: "Gabriel (demo)" };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
@@ -123,6 +155,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           nome: fbUser.displayName ?? (fbUser.isAnonymous ? "Cliente" : fbUser.email ?? "Usuário"),
           foto: fbUser.photoURL ?? undefined,
           anonimo: fbUser.isAnonymous,
+          metodos: metodosDe(fbUser),
         });
       }
       setLoading(false);
@@ -140,7 +173,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await signInWithPopup(auth, googleProvider);
     } catch (e) {
       const code = (e as { code?: string }).code ?? "";
-      if (code === "auth/popup-closed-by-user") return;
+      if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") return;
+      if (code === "auth/account-exists-with-different-credential") {
+        setErro("Este e-mail já tem uma conta com senha. Entre com e-mail e senha e, em Minha conta, vincule o Google.");
+        return;
+      }
       setErro("Não foi possível entrar. Tente novamente.");
     }
   }
@@ -189,8 +226,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch {
         /* o nome é um detalhe: a conta já existe */
       }
+      // E-mail verificado deixa o Google ligar à mesma conta, se a pessoa entrar por ele com este endereço depois.
+      sendEmailVerification(cred.user).catch(() => undefined);
       // O Firebase avisa do login antes do nome ser gravado: acerta o nome aqui.
-      setUser({ uid: cred.user.uid, email: e, nome: n });
+      setUser({ uid: cred.user.uid, email: e, nome: n, metodos: ["senha"] });
       registrarEvento("conta_criada", { metodo: "email" });
       return { ok: true, mensagem: "" };
     } catch (err) {
@@ -212,6 +251,84 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (code !== "auth/user-not-found") return { ok: false, mensagem: mensagemDeErro(err) };
     }
     return { ok: true, mensagem: "Se existir uma conta com esse e-mail, enviamos o link para criar uma nova senha. Confira também a caixa de spam." };
+  }
+
+  /** Refaz o login com o Google (quando o Firebase pede "login recente" para uma ação sensível). */
+  async function reautenticar(u: FirebaseUser): Promise<boolean> {
+    if (!googleProvider || !metodosDe(u).includes("google")) return false;
+    try {
+      await reauthenticateWithPopup(u, googleProvider);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async function criarSenha(senha: string): Promise<ResultadoAuth> {
+    if (senha.length < SENHA_MINIMA) return { ok: false, mensagem: `A senha precisa ter pelo menos ${SENHA_MINIMA} caracteres.` };
+    if (!isFirebaseConfigured || !auth) {
+      if (!user || user.anonimo || !user.email) return { ok: false, mensagem: "Entre primeiro." };
+      const contas = lerContasDemo().filter((c) => c.email !== user.email);
+      const antiga = lerContasDemo().find((c) => c.email === user.email);
+      const nova: ContaDemo = { email: user.email, nome: user.nome, senha, google: antiga?.google ?? !user.metodos?.includes("senha") };
+      try {
+        localStorage.setItem(LS_CONTAS_DEMO, JSON.stringify([...contas, nova]));
+      } catch {
+        /* sem armazenamento */
+      }
+      setUser({ ...user, metodos: ["google", "senha"] });
+      return { ok: true, mensagem: "Senha criada. Agora você também pode entrar com e-mail e senha." };
+    }
+    const u = auth.currentUser;
+    if (!u || u.isAnonymous || !u.email) return { ok: false, mensagem: "Entre primeiro." };
+    const credencial = EmailAuthProvider.credential(u.email, senha);
+    const tentar = async () => {
+      await linkWithCredential(u, credencial);
+      setUser((atual) => (atual ? { ...atual, metodos: metodosDe(u) } : atual));
+      registrarEvento("metodo_vinculado", { metodo: "senha" });
+      return { ok: true, mensagem: "Senha criada. Agora você também pode entrar com e-mail e senha." };
+    };
+    try {
+      return await tentar();
+    } catch (err) {
+      if ((err as { code?: string }).code === "auth/requires-recent-login" && (await reautenticar(u))) {
+        try {
+          return await tentar();
+        } catch (err2) {
+          return { ok: false, mensagem: mensagemDeErro(err2) };
+        }
+      }
+      return { ok: false, mensagem: mensagemDeErro(err) };
+    }
+  }
+
+  async function vincularGoogle(): Promise<ResultadoAuth> {
+    if (!isFirebaseConfigured || !auth || !googleProvider) {
+      if (!user || user.anonimo) return { ok: false, mensagem: "Entre primeiro." };
+      const contas = lerContasDemo();
+      const antiga = contas.find((c) => c.email === user.email);
+      if (antiga) {
+        try {
+          localStorage.setItem(LS_CONTAS_DEMO, JSON.stringify(contas.map((c) => (c.email === user.email ? { ...c, google: true } : c))));
+        } catch {
+          /* sem armazenamento */
+        }
+      }
+      setUser({ ...user, metodos: ["senha", "google"] });
+      return { ok: true, mensagem: "Google vinculado. Agora você também pode entrar com o Google." };
+    }
+    const u = auth.currentUser;
+    if (!u || u.isAnonymous) return { ok: false, mensagem: "Entre primeiro." };
+    try {
+      await linkWithPopup(u, googleProvider);
+      setUser((atual) => (atual ? { ...atual, metodos: metodosDe(u) } : atual));
+      registrarEvento("metodo_vinculado", { metodo: "google" });
+      return { ok: true, mensagem: "Google vinculado. Agora você também pode entrar com o Google." };
+    } catch (err) {
+      const code = (err as { code?: string }).code ?? "";
+      if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") return { ok: false, mensagem: "" };
+      return { ok: false, mensagem: mensagemDeErro(err) };
+    }
   }
 
   async function entrarComoCliente(nome: string): Promise<string> {
@@ -239,7 +356,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, configured: isFirebaseConfigured, erro, login, loginComEmail, criarConta, recuperarSenha, entrarComoCliente, logout }}>
+    <AuthContext.Provider value={{ user, loading, configured: isFirebaseConfigured, erro, login, loginComEmail, criarConta, recuperarSenha, criarSenha, vincularGoogle, entrarComoCliente, logout }}>
       {children}
     </AuthContext.Provider>
   );

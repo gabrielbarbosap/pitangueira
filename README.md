@@ -104,6 +104,7 @@ Os testes simulam um arquiteto novo usando o app de verdade no navegador (Playwr
 - `e2e/permissoes.spec.ts`: só o arquiteto tem a aba Escopo e cria orçamento; o cliente só acompanha.
 - `e2e/relatorio-mensal.spec.ts`: o relatório mensal de andamento (escolher o mês, o que entra, gerar o documento; o cliente não vê).
 - `e2e/tutorial.spec.ts`: o tutorial da primeira visita.
+- `e2e/conta.spec.ts`: Minha conta (criar senha para quem entra com Google e vincular o Google a quem entra com senha, na mesma conta).
 - `e2e/login-email.spec.ts`: login do arquiteto com e-mail e senha (criar conta, validações, senha errada, e-mail repetido, recuperar senha) e o acesso do cliente sem e-mail.
 - `e2e/financeiro.spec.ts`: o financeiro (filtros, atrasos por tempo, cobrança pelo WhatsApp, recebimento com desconto, visão por cliente, planilha CSV).
 - `e2e/whatsapp.spec.ts`: o envio do PDF pelo WhatsApp (PDF real de várias páginas; compartilhamento no celular; download + wa.me no computador).

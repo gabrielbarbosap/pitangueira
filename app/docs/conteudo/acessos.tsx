@@ -37,8 +37,8 @@ export const acessos: PaginaDoc = {
             <li>Por segurança, na recuperação de senha o app não revela se aquele e-mail tem conta.</li>
             <li>Maiúsculas no e-mail não importam.</li>
           </Lista>
-          <Aviso tipo="nota" titulo="Duas formas de entrar, duas contas">
-            Entrar com Google e entrar com e-mail e senha usando o mesmo endereço são contas diferentes se a conta de e-mail e senha for criada à parte. Cada conta enxerga apenas os próprios projetos e dados. Use sempre o mesmo jeito de entrar.
+          <Aviso tipo="dica" titulo="Quer entrar dos dois jeitos?">
+            É possível, na mesma conta e com os mesmos projetos: veja “Minha conta” logo abaixo. Se você já entra com o Google, crie uma senha lá; se começou com e-mail e senha, vincule o Google.
           </Aviso>
           <Lista>
             <li>Se aparecer “Não foi possível entrar. Tente novamente.” no Google, tente de novo. Fechar o popup sem escolher conta não gera erro.</li>
@@ -48,6 +48,33 @@ export const acessos: PaginaDoc = {
             </li>
           </Lista>
           <P>Para sair, use o botão de sair (<Btn>Sair</Btn>) no topo laranja, na home ou na tela do projeto.</P>
+        </>
+      ),
+    },
+    {
+      id: "minha-conta",
+      titulo: "Minha conta: Google e senha na mesma conta",
+      papel: "arquiteto",
+      corpo: (
+        <>
+          <P>
+            Toque na bolinha com a sua inicial, no topo do painel, para abrir <Btn>Minha conta</Btn>. A seção “Como você entra” mostra os dois jeitos e se cada um está <strong>Ativo</strong> ou <strong>Não ativado</strong>. É sempre a mesma conta, com os mesmos projetos, seja qual for o jeito de entrar.
+          </P>
+          <Tabela
+            colunas={["Você entra hoje com…", "Para entrar também de outro jeito"]}
+            linhas={[
+              ["Google", "Em E-mail e senha, preencha Nova senha e Repita a senha e toque em Criar senha. Depois você entra com o seu e-mail e essa senha."],
+              ["E-mail e senha", "No Google, toque em Vincular Google e escolha a conta no popup. Depois pode entrar com o botão do Google."],
+            ]}
+          />
+          <Lista>
+            <li>A senha precisa ter pelo menos 6 caracteres, e as duas digitações têm de ser iguais.</li>
+            <li>Com a senha ativa, o botão <Btn>Enviar link para trocar a senha</Btn> manda um e-mail para você criar outra.</li>
+            <li>Por segurança, em alguns casos o app pede que você entre de novo para concluir a mudança.</li>
+          </Lista>
+          <Aviso tipo="nota" titulo="Se tentar entrar do jeito errado">
+            Se você costuma entrar com o Google e tenta e-mail e senha antes de criar a senha, aparece “E-mail ou senha incorretos” com a dica de entrar com o Google e criar uma senha em Minha conta. No sentido contrário, se o Google avisar que o e-mail já tem conta com senha, entre com e-mail e senha e vincule o Google em Minha conta.
+          </Aviso>
         </>
       ),
     },

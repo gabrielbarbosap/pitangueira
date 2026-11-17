@@ -21,7 +21,9 @@ export const faq: PaginaDoc = {
           <H3>Esqueci a senha do e-mail e senha.</H3>
           <P>Na tela inicial, toque em <Btn>Esqueci a senha</Btn>, digite o e-mail da conta e toque em <Btn>Enviar o link</Btn>. Você recebe um e-mail para criar uma nova senha. Se não chegar, olhe o spam.</P>
           <H3>Entro com Google e com e-mail e vejo projetos diferentes.</H3>
-          <P>São contas diferentes, mesmo com o mesmo e-mail. Cada conta tem os próprios projetos. Entre sempre pelo mesmo jeito.</P>
+          <P>Se você criou a conta de e-mail e senha à parte, ela é outra conta, com projetos próprios. Para ter os dois jeitos na MESMA conta, entre pelo jeito que tem os seus projetos e, em <Btn>Minha conta</Btn> (a bolinha com a inicial, no topo do painel), crie uma senha ou vincule o Google.</P>
+          <H3>Como entro com e-mail e senha se sempre usei o Google?</H3>
+          <P>Entre com o Google, abra <Btn>Minha conta</Btn>, preencha Nova senha e Repita a senha e toque em <Btn>Criar senha</Btn>. Daí em diante você pode entrar dos dois jeitos.</P>
           <H3>Recarreguei a página e fui deslogado.</H3>
           <P>No modo demo isso é normal. Entre de novo; os dados continuam.</P>
         </>
