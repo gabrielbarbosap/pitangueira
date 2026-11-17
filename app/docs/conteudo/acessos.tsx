@@ -1,11 +1,11 @@
 import type { PaginaDoc } from "../tipos";
-import { Aviso, Btn, Ir, Lista, P, Passo, Passos, Tabela } from "../ui";
+import { Aviso, Btn, H3, Ir, Lista, P, Passo, Passos, Tabela } from "../ui";
 
 export const acessos: PaginaDoc = {
   slug: "entrar-e-acessos",
   grupo: "Começando",
   titulo: "Entrar e acessos",
-  resumo: "Como o arquiteto entra com Google, como o cliente entra com o código do projeto e o que cada um vê ao abrir o app.",
+  resumo: "Como o arquiteto entra (Google ou e-mail e senha), como o cliente entra com o código do projeto e o que cada um vê ao abrir o app.",
   secoes: [
     {
       id: "arquiteto",
@@ -13,7 +13,8 @@ export const acessos: PaginaDoc = {
       papel: "arquiteto",
       corpo: (
         <>
-          <P>Na tela inicial você vê a logo, o título “Gestão de projetos, do arquiteto ao cliente” e um único botão.</P>
+          <P>Na tela inicial você vê a logo, o título “Gestão de projetos, do arquiteto ao cliente” e duas formas de entrar: com o Google ou com e-mail e senha.</P>
+          <H3>Com o Google</H3>
           <Passos>
             <Passo>
               Toque em <Btn>Entrar com Google</Btn>.
@@ -21,11 +22,29 @@ export const acessos: PaginaDoc = {
             <Passo>Escolha a conta Google no popup que abrir. O app sempre pergunta qual conta usar.</Passo>
             <Passo>Pronto: você cai no painel, com todos os seus projetos.</Passo>
           </Passos>
+          <H3>Com e-mail e senha</H3>
+          <P>Abaixo do botão do Google, o formulário tem três modos, que você alterna sem sair da tela:</P>
+          <Tabela
+            colunas={["Modo", "Como usar"]}
+            linhas={[
+              [<Btn key="1">Entrar</Btn>, "Digite o e-mail e a senha e toque em Entrar. O botão Mostrar deixa ver a senha digitada."],
+              [<Btn key="2">Criar conta</Btn>, "Toque em “Criar conta”, digite seu nome, e-mail e uma senha de pelo menos 6 caracteres. A conta é criada e você já entra no painel."],
+              [<Btn key="3">Esqueci a senha</Btn>, "Digite o e-mail e toque em Enviar o link. Você recebe um e-mail para criar uma nova senha (olhe também o spam)."],
+            ]}
+          />
           <Lista>
-            <li>Se aparecer “Não foi possível entrar. Tente novamente.”, tente de novo. Fechar o popup sem escolher conta não gera erro.</li>
-            <li>Qualquer conta Google pode entrar como arquiteto. Cada conta enxerga apenas os próprios projetos e dados.</li>
+            <li>Mensagens de erro em português: “E-mail ou senha incorretos.”, “Já existe uma conta com este e-mail.”, “A senha precisa ter pelo menos 6 caracteres.”, “Esse e-mail não parece válido.”</li>
+            <li>Por segurança, na recuperação de senha o app não revela se aquele e-mail tem conta.</li>
+            <li>Maiúsculas no e-mail não importam.</li>
+          </Lista>
+          <Aviso tipo="nota" titulo="Duas formas de entrar, duas contas">
+            Entrar com Google e entrar com e-mail e senha usando o mesmo endereço são contas diferentes se a conta de e-mail e senha for criada à parte. Cada conta enxerga apenas os próprios projetos e dados. Use sempre o mesmo jeito de entrar.
+          </Aviso>
+          <Lista>
+            <li>Se aparecer “Não foi possível entrar. Tente novamente.” no Google, tente de novo. Fechar o popup sem escolher conta não gera erro.</li>
+            <li>Qualquer pessoa pode criar conta de arquiteto. Cada conta enxerga apenas os próprios projetos e dados.</li>
             <li>
-              No <strong>modo demo</strong> (sem Firebase), o mesmo botão entra como um arquiteto de exemplo, “Gabriel (demo)”.
+              No <strong>modo demo</strong> (sem Firebase), o botão do Google entra como um arquiteto de exemplo, “Gabriel (demo)”, e o e-mail e senha funciona com contas guardadas só neste navegador (sem e-mail de recuperação).
             </li>
           </Lista>
           <P>Para sair, use o botão de sair (<Btn>Sair</Btn>) no topo laranja, na home ou na tela do projeto.</P>

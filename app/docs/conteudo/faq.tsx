@@ -18,6 +18,10 @@ export const faq: PaginaDoc = {
           <P>Não. Ela é definida na criação. Para trocar, crie um novo projeto (a partir do atual, se quiser) e arquive o antigo.</P>
           <H3>O cliente precisa digitar a chave toda vez?</H3>
           <P>Não no mesmo aparelho. Em outro aparelho, ou depois de tocar em Sair, sim.</P>
+          <H3>Esqueci a senha do e-mail e senha.</H3>
+          <P>Na tela inicial, toque em <Btn>Esqueci a senha</Btn>, digite o e-mail da conta e toque em <Btn>Enviar o link</Btn>. Você recebe um e-mail para criar uma nova senha. Se não chegar, olhe o spam.</P>
+          <H3>Entro com Google e com e-mail e vejo projetos diferentes.</H3>
+          <P>São contas diferentes, mesmo com o mesmo e-mail. Cada conta tem os próprios projetos. Entre sempre pelo mesmo jeito.</P>
           <H3>Recarreguei a página e fui deslogado.</H3>
           <P>No modo demo isso é normal. Entre de novo; os dados continuam.</P>
         </>
