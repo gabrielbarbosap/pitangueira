@@ -340,5 +340,16 @@ export interface ItemVistoria {
   conferidoPor?: string;
   conferidoEm?: number;
   ordem: number;
+  /** Quem adicionou o ponto (o cliente também pode): uid e nome (o nome leva "(cliente)" quando é o cliente). */
+  criadoPorUid?: string;
+  criadoPorNome?: string;
+  createdAt?: number;
+}
+
+/** Publicação do arquiteto no feed do projeto ("Hoje a alvenaria da sala ficou pronta"). */
+export interface Publicacao {
+  id: string;
+  texto: string;
+  autor: string;
   createdAt?: number;
 }

@@ -1,9 +1,10 @@
 // Acompanhamento do projeto: a linha do tempo e as mensagens que o arquiteto encaminha pelo WhatsApp. Funções puras.
-import type { Gravidade, Item, ItemVistoria, Ocorrencia, Previsao, Visita } from "./types";
+import type { Gravidade, Item, ItemVistoria, Ocorrencia, Previsao, Publicacao, Visita } from "./types";
 
-export type TipoEvento = "andamento" | "prazo" | "visita" | "ocorrencia" | "vistoria";
+export type TipoEvento = "publicacao" | "andamento" | "prazo" | "visita" | "ocorrencia" | "vistoria";
 
 export const ROTULO_TIPO: Record<TipoEvento, string> = {
+  publicacao: "Avisos",
   andamento: "Andamento",
   prazo: "Prazo",
   visita: "Visitas",
@@ -20,6 +21,8 @@ export interface Evento {
   quando: number;
   quem?: string;
   porCliente?: boolean;
+  /** Nomes dos itens (só no andamento), para mostrar como etiquetas no cartão. */
+  itens?: string[];
   /** Texto pronto para encaminhar ao cliente (vazio = não tem o que encaminhar). */
   mensagem?: string;
 }
@@ -38,9 +41,19 @@ export interface ContextoMensagem {
   projeto: string;
   escritorio: string;
   link: string;
+  /** Quem está mandando: o arquiteto (fala com o cliente) ou o cliente (fala com o arquiteto). */
+  remetente?: "arquiteto" | "cliente";
+  /** Nome de quem manda (usado quando é o cliente). */
+  nomeRemetente?: string;
 }
 
 function moldura(c: ContextoMensagem, corpo: string[]): string {
+  if (c.remetente === "cliente") {
+    const quem = c.nomeRemetente?.trim() ? `Aqui é ${c.nomeRemetente.trim()}, do projeto ${c.projeto}.` : `Sobre o projeto ${c.projeto}.`;
+    const partes = [`Olá! ${quem}`, ...corpo];
+    if (c.link) partes.push(`Está tudo no app: ${c.link}`);
+    return partes.join("\n\n");
+  }
   const saudacao = c.cliente.trim() ? `Olá, ${c.cliente.trim()}!` : "Olá!";
   const partes = [`${saudacao} Atualização do projeto ${c.projeto}:`, ...corpo];
   if (c.link) partes.push(`Veja tudo no app: ${c.link}`);
@@ -76,13 +89,18 @@ export function mensagemOcorrencia(o: Ocorrencia, c: ContextoMensagem): string {
   return moldura(c, [linhas.join("\n"), "Já estamos cuidando. Aviso assim que for resolvido."]);
 }
 
+export function mensagemPublicacao(p: Publicacao, c: ContextoMensagem): string {
+  return moldura(c, [p.texto.trim()]);
+}
+
 export function mensagemVistoria(itens: ItemVistoria[], c: ContextoMensagem): string {
   const ok = itens.filter((i) => i.status === "ok").length;
   const ajustar = itens.filter((i) => i.status === "ajustar");
   const pendentes = itens.filter((i) => i.status === "pendente");
-  const partes = [`🔍 Vistoria final: ${ok} de ${itens.length} pontos conferidos.`];
-  if (ajustar.length) partes.push(`Pedem ajuste:\n${ajustar.map((i) => `• ${i.texto}${i.ambiente ? ` (${i.ambiente})` : ""}${i.obs ? ` — ${i.obs}` : ""}`).join("\n")}`);
-  if (pendentes.length) partes.push(`Faltam conferir: ${plural(pendentes.length, "ponto", "pontos")}. Dá uma olhada no app e marque o que estiver ok.`);
+  const doCliente = c.remetente === "cliente";
+  const partes = [`🔍 Vistoria final: ${ok} de ${itens.length} pontos conferidos${doCliente ? " por mim" : ""}.`];
+  if (ajustar.length) partes.push(`${doCliente ? "Peço ajuste em" : "Pedem ajuste"}:\n${ajustar.map((i) => `• ${i.texto}${i.ambiente ? ` (${i.ambiente})` : ""}${i.obs ? ` — ${i.obs}` : ""}`).join("\n")}`);
+  if (pendentes.length) partes.push(doCliente ? `Ainda falta conferir ${plural(pendentes.length, "ponto", "pontos")}.` : `Faltam conferir: ${plural(pendentes.length, "ponto", "pontos")}. Dá uma olhada no app e marque o que estiver ok.`);
   if (!ajustar.length && !pendentes.length) partes.push("Está tudo conferido. 🎉");
   return moldura(c, partes);
 }
@@ -108,11 +126,17 @@ interface Fontes {
   visitas: Visita[];
   ocorrencias: Ocorrencia[];
   vistoria: ItemVistoria[];
+  publicacoes?: Publicacao[];
 }
 
 /** Todos os fatos do projeto em ordem do mais recente para o mais antigo. Itens marcados no mesmo dia, pela mesma pessoa e na mesma etapa viram uma linha só. */
-export function montarLinhaDoTempo({ itens, previsoes, visitas, ocorrencias, vistoria }: Fontes): Evento[] {
+export function montarLinhaDoTempo({ itens, previsoes, visitas, ocorrencias, vistoria, publicacoes = [] }: Fontes): Evento[] {
   const eventos: Evento[] = [];
+
+  // Avisos publicados pelo arquiteto
+  for (const p of publicacoes) {
+    eventos.push({ id: `publicacao|${p.id}`, tipo: "publicacao", titulo: p.texto, quando: p.createdAt ?? 0, quem: p.autor });
+  }
 
   // Andamento: feito e pago, agrupados.
   const grupos = new Map<string, { tipo: "feito" | "pago"; quem: string; porCliente: boolean; etapa: string; quando: number; descricoes: string[] }>();
@@ -139,7 +163,8 @@ export function montarLinhaDoTempo({ itens, previsoes, visitas, ocorrencias, vis
       id: `item|${chave}`,
       tipo: "andamento",
       titulo: n === 1 ? `“${g.descricoes[0]}” marcado como ${acao}` : `${plural(n, "item", "itens")} de ${g.etapa} marcados como ${g.tipo === "feito" ? "feitos" : "pagos"}`,
-      detalhe: n === 1 ? g.etapa : g.descricoes.slice(0, 3).join(", ") + (n > 3 ? ` e mais ${n - 3}` : ""),
+      detalhe: n === 1 ? g.etapa : undefined,
+      itens: n === 1 ? undefined : g.descricoes,
       quando: g.quando,
       quem: g.quem,
       porCliente: g.porCliente,
@@ -219,3 +244,82 @@ export const MODELO_VISTORIA: { ambiente: string; texto: string }[] = [
   { ambiente: "Geral", texto: "Limpeza final feita e entulho retirado" },
   { ambiente: "Geral", texto: "Manuais, garantias e chaves entregues" },
 ];
+
+// ---------- O feed: dias, tempo relativo e resumo ----------
+
+const DIA_MS = 86_400_000;
+const MESES_LONGOS = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+const DIAS_SEMANA = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
+
+export interface DiaDoFeed {
+  chave: string;
+  rotulo: string;
+  eventos: Evento[];
+}
+
+/** "Hoje", "Ontem" ou "quarta, 12 de novembro" (com o ano se não for o deste ano). */
+function rotuloDoDia(ms: number, inicioDeHoje: number): string {
+  if (inicioDeHoje && ms >= inicioDeHoje) return "Hoje";
+  if (inicioDeHoje && ms >= inicioDeHoje - DIA_MS) return "Ontem";
+  const d = new Date(ms);
+  const ano = inicioDeHoje && d.getFullYear() !== new Date(inicioDeHoje).getFullYear() ? ` de ${d.getFullYear()}` : "";
+  return `${DIAS_SEMANA[d.getDay()]}, ${d.getDate()} de ${MESES_LONGOS[d.getMonth()]}${ano}`;
+}
+
+/**
+ * Os fatos do projeto prontos para o feed: o que está agendado (visitas futuras) numa seção "Agendado" no topo,
+ * da mais próxima para a mais distante, e depois cada dia, do mais recente ao mais antigo.
+ * `inicioDeHoje` é a meia-noite de hoje (0 = ainda não sabemos: sem "Hoje" e "Ontem").
+ */
+export function agruparPorDia(eventos: Evento[], inicioDeHoje: number): DiaDoFeed[] {
+  const fimDeHoje = inicioDeHoje ? inicioDeHoje + DIA_MS : Infinity;
+  const futuros = eventos.filter((e) => e.quando >= fimDeHoje).sort((a, b) => a.quando - b.quando);
+  const passados = eventos.filter((e) => e.quando < fimDeHoje);
+  const dias: DiaDoFeed[] = [];
+  if (futuros.length) dias.push({ chave: "agendado", rotulo: "Agendado", eventos: futuros });
+  for (const e of passados) {
+    const chave = diaChave(e.quando);
+    const ultimo = dias[dias.length - 1];
+    if (ultimo && ultimo.chave === chave) ultimo.eventos.push(e);
+    else dias.push({ chave, rotulo: rotuloDoDia(e.quando, inicioDeHoje), eventos: [e] });
+  }
+  return dias;
+}
+
+/** "agora", "há 5 min", "há 2 h", "ontem 14:30" ou "12/11 14:30". `agora` em ms (0 = ainda não sabemos: data e hora). */
+export function tempoRelativo(ms: number, agora: number): string {
+  if (!agora) return `${dataBr(ms)} ${horaBr(ms)}`;
+  const dif = agora - ms;
+  // O relógio do feed anda de minuto em minuto: um fato deste mesmo minuto pode estar "no futuro" por segundos.
+  if (Math.abs(dif) < 60_000) return "agora";
+  if (dif < 0) {
+    const dias = Math.round((new Date(ms).setHours(0, 0, 0, 0) - new Date(agora).setHours(0, 0, 0, 0)) / DIA_MS);
+    const quando = dias <= 0 ? "hoje" : dias === 1 ? "amanhã" : `em ${dias} dias`;
+    return `${quando} às ${horaBr(ms)}`;
+  }
+  if (dif < 3_600_000) return `há ${Math.floor(dif / 60_000)} min`;
+  if (dif < DIA_MS && diaChave(ms) === diaChave(agora)) return `há ${Math.floor(dif / 3_600_000)} h`;
+  const ontem = diaChave(agora - DIA_MS);
+  if (diaChave(ms) === ontem) return `ontem ${horaBr(ms)}`;
+  return `${dataBr(ms).slice(0, 5)} ${horaBr(ms)}`;
+}
+
+export interface ResumoFeed {
+  proximaVisita: Visita | null;
+  ocorrenciasAbertas: number;
+  vistoriaOk: number;
+  vistoriaTotal: number;
+  vistoriaAjustar: number;
+}
+
+/** Os números do topo do feed: o que está por vir e o que pede atenção. */
+export function resumoDoFeed(visitas: Visita[], ocorrencias: Ocorrencia[], vistoria: ItemVistoria[], agora: number): ResumoFeed {
+  const proxima = visitas.filter((v) => v.status === "agendada" && v.quando >= agora - 3_600_000).sort((a, b) => a.quando - b.quando)[0] ?? null;
+  return {
+    proximaVisita: proxima,
+    ocorrenciasAbertas: ocorrencias.filter((o) => o.status !== "resolvida").length,
+    vistoriaOk: vistoria.filter((i) => i.status === "ok").length,
+    vistoriaTotal: vistoria.length,
+    vistoriaAjustar: vistoria.filter((i) => i.status === "ajustar").length,
+  };
+}

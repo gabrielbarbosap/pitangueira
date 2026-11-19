@@ -40,6 +40,7 @@ export function Vistoria({
   contexto,
   ehCliente,
   ator,
+  uid,
   onSalvar,
   onRemover,
   onEnviar,
@@ -48,6 +49,7 @@ export function Vistoria({
   contexto: ContextoMensagem;
   ehCliente: boolean;
   ator: string;
+  uid: string;
   onSalvar: (i: Omit<ItemVistoria, "id"> & { id?: string }) => Promise<void>;
   onRemover: (id: string) => Promise<void>;
   onEnviar?: (titulo: string, tipo: string, texto: string) => void;
@@ -69,7 +71,15 @@ export function Vistoria({
 
   async function adicionar() {
     if (!texto.trim()) return;
-    await onSalvar({ texto: texto.trim(), ambiente: ambiente.trim() || "Geral", status: "pendente", obs: "", ordem: proximaOrdem() });
+    await onSalvar({
+      texto: texto.trim(),
+      ambiente: ambiente.trim() || "Geral",
+      status: "pendente",
+      obs: "",
+      ordem: proximaOrdem(),
+      criadoPorUid: uid,
+      criadoPorNome: `${ator}${ehCliente ? " (cliente)" : ""}`,
+    });
     setTexto("");
   }
 
@@ -78,7 +88,7 @@ export function Vistoria({
     let ordem = proximaOrdem();
     for (const m of MODELO_VISTORIA) {
       if (existentes.has(m.texto.toLowerCase())) continue;
-      await onSalvar({ texto: m.texto, ambiente: m.ambiente, status: "pendente", obs: "", ordem: ordem++ });
+      await onSalvar({ texto: m.texto, ambiente: m.ambiente, status: "pendente", obs: "", ordem: ordem++, criadoPorUid: uid, criadoPorNome: ator });
     }
   }
 
@@ -94,7 +104,13 @@ export function Vistoria({
               </p>
               {ajustar > 0 && <p className="mt-0.5 text-xs font-medium text-pitanga-escuro">{ajustar} {ajustar === 1 ? "ponto pede" : "pontos pedem"} ajuste</p>}
             </div>
-            {onEnviar && <BotaoEnviar rotulo="Enviar ao cliente" contexto="vistoria" onClick={() => onEnviar("Enviar a vistoria ao cliente", "vistoria", mensagemVistoria(itens, contexto))} />}
+            {onEnviar && (
+              <BotaoEnviar
+                rotulo={ehCliente ? "Enviar ao arquiteto" : "Enviar ao cliente"}
+                contexto="vistoria"
+                onClick={() => onEnviar(ehCliente ? "Enviar a vistoria ao arquiteto" : "Enviar a vistoria ao cliente", "vistoria", mensagemVistoria(itens, contexto))}
+              />
+            )}
           </div>
           <div className="mt-3 h-2 overflow-hidden rounded-full bg-ink/10" role="img" aria-label={`${pct}% conferido`}>
             <div className="h-full rounded-full bg-emerald-600 transition-[width] duration-500" style={{ width: `${pct}%` }} />
@@ -102,9 +118,9 @@ export function Vistoria({
         </div>
       )}
 
-      {!ehCliente && (
+      {(
         <div className="prancha space-y-3 p-4">
-          <p className="text-sm font-semibold text-ink">Adicionar um ponto</p>
+          <p className="text-sm font-semibold text-ink">{ehCliente ? "Adicionar um ponto que você quer conferir" : "Adicionar um ponto"}</p>
           <div className="grid gap-2 sm:grid-cols-[1fr_9rem_auto]">
             <div>
               <label htmlFor="vist-texto" className="sr-only">Ponto a conferir</label>
@@ -117,15 +133,17 @@ export function Vistoria({
             </div>
             <Botao variante="solido" onClick={adicionar} disabled={!texto.trim()}>Adicionar</Botao>
           </div>
-          <button type="button" onClick={usarModelo} className="text-xs font-semibold text-pitanga hover:underline">
-            Usar o modelo de vistoria (pontos comuns de obra)
-          </button>
+          {!ehCliente && (
+            <button type="button" onClick={usarModelo} className="text-xs font-semibold text-pitanga hover:underline">
+              Usar o modelo de vistoria (pontos comuns de obra)
+            </button>
+          )}
         </div>
       )}
 
       {itens.length === 0 && (
         <p className="prancha px-4 py-10 text-center text-sm text-ink/55">
-          {ehCliente ? "O arquiteto ainda não montou a vistoria final." : "Monte a lista do que conferir antes de entregar a obra. O cliente também marca o que está ok e o que precisa de ajuste."}
+          {ehCliente ? "Ainda não há pontos na vistoria. Você pode adicionar o que quiser conferir, e o arquiteto também monta a lista." : "Monte a lista do que conferir antes de entregar a obra. O cliente também marca o que está ok e o que precisa de ajuste."}
         </p>
       )}
 
@@ -152,7 +170,7 @@ export function Vistoria({
                           {o.rotulo}
                         </button>
                       ))}
-                      {!ehCliente && (
+                      {(!ehCliente || (Boolean(uid) && i.criadoPorUid === uid)) && (
                         <button
                           className="btn btn-icone perigo h-8 w-8"
                           aria-label={`Remover ponto: ${i.texto}`}
@@ -167,6 +185,7 @@ export function Vistoria({
                     </div>
                   </div>
                   {i.status === "ajustar" && <Observacao item={i} onSalvar={(obs) => void onSalvar({ ...i, obs })} />}
+                  {i.criadoPorNome && i.criadoPorNome.endsWith("(cliente)") && <p className="mt-1 text-[11px] text-ink/45">Adicionado por {i.criadoPorNome}</p>}
                   {i.conferidoPor && i.conferidoEm && (
                     <p className="mt-1 text-[11px] text-ink/45">
                       {i.status === "ok" ? "Conferido" : "Pede ajuste"} por {i.conferidoPor} em {new Date(i.conferidoEm).toLocaleDateString("pt-BR")}

@@ -21,6 +21,20 @@ test("o arquiteto acompanha a obra: visitas, ocorrências, vistoria e linha do t
   await page.getByRole("tab", { name: "Acompanhar" }).click();
   await expect(page.getByRole("tablist", { name: "Acompanhamento" })).toBeVisible();
 
+  await test.step("o feed começa vazio e o arquiteto publica um aviso, que ele pode encaminhar", async () => {
+    const feed = page.getByRole("region", { name: "Linha do tempo" });
+    await expect(feed).toContainText("O feed ainda está vazio");
+    await expect(feed.getByRole("button", { name: "Publicar" })).toBeDisabled();
+    await feed.getByLabel("Escreva um aviso para o feed do projeto").fill("A alvenaria da sala ficou pronta hoje!");
+    await feed.getByRole("button", { name: "Publicar" }).click();
+    await expect(feed.getByRole("heading", { name: "Hoje" })).toBeVisible();
+    await expect(feed).toContainText("A alvenaria da sala ficou pronta hoje!");
+    await expect(feed).toContainText("Gabriel (demo)");
+    await feed.getByRole("button", { name: /^Enviar: A alvenaria/ }).click();
+    await expect(page.getByLabel("Mensagem para o cliente")).toHaveValue(/A alvenaria da sala ficou pronta hoje![\s\S]*\/obra\//);
+    await page.getByRole("dialog", { name: "Enviar ao cliente" }).getByRole("button", { name: "Cancelar" }).click();
+  });
+
   await test.step("marca uma visita e encaminha o convite pelo WhatsApp (nada sai sozinho)", async () => {
     await secao(page, /^Visitas/).click();
     await page.getByRole("button", { name: "Nova visita" }).click();
@@ -89,6 +103,11 @@ test("o arquiteto acompanha a obra: visitas, ocorrências, vistoria e linha do t
   await test.step("a linha do tempo reúne tudo, filtra e gera o resumo da semana", async () => {
     await secao(page, /^Linha do tempo/).click();
     const tempo = page.getByRole("region", { name: "Linha do tempo" });
+    const resumo = tempo.getByRole("region", { name: "Resumo do acompanhamento" });
+    await expect(resumo).toContainText("Visita técnica"); // a próxima visita
+    await expect(resumo).toContainText("Nenhuma em aberto"); // a ocorrência foi resolvida
+    await expect(resumo).toContainText("1 de 12 conferidos");
+    await expect(tempo.getByRole("heading", { name: "Agendado" })).toBeVisible(); // a visita de amanhã fica no topo
     await expect(tempo).toContainText("Visita agendada: Visita técnica");
     await expect(tempo).toContainText("Ocorrência aberta: Vazamento na laje do banheiro");
     await expect(tempo).toContainText("Ocorrência resolvida: Vazamento na laje do banheiro");
@@ -120,8 +139,34 @@ test("o arquiteto acompanha a obra: visitas, ocorrências, vistoria e linha do t
     await page.getByRole("button", { name: /^OK: Tomadas e interruptores/ }).click();
     await expect(page.getByText(/2 de 12 conferidos/)).toBeVisible();
     await expect(page.getByText(/Conferido por Marina \(cliente\)/)).toBeVisible();
+    await test.step("o cliente também cria pontos na vistoria", async () => {
+      await page.getByLabel("Ponto a conferir").fill("Verificar o rejunte do banheiro");
+      await page.getByLabel("Ambiente", { exact: true }).fill("Banheiros");
+      await page.getByRole("button", { name: "Adicionar", exact: true }).click();
+      await expect(page.getByText("Verificar o rejunte do banheiro")).toBeVisible();
+      await expect(page.getByText("Adicionado por Marina (cliente)")).toBeVisible();
+      await expect(page.getByText(/2 de 13 conferidos/)).toBeVisible();
+      // só dá para remover o que ele mesmo criou
+      await expect(page.getByRole("button", { name: /^Remover ponto:/ })).toHaveCount(1);
+      await expect(page.getByRole("button", { name: "Remover ponto: Verificar o rejunte do banheiro" })).toBeVisible();
+    });
+    await test.step("e encaminha a vistoria ao arquiteto pelo WhatsApp", async () => {
+      await page.getByRole("button", { name: "Enviar ao arquiteto: vistoria" }).click();
+      const e = page.getByRole("dialog", { name: "Enviar a vistoria ao arquiteto" });
+      await expect(e.getByLabel("Mensagem para o arquiteto")).toHaveValue(/Olá! Aqui é Marina[\s\S]*Vistoria final: 2 de 13 pontos conferidos por mim/);
+      await e.getByLabel("WhatsApp do arquiteto (opcional)").fill("(21) 98888-7777");
+      await e.getByRole("button", { name: "Abrir no WhatsApp" }).click();
+      await expect(e).toBeHidden();
+      const abertos = await page.evaluate(() => (window as unknown as { __abertos: string[] }).__abertos);
+      expect(abertos.at(-1)).toMatch(/^https:\/\/wa\.me\/5521988887777\?text=/);
+      await page.getByRole("button", { name: "Enviar ao arquiteto: vistoria" }).click();
+      await expect(page.getByLabel("WhatsApp do arquiteto (opcional)")).toHaveValue("(21) 98888-7777"); // guardado neste aparelho
+      await page.getByRole("dialog", { name: "Enviar a vistoria ao arquiteto" }).getByRole("button", { name: "Cancelar" }).click();
+    });
     await secao(page, /^Linha do tempo/).click();
     await expect(page.getByRole("region", { name: "Linha do tempo" })).toContainText("cliente");
+    await expect(page.getByRole("region", { name: "Linha do tempo" })).toContainText("A alvenaria da sala ficou pronta hoje!");
+    await expect(page.getByRole("button", { name: "Publicar" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: /Enviar resumo da semana/ })).toHaveCount(0);
   });
 });

@@ -19,10 +19,10 @@ export const acompanhar: PaginaDoc = {
           <Tabela
             colunas={["Seção", "O que é", "Quem mexe"]}
             linhas={[
-              ["Linha do tempo", "Tudo o que aconteceu, do mais recente ao mais antigo.", "Automática (ninguém digita nela)"],
+              ["Linha do tempo", "O feed do projeto: tudo o que aconteceu, dia a dia, com os avisos do arquiteto.", "Arquiteto publica avisos; o resto entra sozinho"],
               ["Visitas", "Visitas técnicas e reuniões, com pauta antes e ata depois.", "Arquiteto cria; cliente vê"],
               ["Ocorrências", "Problemas e imprevistos, com responsável e como foram resolvidos.", "Arquiteto cria; cliente vê"],
-              ["Vistoria", "A lista do que conferir antes de entregar a obra.", "Arquiteto monta; arquiteto e cliente conferem"],
+              ["Vistoria", "A lista do que conferir antes de entregar a obra.", "Arquiteto e cliente adicionam pontos e conferem"],
             ]}
           />
           <Aviso tipo="nota" titulo="Números ao lado de cada seção">
@@ -38,7 +38,7 @@ export const acompanhar: PaginaDoc = {
       corpo: (
         <>
           <P>
-            Em quase tudo desta aba há um botão verde <Btn>Enviar ao cliente</Btn> (ou <Btn>Enviar convite</Btn>, <Btn>Enviar ata</Btn>, <Btn>Avisar o cliente</Btn>, <Btn>Enviar resumo da semana</Btn>). Ele <strong>não envia nada sozinho</strong>: monta a mensagem e abre o WhatsApp para você revisar e apertar enviar.
+            Em quase tudo desta aba há um botão verde <Btn>Enviar</Btn>, <Btn>Enviar ao cliente</Btn> (ou <Btn>Enviar convite</Btn>, <Btn>Enviar ata</Btn>, <Btn>Avisar o cliente</Btn>, <Btn>Enviar resumo da semana</Btn>). Ele <strong>não envia nada sozinho</strong>: monta a mensagem e abre o WhatsApp para você revisar e apertar enviar.
           </P>
           <Passos>
             <Passo>Toque no botão verde do item que você quer encaminhar.</Passo>
@@ -46,28 +46,53 @@ export const acompanhar: PaginaDoc = {
             <Passo>Se quiser, preencha o <Btn>WhatsApp do cliente (opcional)</Btn>, com DDD. O número fica guardado no projeto e vem preenchido da próxima vez. Sem número, o WhatsApp abre para você escolher o contato.</Passo>
             <Passo>Toque em <Btn>Abrir no WhatsApp</Btn> e, no WhatsApp, aperte enviar.</Passo>
           </Passos>
-          <Aviso tipo="dica">O cliente não vê esses botões. Ele recebe a mensagem como qualquer outra e, pelo link, abre o projeto direto na aba Acompanhar.</Aviso>
+          <Aviso tipo="dica">Quem manda é sempre uma pessoa: o app só prepara a mensagem. O cliente recebe como qualquer outra mensagem e, pelo link, abre o projeto. O cliente tem o próprio botão na vistoria, para mandar ao arquiteto (veja abaixo).</Aviso>
         </>
       ),
     },
     {
       id: "linha-do-tempo",
-      titulo: "Linha do tempo",
+      titulo: "A linha do tempo: o feed do projeto",
       papel: "todos",
       corpo: (
         <>
-          <P>Reúne, sozinha, tudo o que aconteceu no projeto:</P>
-          <Lista>
-            <li><strong>Andamento</strong>: itens marcados como feitos ou pagos. Marcações da mesma etapa, no mesmo dia e pela mesma pessoa viram uma linha só (“5 itens de Elétrica marcados como feitos”).</li>
-            <li><strong>Prazo</strong>: o prazo original e cada nova previsão, com o motivo.</li>
-            <li><strong>Visitas</strong>: agendadas, realizadas e canceladas.</li>
-            <li><strong>Ocorrências</strong>: quando abriram e quando foram resolvidas.</li>
-            <li><strong>Vistoria</strong>: pontos conferidos e pontos que pedem ajuste.</li>
-          </Lista>
-          <P>Cada linha mostra o tipo, quando aconteceu (“hoje 14:30”), quem fez e, se foi o cliente, a etiqueta <strong>cliente</strong>. Os botões de filtro (<Btn>Tudo</Btn>, <Btn>Andamento</Btn>, <Btn>Prazo</Btn>, <Btn>Visitas</Btn>, <Btn>Ocorrências</Btn>, <Btn>Vistoria</Btn>) mostram um tipo só, e <Btn>Ver mais</Btn> abre os mais antigos.</P>
+          <P>
+            A tela inicial do Acompanhar é um <strong>feed</strong>, como numa rede social: tudo o que acontece no projeto, dia a dia, do mais novo ao mais antigo. Cada novidade vira um cartão com quem fez, há quanto tempo (“agora”, “há 2 h”, “ontem 14:30”), o texto e uma etiqueta do tipo. Os dias têm título (“Hoje”, “Ontem”, “quarta, 12 de novembro”), e o que está marcado para o futuro, como uma visita agendada, fica no topo em “Agendado”.
+          </P>
+          <H3>Os números do topo</H3>
+          <Tabela
+            colunas={["Cartão", "O que mostra"]}
+            linhas={[
+              ["Prazo", "Quanto falta para o término previsto, ou quanto atrasou (só aparece se o prazo foi registrado)."],
+              ["Próxima visita", "A data, a hora e o título da próxima visita agendada. Toque para abrir as visitas."],
+              ["Ocorrências", "Quantas estão em aberto. Toque para abrir as ocorrências."],
+              ["Vistoria", "Quantos pontos já foram conferidos e quantos pedem ajuste. Toque para abrir a vistoria."],
+            ]}
+          />
+          <H3>Publicar um aviso (arquiteto)</H3>
+          <Passos>
+            <Passo>No campo “Compartilhe uma novidade da obra…”, escreva o aviso (por exemplo, “A alvenaria da sala ficou pronta hoje!”).</Passo>
+            <Passo>Toque em <Btn>Publicar</Btn>. O aviso entra no feed com o seu nome, e o cliente o vê.</Passo>
+            <Passo>Se quiser, toque em <Btn>Enviar</Btn> no cartão para encaminhar o aviso pelo WhatsApp. A lixeira remove o aviso.</Passo>
+          </Passos>
+          <H3>O que aparece no feed</H3>
+          <Tabela
+            colunas={["Tipo", "Quando entra"]}
+            linhas={[
+              ["Avisos", "Quando o arquiteto publica."],
+              ["Andamento", "Itens marcados como feitos ou pagos. Marcações da mesma etapa, no mesmo dia e pela mesma pessoa viram um cartão só (“5 itens de Elétrica marcados como feitos”), com os nomes em etiquetas."],
+              ["Prazo", "O prazo original e cada nova previsão, com o motivo."],
+              ["Visitas", "Agendadas, realizadas e canceladas."],
+              ["Ocorrências", "Quando abriram e quando foram resolvidas."],
+              ["Vistoria", "Pontos conferidos e pontos que pedem ajuste."],
+            ]}
+          />
+          <P>
+            Quando quem fez foi o cliente, o cartão leva a etiqueta <strong>cliente</strong> e as iniciais em azul. Os botões de filtro (<Btn>Tudo</Btn>, <Btn>Avisos</Btn>, <Btn>Andamento</Btn>, <Btn>Prazo</Btn>, <Btn>Visitas</Btn>, <Btn>Ocorrências</Btn>, <Btn>Vistoria</Btn>) mostram um tipo só, e <Btn>Ver mais</Btn> abre os mais antigos.
+          </P>
           <H3>Resumo da semana</H3>
           <P>
-            O botão <Btn>Enviar resumo da semana</Btn> (do arquiteto) monta uma mensagem com o que aconteceu nos últimos 7 dias, até 10 itens, pronta para encaminhar. Sem novidades, a mensagem diz isso. Cada fato de visita, ocorrência, prazo ou vistoria também tem o seu botão <Btn>Enviar</Btn>.
+            O botão <Btn>Enviar resumo da semana</Btn> (do arquiteto) monta uma mensagem com o que aconteceu nos últimos 7 dias, até 10 itens, pronta para encaminhar. Sem novidades, a mensagem diz isso.
           </P>
         </>
       ),
@@ -115,19 +140,22 @@ export const acompanhar: PaginaDoc = {
       corpo: (
         <>
           <P>É a lista de pontos para conferir antes de entregar a obra (“Porta da suíte fechando bem”, “Torneiras sem vazamento”). No topo aparece “N de M conferidos”, a barra de avanço e, se houver, quantos pontos pedem ajuste.</P>
-          <H3>Montar a lista (arquiteto)</H3>
+          <H3>Montar a lista (arquiteto e cliente)</H3>
           <Lista>
-            <li>Escreva o ponto em <Btn>Ponto a conferir</Btn>, escolha o <Btn>Ambiente</Btn> e toque em <Btn>Adicionar</Btn> (Enter também adiciona).</li>
-            <li>Ou toque em <Btn>Usar o modelo de vistoria (pontos comuns de obra)</Btn>: entram 12 pontos comuns (pintura, tomadas, portas, banheiros, cozinha, limpeza final, garantias…), sem repetir os que você já tem.</li>
-            <li>A lixeira remove um ponto.</li>
+            <li>Escreva o ponto em <Btn>Ponto a conferir</Btn>, escolha o <Btn>Ambiente</Btn> e toque em <Btn>Adicionar</Btn> (Enter também adiciona). O cliente também faz isso: os pontos que ele cria aparecem com “Adicionado por … (cliente)”.</li>
+            <li>Só o arquiteto tem o botão <Btn>Usar o modelo de vistoria (pontos comuns de obra)</Btn>: entram 12 pontos comuns (pintura, tomadas, portas, banheiros, cozinha, limpeza final, garantias…), sem repetir os que já existem.</li>
+            <li>A lixeira remove um ponto. O arquiteto remove qualquer um; o cliente só remove os que ele mesmo criou.</li>
           </Lista>
           <H3>Conferir (arquiteto e cliente)</H3>
           <P>
             Cada ponto tem os botões <Btn>OK</Btn> e <Btn>Ajustar</Btn>. Tocar de novo no botão ativo volta o ponto para pendente. Em “Ajustar” aparece um campo para escrever o que precisa ser ajustado (grava ao sair do campo). Embaixo de cada ponto conferido aparece quem conferiu e quando (“Conferido por Marina (cliente) em 20/11/2026”).
           </P>
-          <P>O botão <Btn>Enviar ao cliente</Btn> manda um resumo: quantos pontos estão conferidos, quais pedem ajuste (com a observação) e quantos faltam.</P>
-          <Aviso tipo="nota" titulo="O cliente também confere">
-            O cliente só consegue mudar a situação (OK ou Ajustar) e a observação. Não cria nem remove pontos.
+          <H3>Enviar a vistoria por WhatsApp</H3>
+          <P>
+            O arquiteto toca em <Btn>Enviar ao cliente</Btn>; o cliente toca em <Btn>Enviar ao arquiteto</Btn>. Em qualquer dos dois a mensagem traz quantos pontos estão conferidos, quais pedem ajuste (com a observação) e quantos faltam. Na janela, quem envia pode editar o texto e informar o WhatsApp de quem recebe: o do cliente fica guardado no projeto, e o do arquiteto fica guardado no aparelho do cliente.
+          </P>
+          <Aviso tipo="nota" titulo="O que o cliente pode e não pode">
+            O cliente adiciona pontos, remove os que criou, marca OK ou Ajustar em qualquer ponto e escreve observações. Não edita o texto dos pontos que o arquiteto criou nem remove os dele.
           </Aviso>
         </>
       ),

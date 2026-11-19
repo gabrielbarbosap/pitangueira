@@ -1,38 +1,55 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { montarLinhaDoTempo } from "@/lib/acompanhamento";
+import { montarLinhaDoTempo, resumoDoFeed } from "@/lib/acompanhamento";
+import { useAuth } from "@/lib/auth";
 import { useColecaoObra } from "@/lib/colecaoObra";
 import { useData } from "@/lib/data";
-import type { ItemVistoria, Ocorrencia, Visita } from "@/lib/types";
+import { percentual } from "@/lib/format";
+import { situacaoDoPrazo, textoDeTempo } from "@/lib/prazo";
+import type { ItemVistoria, Ocorrencia, Publicacao, Visita } from "@/lib/types";
+import { useHoje } from "../PrazoVisual";
 import { useContextoMensagem, useEnvio } from "./Envio";
-import { LinhaDoTempo } from "./LinhaDoTempo";
+import { Feed } from "./Feed";
 import { Ocorrencias } from "./Ocorrencias";
+import { useAgora } from "./useAgora";
 import { Visitas } from "./Visitas";
 import { Vistoria } from "./Vistoria";
 
 type Secao = "tempo" | "visitas" | "ocorrencias" | "vistoria";
 
 /**
- * Aba "Acompanhar": o que acontece no projeto além dos números. Linha do tempo, visitas e reuniões, ocorrências e a
- * vistoria final. O arquiteto encaminha qualquer coisa ao cliente pelo WhatsApp (sempre com um toque dele; nada sai sozinho).
+ * Aba "Acompanhar": o que acontece no projeto além dos números. A tela inicial é um feed (linha do tempo) com tudo, dia a
+ * dia; as outras seções gerenciam visitas e reuniões, ocorrências e a vistoria final. O arquiteto encaminha ao cliente
+ * pelo WhatsApp (sempre com um toque dele; nada sai sozinho) e o cliente encaminha a vistoria ao arquiteto.
  */
 export function AcompanharTab() {
   const { itens, previsoes, ehCliente, ator } = useData();
+  const { user } = useAuth();
+  const hoje = useHoje();
+  const agora = useAgora();
   const visitas = useColecaoObra<Visita>("visitas", (a, b) => a.quando - b.quando);
   const ocorrencias = useColecaoObra<Ocorrencia>("ocorrencias", (a, b) => b.abertaEm - a.abertaEm);
   const vistoria = useColecaoObra<ItemVistoria>("vistoria", (a, b) => a.ordem - b.ordem);
+  const publicacoes = useColecaoObra<Publicacao>("publicacoes", (a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
   const contexto = useContextoMensagem();
   const { enviar, dialogo } = useEnvio();
   const [secao, setSecao] = useState<Secao>("tempo");
 
   const eventos = useMemo(
-    () => montarLinhaDoTempo({ itens, previsoes, visitas: visitas.itens, ocorrencias: ocorrencias.itens, vistoria: vistoria.itens }),
-    [itens, previsoes, visitas.itens, ocorrencias.itens, vistoria.itens],
+    () => montarLinhaDoTempo({ itens, previsoes, visitas: visitas.itens, ocorrencias: ocorrencias.itens, vistoria: vistoria.itens, publicacoes: publicacoes.itens }),
+    [itens, previsoes, visitas.itens, ocorrencias.itens, vistoria.itens, publicacoes.itens],
   );
+  const resumo = useMemo(() => resumoDoFeed(visitas.itens, ocorrencias.itens, vistoria.itens, agora), [visitas.itens, ocorrencias.itens, vistoria.itens, agora]);
+
+  const prazo = useMemo(() => {
+    const concluidos = itens.filter((i) => i.feito && i.pago).length;
+    const s = hoje ? situacaoDoPrazo(previsoes, hoje, itens.length ? percentual(concluidos, itens.length) : 0) : null;
+    return s ? { texto: textoDeTempo(s), atencao: s.status === "atrasado" } : null;
+  }, [itens, previsoes, hoje]);
 
   const proximas = visitas.itens.filter((v) => v.status === "agendada").length;
-  const abertas = ocorrencias.itens.filter((o) => o.status !== "resolvida").length;
+  const abertas = resumo.ocorrenciasAbertas;
   const pendentes = vistoria.itens.filter((i) => i.status === "pendente").length;
   const abas: { id: Secao; rotulo: string; qtd: number }[] = [
     { id: "tempo", rotulo: "Linha do tempo", qtd: 0 },
@@ -40,8 +57,8 @@ export function AcompanharTab() {
     { id: "ocorrencias", rotulo: "Ocorrências", qtd: abertas },
     { id: "vistoria", rotulo: "Vistoria", qtd: pendentes },
   ];
-  // O cliente não encaminha nada: o botão de WhatsApp é só do arquiteto.
-  const onEnviar = ehCliente ? undefined : enviar;
+  // O arquiteto encaminha tudo ao cliente. O cliente encaminha só a vistoria, ao arquiteto.
+  const onEnviarArquiteto = ehCliente ? undefined : enviar;
 
   return (
     <div className="space-y-4">
@@ -62,10 +79,24 @@ export function AcompanharTab() {
         </div>
       </div>
 
-      {secao === "tempo" && <LinhaDoTempo eventos={eventos} contexto={contexto} onEnviar={onEnviar} />}
-      {secao === "visitas" && <Visitas visitas={visitas.itens} contexto={contexto} somenteLeitura={ehCliente} onSalvar={async (v) => void (await visitas.salvar(v))} onRemover={visitas.remover} onEnviar={onEnviar} />}
-      {secao === "ocorrencias" && <Ocorrencias ocorrencias={ocorrencias.itens} contexto={contexto} somenteLeitura={ehCliente} onSalvar={async (o) => void (await ocorrencias.salvar(o))} onRemover={ocorrencias.remover} onEnviar={onEnviar} />}
-      {secao === "vistoria" && <Vistoria itens={vistoria.itens} contexto={contexto} ehCliente={ehCliente} ator={ator} onSalvar={async (i) => void (await vistoria.salvar(i))} onRemover={vistoria.remover} onEnviar={onEnviar} />}
+      {secao === "tempo" && (
+        <Feed
+          eventos={eventos}
+          resumo={resumo}
+          prazo={prazo}
+          contexto={contexto}
+          ator={ator}
+          onIrPara={setSecao}
+          onEnviar={onEnviarArquiteto}
+          onPublicar={ehCliente ? undefined : async (texto) => void (await publicacoes.salvar({ texto, autor: ator }))}
+          onRemoverPublicacao={ehCliente ? undefined : publicacoes.remover}
+        />
+      )}
+      {secao === "visitas" && <Visitas visitas={visitas.itens} contexto={contexto} somenteLeitura={ehCliente} onSalvar={async (v) => void (await visitas.salvar(v))} onRemover={visitas.remover} onEnviar={onEnviarArquiteto} />}
+      {secao === "ocorrencias" && <Ocorrencias ocorrencias={ocorrencias.itens} contexto={contexto} somenteLeitura={ehCliente} onSalvar={async (o) => void (await ocorrencias.salvar(o))} onRemover={ocorrencias.remover} onEnviar={onEnviarArquiteto} />}
+      {secao === "vistoria" && (
+        <Vistoria itens={vistoria.itens} contexto={contexto} ehCliente={ehCliente} ator={ator} uid={user?.uid ?? ""} onSalvar={async (i) => void (await vistoria.salvar(i))} onRemover={vistoria.remover} onEnviar={enviar} />
+      )}
       {dialogo}
     </div>
   );

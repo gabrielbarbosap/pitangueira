@@ -89,10 +89,19 @@ service cloud.firestore {
         allow read: if isOwner(obraId) || isMember(obraId);
         allow write: if isOwner(obraId);
       }
-      // Vistoria final: o arquiteto monta a lista; o cliente também confere (status e observação).
+      // Feed: publicações do arquiteto (o cliente só lê).
+      match /publicacoes/{id} {
+        allow read: if isOwner(obraId) || isMember(obraId);
+        allow write: if isOwner(obraId);
+      }
+      // Vistoria final: arquiteto e cliente montam e conferem a lista. O cliente cria pontos (marcados como dele),
+      // remove só os que ele mesmo criou e altera apenas a conferência (status e observação).
       match /vistoria/{id} {
         allow read: if isOwner(obraId) || isMember(obraId);
-        allow create, delete: if isOwner(obraId);
+        allow create: if isOwner(obraId)
+          || (isMember(obraId) && request.resource.data.criadoPorUid == request.auth.uid);
+        allow delete: if isOwner(obraId)
+          || (isMember(obraId) && resource.data.get('criadoPorUid', '') == request.auth.uid);
         allow update: if isOwner(obraId)
           || (isMember(obraId) && soAltera(['status', 'obs', 'conferidoPor', 'conferidoEm', 'updatedAt']));
       }

@@ -10,13 +10,25 @@ import { Botao } from "../ui/Botao";
 
 /** Quem recebe e de qual projeto: serve para montar as mensagens ao cliente. */
 export function useContextoMensagem(): ContextoMensagem {
-  const { config, projeto, obraId } = useData();
+  const { config, projeto, obraId, ehCliente, ator } = useData();
   return {
     cliente: projeto.cliente,
     projeto: config.nomeObra,
     escritorio: projeto.escritorio,
     link: typeof window === "undefined" ? "" : `${window.location.origin}/obra/${obraId}`,
+    remetente: ehCliente ? "cliente" : "arquiteto",
+    nomeRemetente: ator,
   };
+}
+
+/** O número do arquiteto, guardado só neste aparelho (o cliente não grava nada no projeto). */
+const chaveFoneArquiteto = (obraId: string) => `pitangueira:wpp-arquiteto:${obraId}`;
+function lerFoneArquiteto(obraId: string): string {
+  try {
+    return localStorage.getItem(chaveFoneArquiteto(obraId)) ?? "";
+  } catch {
+    return "";
+  }
 }
 
 const IconeWhatsapp = () => (
@@ -30,8 +42,9 @@ const IconeWhatsapp = () => (
  * Nada é enviado sozinho: o arquiteto confere e aperta enviar no próprio WhatsApp.
  */
 function EnvioDialog({ titulo, texto, tipo, onFechar }: { titulo: string; texto: string; tipo: string; onFechar: () => void }) {
-  const { projeto, saveProjeto } = useData();
-  const [telefone, setTelefone] = useState(projeto.telefone ?? "");
+  const { projeto, saveProjeto, ehCliente, obraId } = useData();
+  // Arquiteto manda ao cliente (número guardado no projeto); cliente manda ao arquiteto (número guardado neste aparelho).
+  const [telefone, setTelefone] = useState(() => (ehCliente ? lerFoneArquiteto(obraId) : (projeto.telefone ?? "")));
   const [mensagem, setMensagem] = useState(texto);
   const [ocupado, setOcupado] = useState(false);
   const foneOk = telefone.trim() === "" || normalizarTelefone(telefone) !== "";
@@ -43,7 +56,15 @@ function EnvioDialog({ titulo, texto, tipo, onFechar }: { titulo: string; texto:
       // Abre antes de qualquer espera, para o navegador não bloquear a nova aba.
       window.open(`https://wa.me/${normalizarTelefone(telefone)}?text=${encodeURIComponent(mensagem)}`, "_blank", "noopener");
       registrarEvento("atualizacao_whatsapp", { tipo });
-      if (telefone.trim() !== (projeto.telefone ?? "") && telefone.trim()) await saveProjeto({ ...projeto, telefone: telefone.trim() });
+      if (ehCliente) {
+        try {
+          if (telefone.trim()) localStorage.setItem(chaveFoneArquiteto(obraId), telefone.trim());
+        } catch {
+          /* sem armazenamento: o número só não fica guardado */
+        }
+      } else if (telefone.trim() !== (projeto.telefone ?? "") && telefone.trim()) {
+        await saveProjeto({ ...projeto, telefone: telefone.trim() });
+      }
       onFechar();
     } finally {
       setOcupado(false);
@@ -54,14 +75,14 @@ function EnvioDialog({ titulo, texto, tipo, onFechar }: { titulo: string; texto:
     <Modal aberto onFechar={onFechar} titulo={titulo}>
       <div className="space-y-4">
         <div>
-          <label htmlFor="env-msg" className="rotulo-campo">Mensagem para o cliente</label>
+          <label htmlFor="env-msg" className="rotulo-campo">{ehCliente ? "Mensagem para o arquiteto" : "Mensagem para o cliente"}</label>
           <textarea id="env-msg" className="input-pit resize-none text-[13.5px] leading-snug" rows={9} value={mensagem} onChange={(e) => setMensagem(e.target.value)} />
         </div>
         <div>
-          <label htmlFor="env-fone" className="rotulo-campo">WhatsApp do cliente (opcional)</label>
+          <label htmlFor="env-fone" className="rotulo-campo">{ehCliente ? "WhatsApp do arquiteto (opcional)" : "WhatsApp do cliente (opcional)"}</label>
           <input id="env-fone" type="tel" inputMode="tel" className="input-pit" value={telefone} onChange={(e) => setTelefone(e.target.value)} placeholder="(11) 91234-5678" aria-invalid={!foneOk} />
           <p className={`mt-1 text-xs ${foneOk ? "text-ink/50" : "font-medium text-pitanga-escuro"}`}>
-            {foneOk ? "Com o número, abre direto a conversa do cliente (e fica guardado no projeto). Sem ele, você escolhe o contato no WhatsApp." : "Digite o DDD e o número, por exemplo (11) 91234-5678."}
+            {foneOk ? (ehCliente ? "Com o número, abre direto a conversa com o arquiteto (e fica guardado neste aparelho). Sem ele, você escolhe o contato no WhatsApp." : "Com o número, abre direto a conversa do cliente (e fica guardado no projeto). Sem ele, você escolhe o contato no WhatsApp.") : "Digite o DDD e o número, por exemplo (11) 91234-5678."}
           </p>
         </div>
         <p className="text-xs leading-snug text-ink/55">Nada é enviado sozinho: o WhatsApp abre com o texto pronto e você aperta enviar.</p>

@@ -150,7 +150,7 @@ export function Dashboard() {
         {
           alvo: "acompanhar",
           titulo: "Acompanhe a obra",
-          texto: "Em Acompanhar você vê a linha do tempo do projeto, as visitas e reuniões marcadas, as ocorrências e a vistoria final, onde você também confere o que está ok e o que precisa de ajuste.",
+          texto: "Em Acompanhar você vê o feed do projeto, com tudo o que acontece dia a dia, as visitas e reuniões, as ocorrências e a vistoria final. Na vistoria você adiciona o que quer conferir, marca o que está ok e manda para o arquiteto pelo WhatsApp.",
           aoEntrar: irPara("acompanhar"),
         },
         { ...passoOlho, aoEntrar: irPara("resumo") },
@@ -192,7 +192,7 @@ export function Dashboard() {
         {
           alvo: "acompanhar",
           titulo: "Acompanhe a obra",
-          texto: "Linha do tempo, visitas e reuniões, ocorrências e vistoria final. Em cada item você toca em “Enviar ao cliente”: o WhatsApp abre com a mensagem pronta e você aperta enviar. Nada sai sozinho.",
+          texto: "O feed mostra tudo o que acontece no projeto, dia a dia, e você publica avisos nele. Também há visitas e reuniões, ocorrências e a vistoria final. Em cada item você toca em “Enviar”: o WhatsApp abre com a mensagem pronta e você aperta enviar. Nada sai sozinho.",
           aoEntrar: irPara("acompanhar"),
         },
         {
