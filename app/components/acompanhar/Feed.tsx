@@ -70,7 +70,7 @@ function Avatar({ e }: { e: Evento }) {
   );
 }
 
-function Cartao({ e, agora, onEnviar, onRemover, contexto }: { e: Evento; agora: number; onEnviar?: (t: string, tipo: string, m: string) => void; onRemover?: () => void; contexto: ContextoMensagem }) {
+function Cartao({ e, agora, onEnviar, tituloEnvio, onRemover, contexto }: { e: Evento; agora: number; onEnviar?: (t: string, tipo: string, m: string) => void; tituloEnvio: string; onRemover?: () => void; contexto: ContextoMensagem }) {
   const est = ESTILO[e.tipo];
   const ehPost = e.tipo === "publicacao";
   const autor = e.quem ?? ROTULO_SINGULAR[e.tipo];
@@ -109,11 +109,11 @@ function Cartao({ e, agora, onEnviar, onRemover, contexto }: { e: Evento; agora:
               {ROTULO_TIPO[e.tipo]}
             </span>
             <span className="flex-1" />
-            {onEnviar && e.tipo !== "andamento" && (
+            {onEnviar && (
               <BotaoEnviar
                 rotulo="Enviar"
                 contexto={e.titulo.slice(0, 60)}
-                onClick={() => onEnviar("Enviar ao cliente", e.tipo, ehPost ? mensagemPublicacao({ id: e.id, texto: e.titulo, autor: e.quem ?? "" }, contexto) : (e.mensagem ?? mensagemDoEvento(e, contexto)))}
+                onClick={() => onEnviar(tituloEnvio, e.tipo, ehPost ? mensagemPublicacao({ id: e.id, texto: e.titulo, autor: e.quem ?? "" }, contexto) : (e.mensagem ?? mensagemDoEvento(e, contexto)))}
               />
             )}
             {onRemover && (
@@ -172,6 +172,8 @@ export function Feed({
   prazo,
   contexto,
   ator,
+  ehCliente,
+  uid,
   onIrPara,
   onEnviar,
   onPublicar,
@@ -182,7 +184,10 @@ export function Feed({
   prazo: { texto: string; atencao: boolean } | null;
   contexto: ContextoMensagem;
   ator: string;
+  ehCliente: boolean;
+  uid: string;
   onIrPara: (s: Secao) => void;
+  /** O arquiteto encaminha ao cliente qualquer fato; o cliente encaminha ao arquiteto só o que ele mesmo publicou. */
   onEnviar?: (titulo: string, tipo: string, texto: string) => void;
   onPublicar?: (texto: string) => Promise<void>;
   onRemoverPublicacao?: (id: string) => Promise<void>;
@@ -209,6 +214,11 @@ export function Feed({
     }
   }
 
+  /** O arquiteto encaminha qualquer fato (menos o andamento solto); o cliente, só os próprios recados. */
+  const podeEnviar = (e: Evento) => (ehCliente ? e.tipo === "publicacao" && Boolean(uid) && e.donoUid === uid : e.tipo !== "andamento");
+  /** O arquiteto remove qualquer aviso; o cliente, só o que ele mesmo escreveu. */
+  const podeRemover = (e: Evento) => !ehCliente || (Boolean(uid) && e.donoUid === uid);
+
   function enviarResumo() {
     onEnviar?.("Resumo da semana", "resumo", mensagemResumo(eventos, Date.now() - 7 * 86_400_000, contexto));
   }
@@ -224,17 +234,17 @@ export function Feed({
               {iniciais(ator) || "EU"}
             </span>
             <div className="min-w-0 flex-1">
-              <label htmlFor="feed-texto" className="sr-only">Escreva um aviso para o feed do projeto</label>
+              <label htmlFor="feed-texto" className="sr-only">{ehCliente ? "Escreva uma mensagem para o feed do projeto" : "Escreva um aviso para o feed do projeto"}</label>
               <textarea
                 id="feed-texto"
                 className="input-pit resize-none"
                 rows={2}
                 value={texto}
                 onChange={(e) => setTexto(e.target.value)}
-                placeholder="Compartilhe uma novidade da obra…"
+                placeholder={ehCliente ? "Escreva uma mensagem ou dúvida para o arquiteto…" : "Compartilhe uma novidade da obra…"}
               />
               <div className="mt-2 flex items-center justify-between gap-2">
-                <p className="text-xs text-ink/45">Aparece no feed para o cliente. Depois você pode encaminhar pelo WhatsApp.</p>
+                <p className="text-xs text-ink/45">{ehCliente ? "Aparece no feed para o arquiteto. Depois você pode encaminhar pelo WhatsApp." : "Aparece no feed para o cliente. Depois você pode encaminhar pelo WhatsApp."}</p>
                 <Botao variante="solido" tamanho="pequeno" disabled={!texto.trim() || publicando} onClick={publicar}>
                   {publicando ? "Publicando…" : "Publicar"}
                 </Botao>
@@ -260,15 +270,15 @@ export function Feed({
             </button>
           ))}
         </div>
-        {onEnviar && <BotaoEnviar rotulo="Enviar resumo da semana" onClick={enviarResumo} />}
+        {onEnviar && !ehCliente && <BotaoEnviar rotulo="Enviar resumo da semana" onClick={enviarResumo} />}
       </div>
 
       {visiveis.length === 0 ? (
         <p className="prancha px-4 py-12 text-center text-sm leading-snug text-ink/55">
           {eventos.length === 0
-            ? onPublicar
-              ? "O feed ainda está vazio. Publique um aviso acima, marque uma visita ou marque itens como feitos: tudo aparece aqui, dia a dia."
-              : "Quando algo acontecer no projeto (avisos, itens feitos, visitas, ocorrências, prazos), aparece aqui, dia a dia."
+            ? ehCliente
+              ? "O feed ainda está vazio. Escreva uma mensagem acima: o arquiteto vê aqui. Tudo o que acontecer no projeto também aparece, dia a dia."
+              : "O feed ainda está vazio. Publique um aviso acima, marque uma visita ou marque itens como feitos: tudo aparece aqui, dia a dia."
             : "Nada neste filtro ainda."}
         </p>
       ) : (
@@ -286,9 +296,10 @@ export function Feed({
                     e={e}
                     agora={agora}
                     contexto={contexto}
-                    onEnviar={onEnviar}
+                    tituloEnvio={ehCliente ? "Enviar ao arquiteto" : "Enviar ao cliente"}
+                    onEnviar={onEnviar && podeEnviar(e) ? onEnviar : undefined}
                     onRemover={
-                      onRemoverPublicacao && e.tipo === "publicacao"
+                      onRemoverPublicacao && e.tipo === "publicacao" && podeRemover(e)
                         ? async () => {
                             if (await confirmar({ titulo: "Remover aviso", mensagem: "Remover este aviso do feed? Essa ação não pode ser desfeita.", confirmar: "Remover", tom: "perigo" })) await onRemoverPublicacao(e.id.replace("publicacao|", ""));
                           }

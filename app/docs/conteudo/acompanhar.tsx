@@ -19,8 +19,8 @@ export const acompanhar: PaginaDoc = {
           <Tabela
             colunas={["Seção", "O que é", "Quem mexe"]}
             linhas={[
-              ["Linha do tempo", "O feed do projeto: tudo o que aconteceu, dia a dia, com os avisos do arquiteto.", "Arquiteto publica avisos; o resto entra sozinho"],
-              ["Visitas", "Visitas técnicas e reuniões, com pauta antes e ata depois.", "Arquiteto cria; cliente vê"],
+              ["Linha do tempo", "O feed do projeto: tudo o que aconteceu, dia a dia, com os avisos e recados.", "Arquiteto e cliente publicam; o resto entra sozinho"],
+              ["Visitas", "Visitas técnicas e reuniões, com pauta antes e ata depois. O cliente pode pedir uma visita.", "Arquiteto agenda e aprova; cliente vê e pede"],
               ["Ocorrências", "Problemas e imprevistos, com responsável e como foram resolvidos.", "Arquiteto cria; cliente vê"],
               ["Vistoria", "A lista do que conferir antes de entregar a obra.", "Arquiteto e cliente adicionam pontos e conferem"],
             ]}
@@ -46,6 +46,15 @@ export const acompanhar: PaginaDoc = {
             <Passo>Se quiser, preencha o <Btn>WhatsApp do cliente (opcional)</Btn>, com DDD. O número fica guardado no projeto e vem preenchido da próxima vez. Sem número, o WhatsApp abre para você escolher o contato.</Passo>
             <Passo>Toque em <Btn>Abrir no WhatsApp</Btn> e, no WhatsApp, aperte enviar.</Passo>
           </Passos>
+          <H3>Como a mensagem é montada</H3>
+          <P>
+            Toda mensagem segue o mesmo desenho, com negrito e ícones do WhatsApp para ficar fácil de ler: uma saudação (“Olá, Marina! 👋”), o nome do projeto, um título do assunto (“📅 <strong>Visita agendada</strong>”), os dados em linhas com rótulo (“🕒 <strong>Quando:</strong> sábado, 21/11/2026 às 09:00”, “📍 <strong>Onde:</strong> Na obra”), listas quando há várias coisas (pauta, ata, pontos da vistoria) e, no fim, o link para o app e a assinatura do escritório.
+          </P>
+          <Lista>
+            <li>Pauta, ata, motivo e resolução escritos em várias linhas viram uma lista com “•”; escritos numa linha só, continuam um parágrafo.</li>
+            <li>As mensagens do cliente começam com “Olá! 👋 Aqui é Marina.” e não levam assinatura de escritório.</li>
+            <li>A mesma estrutura vale para o envio de PDFs e para a cobrança no Financeiro.</li>
+          </Lista>
           <Aviso tipo="dica">Quem manda é sempre uma pessoa: o app só prepara a mensagem. O cliente recebe como qualquer outra mensagem e, pelo link, abre o projeto. O cliente tem o próprio botão na vistoria, para mandar ao arquiteto (veja abaixo).</Aviso>
         </>
       ),
@@ -69,12 +78,16 @@ export const acompanhar: PaginaDoc = {
               ["Vistoria", "Quantos pontos já foram conferidos e quantos pedem ajuste. Toque para abrir a vistoria."],
             ]}
           />
-          <H3>Publicar um aviso (arquiteto)</H3>
+          <H3>Publicar no feed (arquiteto e cliente)</H3>
           <Passos>
-            <Passo>No campo “Compartilhe uma novidade da obra…”, escreva o aviso (por exemplo, “A alvenaria da sala ficou pronta hoje!”).</Passo>
-            <Passo>Toque em <Btn>Publicar</Btn>. O aviso entra no feed com o seu nome, e o cliente o vê.</Passo>
-            <Passo>Se quiser, toque em <Btn>Enviar</Btn> no cartão para encaminhar o aviso pelo WhatsApp. A lixeira remove o aviso.</Passo>
+            <Passo>No campo de cima, escreva. O arquiteto vê “Compartilhe uma novidade da obra…” (por exemplo, “A alvenaria da sala ficou pronta hoje!”); o cliente vê “Escreva uma mensagem ou dúvida para o arquiteto…”.</Passo>
+            <Passo>Toque em <Btn>Publicar</Btn>. O texto entra no feed com o nome de quem escreveu, e o outro lado o vê.</Passo>
+            <Passo>Se quiser, toque em <Btn>Enviar</Btn> no cartão para encaminhar pelo WhatsApp (o arquiteto ao cliente; o cliente ao arquiteto).</Passo>
           </Passos>
+          <Lista>
+            <li>O arquiteto remove qualquer aviso; o cliente remove só o que ele mesmo escreveu.</li>
+            <li>O cliente encaminha pelo WhatsApp só os próprios recados. O arquiteto encaminha qualquer fato do feed e o resumo da semana.</li>
+          </Lista>
           <H3>O que aparece no feed</H3>
           <Tabela
             colunas={["Tipo", "Quando entra"]}
@@ -111,8 +124,21 @@ export const acompanhar: PaginaDoc = {
             <Passo>Depois da visita, edite-a (lápis), mude a <Btn>Situação</Btn> para Realizada e escreva a <Btn>Ata: o que ficou combinado</Btn>. Toque em <Btn>Enviar ata</Btn> para mandar o combinado ao cliente.</Passo>
           </Passos>
           <Lista>
-            <li>As próximas ficam em ordem de data; as realizadas e canceladas vão para “Anteriores”.</li>
+            <li>As próximas ficam em ordem de data; as realizadas, canceladas e recusadas vão para “Anteriores”.</li>
             <li>A lixeira remove a visita, com confirmação.</li>
+          </Lista>
+          <H3>O cliente pede uma visita; o arquiteto aprova pelo WhatsApp</H3>
+          <Passos>
+            <Passo>O cliente, em <Btn>Visitas</Btn>, toca em <Btn>Pedir uma visita</Btn> e preenche <Btn>Para quê?</Btn>, a data, a hora e, se quiser, o local e o motivo. Toca em <Btn>Pedir visita</Btn>.</Passo>
+            <Passo>A janela do WhatsApp abre sozinha com a mensagem “🙋 Pedido de visita”, que traz um <strong>link</strong> para o arquiteto. O cliente manda a mensagem ao arquiteto (para isso pode informar o número dele, que fica guardado no aparelho do cliente).</Passo>
+            <Passo>O pedido aparece, para os dois, em “Aguardando aprovação”, com a etiqueta <Btn>Aguardando aprovação</Btn>.</Passo>
+            <Passo>O arquiteto toca no link: o app abre direto na aba Acompanhar, em Visitas, com o pedido destacado. Ele escolhe <Btn>Aprovar</Btn>, <Btn>Sugerir outro horário</Btn> ou <Btn>Recusar</Btn>.</Passo>
+            <Passo>Qualquer das três abre a mensagem de resposta ao cliente, já pronta: “✅ Visita confirmada”, a confirmação do novo horário ou “🔄 Sobre o seu pedido de visita”, com a resposta que o arquiteto escreveu ao recusar.</Passo>
+          </Passos>
+          <Lista>
+            <li>Aprovada, a visita vira “Agendada” e passa para “Próximas”. Recusada, vai para “Anteriores”, com a resposta do arquiteto em destaque.</li>
+            <li>O cliente pode cancelar o próprio pedido enquanto ele aguarda (lixeira, com confirmação). Não consegue cancelar visitas que o arquiteto marcou.</li>
+            <li>O arquiteto vê o número de pedidos pendentes ao lado de “Visitas”, e o pedido aparece na linha do tempo como “Visita solicitada”.</li>
           </Lista>
         </>
       ),

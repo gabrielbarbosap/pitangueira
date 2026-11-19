@@ -42,7 +42,9 @@ export const dados: PaginaDoc = {
               ["Registrar prazo e novas previsões", "Sim", "Não"],
               ["Arquivar e excluir o projeto", "Sim", "Não"],
               ["Ver Escopo e gerar relatório", "Sim", "Não"],
-              ["Publicar avisos no feed, criar visitas e ocorrências", "Sim", "Não"],
+              ["Publicar no feed (remove só o que escreveu)", "Sim (e remove qualquer um)", "Sim"],
+              ["Agendar visitas e criar ocorrências", "Sim", "Não"],
+              ["Pedir uma visita (cancela só o próprio pedido)", "Aprova, recusa e edita", "Sim"],
               ["Criar pontos da vistoria e marcar OK ou Ajustar", "Sim", "Sim (remove só os que criou)"],
             ]}
           />

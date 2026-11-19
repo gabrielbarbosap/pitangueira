@@ -40,7 +40,7 @@ test("no celular, o PDF vai pela folha de compartilhamento do aparelho, com text
   await test.step("a mensagem já vem pronta, com o link e a chave do projeto", async () => {
     const msg = janela.getByLabel("Mensagem");
     await expect(msg).toHaveValue(/Segue o orçamento do projeto Casa do Lago/);
-    await expect(msg).toHaveValue(new RegExp(`Chave de acesso: ${projeto.chave}`));
+    await expect(msg).toHaveValue(new RegExp(`Chave de acesso:\\* ${projeto.chave}`));
     await janela.getByRole("checkbox", { name: /Incluir o link do projeto/ }).uncheck();
     await expect(msg).not.toHaveValue(/Chave de acesso/);
     await janela.getByRole("checkbox", { name: /Incluir o link do projeto/ }).check();
@@ -55,7 +55,7 @@ test("no celular, o PDF vai pela folha de compartilhamento do aparelho, com text
     expect(enviado.inicio).toBe("%PDF-");
     expect(enviado.tamanho).toBeGreaterThan(20_000);
     expect(enviado.paginas).toBeGreaterThanOrEqual(2);
-    expect(enviado.texto).toContain(`Chave de acesso: ${projeto.chave}`);
+    expect(enviado.texto).toContain(`Chave de acesso:* ${projeto.chave}`);
   });
 });
 
@@ -114,5 +114,5 @@ test("o WhatsApp do cliente salvo nos dados do projeto já vem preenchido, e o n
   await page.getByRole("button", { name: "Enviar por WhatsApp" }).click();
   const janela = page.getByRole("dialog", { name: "Enviar por WhatsApp" });
   await expect(janela.getByLabel("WhatsApp do cliente (opcional)")).toHaveValue("(11) 98888-7777");
-  await expect(janela.getByLabel("Mensagem")).toHaveValue(/Olá, Marina e João! Segue o orçamento/);
+  await expect(janela.getByLabel("Mensagem")).toHaveValue(/Olá, Marina e João! 👋[\s\S]*Segue o orçamento/);
 });

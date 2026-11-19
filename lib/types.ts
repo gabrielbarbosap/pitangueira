@@ -294,7 +294,8 @@ export interface Previsao {
 
 // ---------- Acompanhamento do projeto (visitas, ocorrências, vistoria) ----------
 
-export type StatusVisita = "agendada" | "realizada" | "cancelada";
+/** "solicitada": pedido do cliente, esperando o arquiteto aprovar. "recusada": o arquiteto não pôde (com a resposta em `ata`). */
+export type StatusVisita = "solicitada" | "agendada" | "realizada" | "cancelada" | "recusada";
 
 /** Visita técnica ou reunião do projeto, com a pauta antes e a ata depois. */
 export interface Visita {
@@ -306,8 +307,11 @@ export interface Visita {
   participantes: string;
   pauta: string;
   status: StatusVisita;
-  /** O que ficou combinado (preenchida depois da visita). */
+  /** O que ficou combinado (preenchida depois da visita) ou, numa visita recusada, a resposta ao cliente. */
   ata: string;
+  /** Quem criou (no pedido do cliente: o uid dele, e o nome leva "(cliente)"). */
+  criadoPorUid?: string;
+  criadoPorNome?: string;
   createdAt?: number;
 }
 
@@ -346,10 +350,12 @@ export interface ItemVistoria {
   createdAt?: number;
 }
 
-/** Publicação do arquiteto no feed do projeto ("Hoje a alvenaria da sala ficou pronta"). */
+/** Publicação no feed do projeto ("Hoje a alvenaria da sala ficou pronta"), do arquiteto ou do cliente. */
 export interface Publicacao {
   id: string;
   texto: string;
+  /** Nome de quem publicou (o cliente leva "(cliente)"). */
   autor: string;
+  autorUid?: string;
   createdAt?: number;
 }

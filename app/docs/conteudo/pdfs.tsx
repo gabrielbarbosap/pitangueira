@@ -39,7 +39,7 @@ export const pdfs: PaginaDoc = {
             <Passo>Abra o documento e toque em <Btn>WhatsApp</Btn> (no celular aparece só o ícone verde).</Passo>
             <Passo>A janela “Enviar por WhatsApp” começa a preparar o PDF. Espere aparecer “✓ PDF pronto”.</Passo>
             <Passo>Se quiser, preencha o <Btn>WhatsApp do cliente (opcional)</Btn>, com DDD. Se o projeto já tem esse número nos <strong>Dados do projeto</strong>, ele vem preenchido.</Passo>
-            <Passo>Confira a <Btn>Mensagem</Btn>, que já vem pronta (“Olá, {"{cliente}"}! Segue o orçamento do projeto…”) e pode ser editada.</Passo>
+            <Passo>Confira a <Btn>Mensagem</Btn>, que já vem pronta e estruturada (saudação, “📄 Orçamento”, o link do projeto, a chave e a assinatura) e pode ser editada.</Passo>
             <Passo>Toque em <Btn>Enviar pelo WhatsApp</Btn>.</Passo>
           </Passos>
           <H3>O que acontece depois</H3>

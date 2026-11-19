@@ -1,4 +1,5 @@
 // Cálculos do financeiro do escritório (honorários e parcelas a receber). Funções puras.
+import { blocos, campo, titulo } from "./mensagens";
 import type { Honorario, Parcela } from "./types";
 
 const DIA = 86_400_000;
@@ -306,18 +307,16 @@ const dataBr = (ms: number) => new Date(ms).toLocaleDateString("pt-BR");
 /** Texto de cobrança educado, com o valor, o vencimento e a chave PIX (se houver). */
 export function mensagemCobranca(p: { cliente: string; projeto: string; descricao: string; valor: number; vencimento: number; hoje: number; pix?: string; escritorio?: string }): string {
   const dias = Math.round((p.hoje - p.vencimento) / DIA);
-  const nome = p.cliente.trim() ? `Olá, ${p.cliente.trim()}!` : "Olá!";
   const situacao =
-    dias > 0
-      ? `venceu em ${dataBr(p.vencimento)} (há ${dias} ${dias === 1 ? "dia" : "dias"})`
-      : dias === 0
-        ? "vence hoje"
-        : `vence em ${dataBr(p.vencimento)}`;
-  const partes = [`${nome} Passando para lembrar da parcela "${p.descricao}" do projeto ${p.projeto}, no valor de ${reais(p.valor)}, que ${situacao}.`];
-  if (p.pix?.trim()) partes.push(`Chave PIX: ${p.pix.trim()}`);
-  partes.push(dias > 0 ? "Se já pagou, desconsidere e me avise para eu dar baixa. Obrigado!" : "Qualquer dúvida, é só falar. Obrigado!");
-  if (p.escritorio?.trim()) partes.push(`— ${p.escritorio.trim()}`);
-  return partes.join("\n\n");
+    dias > 0 ? `${dataBr(p.vencimento)} (venceu há ${dias} ${dias === 1 ? "dia" : "dias"})` : dias === 0 ? `${dataBr(p.vencimento)} (vence hoje)` : `${dataBr(p.vencimento)} (vence em ${Math.abs(dias)} ${Math.abs(dias) === 1 ? "dia" : "dias"})`;
+  return blocos([
+    p.cliente.trim() ? `Olá, ${p.cliente.trim()}! 👋` : "Olá! 👋",
+    titulo("💰", dias > 0 ? "Pagamento em aberto" : "Lembrete de pagamento"),
+    [campo("🏗️", "Projeto", p.projeto), campo("🧾", "Parcela", p.descricao), campo("💵", "Valor", reais(p.valor)), campo("📅", "Vencimento", situacao)].join("\n"),
+    p.pix?.trim() && `${titulo("💳", "Chave PIX")}\n${p.pix.trim()}`,
+    dias > 0 ? "Se já pagou, desconsidere e me avise para eu dar baixa. Obrigado! 🙏" : "Qualquer dúvida, é só falar. Obrigado! 🙏",
+    p.escritorio?.trim() && `— ${p.escritorio.trim()}`,
+  ]);
 }
 
 /** Planilha (CSV com ; e acentos corretos no Excel) de todas as parcelas, para o contador ou para guardar. */

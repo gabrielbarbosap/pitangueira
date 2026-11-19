@@ -1,4 +1,5 @@
 /** Envio de documentos pelo WhatsApp: monta a mensagem e entrega o PDF pelo melhor caminho que o aparelho oferece. */
+import { abertura, blocos, campo, titulo } from "./mensagens";
 
 export interface DadosMensagem {
   /** Título do documento: "Orçamento", "Escopo do projeto", "Relatório mensal de andamento". */
@@ -29,14 +30,13 @@ function nomeDoDocumento(d: DadosMensagem): string {
 
 /** O texto que acompanha o PDF. O arquiteto edita antes de enviar. */
 export function montarMensagem(d: DadosMensagem): string {
-  const saudacao = d.cliente.trim() ? `Olá, ${d.cliente.trim()}!` : "Olá!";
-  const partes = [`${saudacao} Segue o ${nomeDoDocumento(d)} do projeto ${d.projeto}.`];
-  if (d.link) {
-    partes.push(`Você acompanha tudo em tempo real por aqui: ${d.link}${d.chave ? `\nChave de acesso: ${d.chave}` : ""}`);
-  }
-  partes.push("Qualquer dúvida, é só falar.");
-  if (d.escritorio.trim()) partes.push(`— ${d.escritorio.trim()}`);
-  return partes.join("\n\n");
+  return blocos([
+    abertura({ destinatario: d.cliente, projeto: d.projeto }),
+    `${titulo("📄", d.tipo.toLowerCase().startsWith("relatório") ? `Relatório de andamento · ${d.rotulo}` : d.tipo)}\nSegue o ${nomeDoDocumento(d)} do projeto ${d.projeto}, em PDF.`,
+    "Qualquer dúvida, é só falar! 😊",
+    d.link && `${titulo("🔗", "Acompanhe tudo em tempo real")}\n${d.link}${d.chave ? `\n${campo("🔑", "Chave de acesso", d.chave)}` : ""}`,
+    d.escritorio.trim() && `— ${d.escritorio.trim()}`,
+  ]);
 }
 
 export type ResultadoEnvio = "compartilhado" | "baixado" | "cancelado";

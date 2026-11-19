@@ -23,7 +23,7 @@ type Secao = "tempo" | "visitas" | "ocorrencias" | "vistoria";
  * dia; as outras seções gerenciam visitas e reuniões, ocorrências e a vistoria final. O arquiteto encaminha ao cliente
  * pelo WhatsApp (sempre com um toque dele; nada sai sozinho) e o cliente encaminha a vistoria ao arquiteto.
  */
-export function AcompanharTab() {
+export function AcompanharTab({ visitaFoco = null }: { visitaFoco?: string | null }) {
   const { itens, previsoes, ehCliente, ator } = useData();
   const { user } = useAuth();
   const hoje = useHoje();
@@ -34,7 +34,8 @@ export function AcompanharTab() {
   const publicacoes = useColecaoObra<Publicacao>("publicacoes", (a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
   const contexto = useContextoMensagem();
   const { enviar, dialogo } = useEnvio();
-  const [secao, setSecao] = useState<Secao>("tempo");
+  // Quem chega pelo link de um pedido de visita (WhatsApp) já cai nas visitas.
+  const [secao, setSecao] = useState<Secao>(visitaFoco ? "visitas" : "tempo");
 
   const eventos = useMemo(
     () => montarLinhaDoTempo({ itens, previsoes, visitas: visitas.itens, ocorrencias: ocorrencias.itens, vistoria: vistoria.itens, publicacoes: publicacoes.itens }),
@@ -48,7 +49,7 @@ export function AcompanharTab() {
     return s ? { texto: textoDeTempo(s), atencao: s.status === "atrasado" } : null;
   }, [itens, previsoes, hoje]);
 
-  const proximas = visitas.itens.filter((v) => v.status === "agendada").length;
+  const proximas = visitas.itens.filter((v) => v.status === "agendada" || (v.status === "solicitada" && !ehCliente)).length;
   const abertas = resumo.ocorrenciasAbertas;
   const pendentes = vistoria.itens.filter((i) => i.status === "pendente").length;
   const abas: { id: Secao; rotulo: string; qtd: number }[] = [
@@ -86,13 +87,15 @@ export function AcompanharTab() {
           prazo={prazo}
           contexto={contexto}
           ator={ator}
+          ehCliente={ehCliente}
+          uid={user?.uid ?? ""}
           onIrPara={setSecao}
-          onEnviar={onEnviarArquiteto}
-          onPublicar={ehCliente ? undefined : async (texto) => void (await publicacoes.salvar({ texto, autor: ator }))}
-          onRemoverPublicacao={ehCliente ? undefined : publicacoes.remover}
+          onEnviar={enviar}
+          onPublicar={async (texto) => void (await publicacoes.salvar({ texto, autor: `${ator}${ehCliente ? " (cliente)" : ""}`, autorUid: user?.uid }))}
+          onRemoverPublicacao={publicacoes.remover}
         />
       )}
-      {secao === "visitas" && <Visitas visitas={visitas.itens} contexto={contexto} somenteLeitura={ehCliente} onSalvar={async (v) => void (await visitas.salvar(v))} onRemover={visitas.remover} onEnviar={onEnviarArquiteto} />}
+      {secao === "visitas" && <Visitas visitas={visitas.itens} contexto={contexto} ehCliente={ehCliente} uid={user?.uid ?? ""} ator={ator} foco={visitaFoco} onSalvar={visitas.salvar} onRemover={visitas.remover} onEnviar={enviar} />}
       {secao === "ocorrencias" && <Ocorrencias ocorrencias={ocorrencias.itens} contexto={contexto} somenteLeitura={ehCliente} onSalvar={async (o) => void (await ocorrencias.salvar(o))} onRemover={ocorrencias.remover} onEnviar={onEnviarArquiteto} />}
       {secao === "vistoria" && (
         <Vistoria itens={vistoria.itens} contexto={contexto} ehCliente={ehCliente} ator={ator} uid={user?.uid ?? ""} onSalvar={async (i) => void (await vistoria.salvar(i))} onRemover={vistoria.remover} onEnviar={enviar} />

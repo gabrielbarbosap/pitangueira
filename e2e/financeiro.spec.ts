@@ -62,9 +62,9 @@ test("o arquiteto controla o que tem a receber: filtros, cobrança, recebimento,
     await page.getByRole("button", { name: "Cobrar Apto da Ana pelo WhatsApp" }).first().click();
     const c = page.getByRole("dialog", { name: "Cobrar pelo WhatsApp" });
     await expect(c.getByLabel("WhatsApp do cliente")).toHaveValue("(11) 91111-2222");
-    await expect(c.getByLabel("Mensagem")).toHaveValue(/Olá, Ana Souza! [\s\S]*R\$\s1\.000,00[\s\S]*venceu em/);
+    await expect(c.getByLabel("Mensagem")).toHaveValue(/Olá, Ana Souza! 👋[\s\S]*Valor:\* R\$\s1\.000,00[\s\S]*venceu há/);
     await c.getByLabel("Sua chave PIX").fill("pix@escritorio.com");
-    await expect(c.getByLabel("Mensagem")).toHaveValue(/Chave PIX: pix@escritorio\.com/);
+    await expect(c.getByLabel("Mensagem")).toHaveValue(/Chave PIX\*\npix@escritorio\.com/);
     await c.getByRole("button", { name: "Abrir no WhatsApp" }).click();
     await expect(c).toBeHidden();
     const abertos = await page.evaluate(() => (window as unknown as { __abertos: string[] }).__abertos);

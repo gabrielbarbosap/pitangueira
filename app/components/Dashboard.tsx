@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ComponentType } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { registrarObraCliente } from "@/lib/clienteObras";
 import { useAuth } from "@/lib/auth";
 import { useObras } from "@/lib/obras";
@@ -87,7 +87,9 @@ export function Dashboard() {
   const [importar, setImportar] = useState<number | null>(null);
   const [agrupamento, setAgrupamento] = useState<Agrupamento>("etapa");
   const [busca, setBusca] = useState("");
-  const [aba, setAba] = useState<Aba>("resumo");
+  // O link de um pedido de visita (?visita=…, vindo do WhatsApp) abre o projeto direto no Acompanhar.
+  const visitaDoLink = useSearchParams().get("visita");
+  const [aba, setAba] = useState<Aba>(visitaDoLink ? "acompanhar" : "resumo");
 
   const resumo = useMemo(() => calcularResumo(itens, config), [itens, config]);
   const agregado = useMemo(() => resumoDeItens(itens), [itens]);
@@ -150,7 +152,7 @@ export function Dashboard() {
         {
           alvo: "acompanhar",
           titulo: "Acompanhe a obra",
-          texto: "Em Acompanhar você vê o feed do projeto, com tudo o que acontece dia a dia, as visitas e reuniões, as ocorrências e a vistoria final. Na vistoria você adiciona o que quer conferir, marca o que está ok e manda para o arquiteto pelo WhatsApp.",
+          texto: "Em Acompanhar você vê o feed do projeto, com tudo o que acontece dia a dia, e também escreve nele. Peça uma visita (o arquiteto aprova pelo link que você manda no WhatsApp), veja as ocorrências e faça a vistoria final: adicione o que quer conferir, marque o que está ok e mande ao arquiteto.",
           aoEntrar: irPara("acompanhar"),
         },
         { ...passoOlho, aoEntrar: irPara("resumo") },
@@ -192,7 +194,7 @@ export function Dashboard() {
         {
           alvo: "acompanhar",
           titulo: "Acompanhe a obra",
-          texto: "O feed mostra tudo o que acontece no projeto, dia a dia, e você publica avisos nele. Também há visitas e reuniões, ocorrências e a vistoria final. Em cada item você toca em “Enviar”: o WhatsApp abre com a mensagem pronta e você aperta enviar. Nada sai sozinho.",
+          texto: "O feed mostra tudo o que acontece no projeto, dia a dia. Você publica avisos e o cliente também escreve nele. Há visitas e reuniões (o cliente pode pedir uma, e você aprova pelo link do WhatsApp), ocorrências e a vistoria final. Em cada item você toca em “Enviar”: o WhatsApp abre com a mensagem pronta e você aperta enviar. Nada sai sozinho.",
           aoEntrar: irPara("acompanhar"),
         },
         {
@@ -339,7 +341,7 @@ export function Dashboard() {
         ) : aba === "programa" && !ehCliente ? (
           <ProgramaTab gruposEtapa={gruposEtapa} />
         ) : aba === "acompanhar" ? (
-          <AcompanharTab />
+          <AcompanharTab visitaFoco={visitaDoLink} />
         ) : itens.length === 0 ? (
           <>
             {/* Projeto novo ainda sem itens: o prazo já pode ser registrado */}

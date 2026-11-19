@@ -1,4 +1,5 @@
 // Acompanhamento do projeto: a linha do tempo e as mensagens que o arquiteto encaminha pelo WhatsApp. Funções puras.
+import { abertura, blocos, bullets, campo, comoLista, fecho, titulo } from "./mensagens";
 import type { Gravidade, Item, ItemVistoria, Ocorrencia, Previsao, Publicacao, Visita } from "./types";
 
 export type TipoEvento = "publicacao" | "andamento" | "prazo" | "visita" | "ocorrencia" | "vistoria";
@@ -21,6 +22,8 @@ export interface Evento {
   quando: number;
   quem?: string;
   porCliente?: boolean;
+  /** Uid de quem criou (publicações): serve para o autor remover o que é dele. */
+  donoUid?: string;
   /** Nomes dos itens (só no andamento), para mostrar como etiquetas no cartão. */
   itens?: string[];
   /** Texto pronto para encaminhar ao cliente (vazio = não tem o que encaminhar). */
@@ -47,77 +50,129 @@ export interface ContextoMensagem {
   nomeRemetente?: string;
 }
 
-function moldura(c: ContextoMensagem, corpo: string[]): string {
-  if (c.remetente === "cliente") {
-    const quem = c.nomeRemetente?.trim() ? `Aqui é ${c.nomeRemetente.trim()}, do projeto ${c.projeto}.` : `Sobre o projeto ${c.projeto}.`;
-    const partes = [`Olá! ${quem}`, ...corpo];
-    if (c.link) partes.push(`Está tudo no app: ${c.link}`);
-    return partes.join("\n\n");
-  }
-  const saudacao = c.cliente.trim() ? `Olá, ${c.cliente.trim()}!` : "Olá!";
-  const partes = [`${saudacao} Atualização do projeto ${c.projeto}:`, ...corpo];
-  if (c.link) partes.push(`Veja tudo no app: ${c.link}`);
-  if (c.escritorio.trim()) partes.push(`— ${c.escritorio.trim()}`);
-  return partes.join("\n\n");
+/** Abertura (saudação e projeto), os blocos da mensagem e o fecho (link e assinatura). */
+function moldura(c: ContextoMensagem, corpo: (string | false | null | undefined)[], opts: { link?: string } = {}): string {
+  const doCliente = c.remetente === "cliente";
+  return blocos([
+    abertura(doCliente ? { projeto: c.projeto, remetente: c.nomeRemetente?.trim() || "o cliente" } : { destinatario: c.cliente, projeto: c.projeto }),
+    ...corpo,
+    fecho({ link: opts.link ?? c.link, assinatura: doCliente ? "" : c.escritorio }),
+  ]);
+}
+
+const DIAS_SEMANA_CURTO = ["domingo", "segunda-feira", "terça-feira", "quarta-feira", "quinta-feira", "sexta-feira", "sábado"];
+
+/** "sábado, 21/11/2026 às 09:00" */
+export function dataLonga(ms: number): string {
+  return `${DIAS_SEMANA_CURTO[new Date(ms).getDay()]}, ${dataBr(ms)} às ${horaBr(ms)}`;
+}
+
+/** Endereço que abre o projeto já na visita (o arquiteto toca no link do WhatsApp e cai direto nela, para aprovar). */
+export function linkDaVisita(c: ContextoMensagem, v: Visita): string {
+  return c.link ? `${c.link}?visita=${v.id}` : "";
+}
+
+function dadosDaVisita(v: Visita): string[] {
+  return [campo("🕒", "Quando", dataLonga(v.quando)), v.local.trim() && campo("📍", "Onde", v.local.trim()), v.participantes.trim() && campo("👥", "Quem", v.participantes.trim())].filter(Boolean) as string[];
 }
 
 export function mensagemVisitaAgendada(v: Visita, c: ContextoMensagem): string {
-  const linhas = [`📅 Visita agendada: ${v.titulo}`, `Quando: ${dataHoraBr(v.quando)}`];
-  if (v.local.trim()) linhas.push(`Onde: ${v.local.trim()}`);
-  if (v.participantes.trim()) linhas.push(`Quem: ${v.participantes.trim()}`);
-  const partes = [linhas.join("\n")];
-  if (v.pauta.trim()) partes.push(`Pauta:\n${v.pauta.trim()}`);
-  partes.push("Pode confirmar presença por aqui?");
-  return moldura(c, partes);
+  return moldura(c, [
+    `${titulo("📅", "Visita agendada")}\n${v.titulo}`,
+    dadosDaVisita(v).join("\n"),
+    v.pauta.trim() && `${titulo("📝", "Pauta")}\n${comoLista(v.pauta)}`,
+    "Pode confirmar presença por aqui? 🙏",
+  ]);
+}
+
+/** O cliente pede uma visita e manda o link para o arquiteto aprovar (o link abre o projeto direto no pedido). */
+export function mensagemPedidoVisita(v: Visita, c: ContextoMensagem): string {
+  return moldura(
+    c,
+    [
+      `${titulo("🙋", "Pedido de visita")}\n${v.titulo}`,
+      dadosDaVisita(v).join("\n"),
+      v.pauta.trim() && `${titulo("📝", "Motivo")}\n${comoLista(v.pauta)}`,
+      "Pode aprovar, ou sugerir outro horário, por este link? 🙏",
+    ],
+    { link: linkDaVisita(c, v) },
+  );
+}
+
+/** O arquiteto aprovou o pedido do cliente. */
+export function mensagemVisitaAprovada(v: Visita, c: ContextoMensagem): string {
+  return moldura(c, [`${titulo("✅", "Visita confirmada")}\n${v.titulo}`, dadosDaVisita(v).join("\n"), "Combinado! Até lá. 🙌"]);
+}
+
+/** O arquiteto não pôde no horário pedido. */
+export function mensagemVisitaRecusada(v: Visita, c: ContextoMensagem): string {
+  return moldura(c, [
+    `${titulo("🔄", "Sobre o seu pedido de visita")}\n${v.titulo} (${dataLonga(v.quando)})`,
+    v.ata.trim() ? `${titulo("💬", "Resposta")}\n${v.ata.trim()}` : "Não consigo nesse horário. Podemos combinar outro? 🙏",
+  ]);
 }
 
 export function mensagemAta(v: Visita, c: ContextoMensagem): string {
-  const partes = [`📝 Ata da visita "${v.titulo}" (${dataBr(v.quando)})`];
-  partes.push(v.ata.trim() ? `O que ficou combinado:\n${v.ata.trim()}` : "Visita realizada. A ata será enviada em seguida.");
-  return moldura(c, partes);
+  return moldura(c, [
+    `${titulo("📝", "Ata da visita")}\n${v.titulo} · ${dataBr(v.quando)}`,
+    v.ata.trim() ? `${titulo("✅", "O que ficou combinado")}\n${comoLista(v.ata)}` : "Visita realizada. A ata segue em seguida.",
+  ]);
 }
+
+const EMOJI_GRAVIDADE: Record<Gravidade, string> = { alta: "🔴", media: "🟡", baixa: "🟢" };
 
 export function mensagemOcorrencia(o: Ocorrencia, c: ContextoMensagem): string {
   if (o.status === "resolvida") {
-    const partes = [`✅ Ocorrência resolvida: ${o.titulo}`];
-    if (o.resolucao.trim()) partes.push(`Como foi resolvido:\n${o.resolucao.trim()}`);
-    return moldura(c, partes);
+    return moldura(c, [`${titulo("✅", "Ocorrência resolvida")}\n${o.titulo}`, o.resolucao.trim() && `${titulo("🛠️", "Como foi resolvido")}\n${comoLista(o.resolucao)}`]);
   }
-  const linhas = [`⚠️ Ocorrência (${ROTULO_GRAVIDADE[o.gravidade].toLowerCase()}): ${o.titulo}`];
-  if (o.descricao.trim()) linhas.push(o.descricao.trim());
-  if (o.responsavel.trim()) linhas.push(`Responsável: ${o.responsavel.trim()}`);
-  return moldura(c, [linhas.join("\n"), "Já estamos cuidando. Aviso assim que for resolvido."]);
+  return moldura(c, [
+    `${titulo("⚠️", "Ocorrência")}\n${o.titulo}`,
+    [campo(EMOJI_GRAVIDADE[o.gravidade], "Gravidade", ROTULO_GRAVIDADE[o.gravidade]), o.responsavel.trim() && campo("👷", "Responsável", o.responsavel.trim())].filter(Boolean).join("\n"),
+    o.descricao.trim() && `${titulo("📋", "Detalhes")}\n${comoLista(o.descricao)}`,
+    "Já estamos cuidando. Aviso por aqui assim que for resolvido. 🤝",
+  ]);
 }
 
 export function mensagemPublicacao(p: Publicacao, c: ContextoMensagem): string {
-  return moldura(c, [p.texto.trim()]);
+  const doCliente = c.remetente === "cliente";
+  return moldura(c, [`${titulo(doCliente ? "💬" : "📢", doCliente ? "Recado" : "Novidade da obra")}\n${comoLista(p.texto)}`]);
 }
 
+const limitar = (itens: string[], max = 6) => (itens.length > max ? [...itens.slice(0, max), `e mais ${itens.length - max}…`] : itens);
+
 export function mensagemVistoria(itens: ItemVistoria[], c: ContextoMensagem): string {
+  const doCliente = c.remetente === "cliente";
   const ok = itens.filter((i) => i.status === "ok").length;
   const ajustar = itens.filter((i) => i.status === "ajustar");
   const pendentes = itens.filter((i) => i.status === "pendente");
-  const doCliente = c.remetente === "cliente";
-  const partes = [`🔍 Vistoria final: ${ok} de ${itens.length} pontos conferidos${doCliente ? " por mim" : ""}.`];
-  if (ajustar.length) partes.push(`${doCliente ? "Peço ajuste em" : "Pedem ajuste"}:\n${ajustar.map((i) => `• ${i.texto}${i.ambiente ? ` (${i.ambiente})` : ""}${i.obs ? ` — ${i.obs}` : ""}`).join("\n")}`);
-  if (pendentes.length) partes.push(doCliente ? `Ainda falta conferir ${plural(pendentes.length, "ponto", "pontos")}.` : `Faltam conferir: ${plural(pendentes.length, "ponto", "pontos")}. Dá uma olhada no app e marque o que estiver ok.`);
-  if (!ajustar.length && !pendentes.length) partes.push("Está tudo conferido. 🎉");
-  return moldura(c, partes);
+  const pct = itens.length ? Math.round((ok / itens.length) * 100) : 0;
+  const rotulo = (i: ItemVistoria) => `${i.texto}${i.ambiente && i.ambiente !== "Geral" ? ` (${i.ambiente})` : ""}${i.obs ? ` — ${i.obs}` : ""}`;
+  return moldura(c, [
+    `${titulo("🔍", "Vistoria final")}\n${campo("✅", "Conferidos", `${ok} de ${itens.length} pontos (${pct}%)${doCliente ? ", por mim" : ""}`)}`,
+    ajustar.length > 0 && `${titulo("🔧", doCliente ? `Peço ajuste (${ajustar.length})` : `Pedem ajuste (${ajustar.length})`)}\n${bullets(limitar(ajustar.map(rotulo)))}`,
+    pendentes.length > 0 && `${titulo("⏳", `Faltam conferir (${pendentes.length})`)}\n${bullets(limitar(pendentes.map(rotulo)))}`,
+    !ajustar.length && !pendentes.length && "Está tudo conferido. 🎉",
+    ajustar.length + pendentes.length > 0 && !doCliente && "Pode dar uma olhada no app e marcar o que estiver ok? 🙏",
+  ]);
 }
+
+const EMOJI_TIPO: Record<TipoEvento, string> = { publicacao: "📢", andamento: "✅", prazo: "🗓️", visita: "📅", ocorrencia: "⚠️", vistoria: "🔍" };
+const ROTULO_UNICO: Record<TipoEvento, string> = { publicacao: "Novidade da obra", andamento: "Andamento", prazo: "Prazo", visita: "Visita", ocorrencia: "Ocorrência", vistoria: "Vistoria" };
 
 /** Mensagem de um fato da linha do tempo. */
 export function mensagemDoEvento(e: Evento, c: ContextoMensagem): string {
-  const corpo = [`${e.titulo}${e.detalhe ? `\n${e.detalhe}` : ""}`];
-  return moldura(c, corpo);
+  return moldura(c, [`${titulo(EMOJI_TIPO[e.tipo], ROTULO_UNICO[e.tipo])}\n${e.titulo}`, e.detalhe?.trim() && comoLista(e.detalhe)]);
 }
 
-/** Resumo do que aconteceu nos últimos dias (padrão 7), pronto para encaminhar. */
+/** Resumo do que aconteceu nos últimos dias, pronto para encaminhar. */
 export function mensagemResumo(eventos: Evento[], desde: number, c: ContextoMensagem): string {
-  const recentes = eventos.filter((e) => e.quando >= desde && e.quando <= Date.now() + 1000);
-  if (recentes.length === 0) return moldura(c, ["Sem novidades nesta semana. Qualquer coisa eu aviso por aqui."]);
-  const linhas = recentes.slice(0, 10).map((e) => `• ${e.titulo}${e.detalhe ? ` — ${e.detalhe}` : ""}`);
-  if (recentes.length > 10) linhas.push(`• e mais ${recentes.length - 10}…`);
-  return moldura(c, [`O que aconteceu nos últimos dias:\n${linhas.join("\n")}`]);
+  const agora = Date.now();
+  const recentes = eventos.filter((e) => e.quando >= desde && e.quando <= agora + 1000);
+  const periodo = `_${dataBr(desde)} a ${dataBr(agora)}_`;
+  if (recentes.length === 0) return moldura(c, [`${titulo("📋", "Resumo da semana")}\n${periodo}`, "Sem novidades nesta semana. Qualquer coisa aviso por aqui."]);
+  const linhas = recentes.slice(0, 10).map((e) => `${EMOJI_TIPO[e.tipo]} ${e.titulo} _(${dataBr(e.quando).slice(0, 5)})_`);
+  if (recentes.length > 10) linhas.push(`e mais ${recentes.length - 10}…`);
+  return moldura(c, [`${titulo("📋", "Resumo da semana")}\n${periodo}`, bullets(linhas)]);
 }
 
 interface Fontes {
@@ -135,7 +190,8 @@ export function montarLinhaDoTempo({ itens, previsoes, visitas, ocorrencias, vis
 
   // Avisos publicados pelo arquiteto
   for (const p of publicacoes) {
-    eventos.push({ id: `publicacao|${p.id}`, tipo: "publicacao", titulo: p.texto, quando: p.createdAt ?? 0, quem: p.autor });
+    const doCliente = / \(cliente\)$/.test(p.autor);
+    eventos.push({ id: `publicacao|${p.id}`, tipo: "publicacao", titulo: p.texto, quando: p.createdAt ?? 0, quem: p.autor.replace(/ \(cliente\)$/, ""), porCliente: doCliente, donoUid: p.autorUid });
   }
 
   // Andamento: feito e pago, agrupados.
@@ -185,13 +241,23 @@ export function montarLinhaDoTempo({ itens, previsoes, visitas, ocorrencias, vis
 
   // Visitas
   for (const v of visitas) {
-    const rotulo = v.status === "realizada" ? "Visita realizada" : v.status === "cancelada" ? "Visita cancelada" : "Visita agendada";
+    const pedido = v.status === "solicitada" || v.status === "recusada";
+    const rotulo = { solicitada: "Visita solicitada", recusada: "Pedido de visita recusado", realizada: "Visita realizada", cancelada: "Visita cancelada", agendada: "Visita agendada" }[v.status];
+    const cliente = / \(cliente\)$/.test(v.criadoPorNome ?? "");
     eventos.push({
       id: `visita|${v.id}`,
       tipo: "visita",
       titulo: `${rotulo}: ${v.titulo}`,
-      detalhe: v.status === "realizada" && v.ata.trim() ? v.ata.trim() : [dataHoraBr(v.quando), v.local].filter(Boolean).join(" · "),
-      quando: v.quando,
+      detalhe:
+        v.status === "recusada" && v.ata.trim()
+          ? `Resposta: ${v.ata.trim()}`
+          : v.status === "realizada" && v.ata.trim()
+            ? v.ata.trim()
+            : [pedido ? `Para ${dataLonga(v.quando)}` : dataHoraBr(v.quando), v.local].filter(Boolean).join(" · "),
+      // Um pedido é um fato de agora (de quando foi feito), não do dia da visita.
+      quando: pedido ? (v.createdAt ?? v.quando) : v.quando,
+      quem: v.status === "solicitada" && cliente ? (v.criadoPorNome ?? "").replace(/ \(cliente\)$/, "") : undefined,
+      porCliente: v.status === "solicitada" && cliente ? true : undefined,
     });
   }
 

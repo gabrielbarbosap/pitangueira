@@ -24,8 +24,8 @@ export function ObraClient({ params }: { params: Promise<{ id: string }> }) {
     );
   }
 
-  // Cliente que já passou pelo código → dashboard limitado.
-  if (liberado) {
+  // Cliente que já passou pelo código → dashboard limitado. Sem sessão (saiu), volta a pedir o código.
+  if (liberado && user) {
     return (
       <DataProvider obraId={id}>
         <Dashboard />

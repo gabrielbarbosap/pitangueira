@@ -137,7 +137,7 @@ export const financeiro: PaginaDoc = {
             <Passo>Na parcela vencida (ou que vence hoje ou em até 7 dias), toque em <Btn>Cobrar</Btn>.</Passo>
             <Passo>Confira o <Btn>WhatsApp do cliente</Btn>. Vem do contrato; se mudar, o número novo fica guardado nele.</Passo>
             <Passo>Informe <Btn>Sua chave PIX</Btn>. Ela entra na mensagem e fica guardada para as próximas cobranças.</Passo>
-            <Passo>Leia e, se quiser, edite a <Btn>Mensagem</Btn>. Ela já vem pronta: cumprimenta o cliente, cita a parcela, o projeto, o valor e o vencimento (“venceu em 12/10 (há 20 dias)”, “vence hoje” ou “vence em 27/11”), traz a chave PIX e termina com um agradecimento.</Passo>
+            <Passo>Leia e, se quiser, edite a <Btn>Mensagem</Btn>. Ela já vem pronta e organizada: cumprimenta o cliente e traz o título (“💰 Pagamento em aberto” ou “Lembrete de pagamento”), as linhas com o projeto, a parcela, o valor e o vencimento (“12/10/2026 (venceu há 20 dias)”, “(vence hoje)” ou “(vence em 5 dias)”), a chave PIX e um agradecimento.</Passo>
             <Passo>Toque em <Btn>Abrir no WhatsApp</Btn>. O WhatsApp abre na conversa do cliente (se houver número) com o texto pronto; você só envia.</Passo>
           </Passos>
           <Aviso tipo="dica">Em parcelas vencidas a mensagem pede para o cliente avisar se já pagou, para você dar baixa. Em parcelas que ainda vão vencer, o tom é de lembrete.</Aviso>

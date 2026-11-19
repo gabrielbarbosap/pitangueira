@@ -80,19 +80,29 @@ service cloud.firestore {
           || (isMember(obraId) && soAltera(['feito', 'pago', 'feitoPor', 'feitoEm', 'pagoPor', 'pagoEm', 'updatedAt']));
       }
 
-      // Acompanhamento: visitas e ocorrências são do arquiteto (o cliente só lê).
+      // Visitas: o arquiteto agenda e decide. O cliente lê e PEDE uma visita (status 'solicitada'); só cancela o próprio pedido.
       match /visitas/{id} {
         allow read: if isOwner(obraId) || isMember(obraId);
-        allow write: if isOwner(obraId);
+        allow create: if isOwner(obraId)
+          || (isMember(obraId) && request.resource.data.status == 'solicitada' && request.resource.data.criadoPorUid == request.auth.uid);
+        allow update: if isOwner(obraId);
+        allow delete: if isOwner(obraId)
+          || (isMember(obraId) && resource.data.get('criadoPorUid', '') == request.auth.uid && resource.data.status == 'solicitada');
       }
+      // Ocorrências são do arquiteto (o cliente só lê).
+
       match /ocorrencias/{id} {
         allow read: if isOwner(obraId) || isMember(obraId);
         allow write: if isOwner(obraId);
       }
-      // Feed: publicações do arquiteto (o cliente só lê).
+      // Feed: arquiteto e cliente publicam. Cada um remove só o que publicou (o arquiteto remove qualquer um).
       match /publicacoes/{id} {
         allow read: if isOwner(obraId) || isMember(obraId);
-        allow write: if isOwner(obraId);
+        allow create: if isOwner(obraId)
+          || (isMember(obraId) && request.resource.data.autorUid == request.auth.uid);
+        allow update: if isOwner(obraId);
+        allow delete: if isOwner(obraId)
+          || (isMember(obraId) && resource.data.get('autorUid', '') == request.auth.uid);
       }
       // Vistoria final: arquiteto e cliente montam e conferem a lista. O cliente cria pontos (marcados como dele),
       // remove só os que ele mesmo criou e altera apenas a conferência (status e observação).
