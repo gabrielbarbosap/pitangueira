@@ -34,12 +34,13 @@ export const telaDoProjeto: PaginaDoc = {
       papel: "todos",
       corpo: (
         <>
-          <P>O menu em pílula fica fixo na parte de baixo da tela. O arquiteto vê quatro abas e o cliente vê três:</P>
+          <P>O menu em pílula fica fixo na parte de baixo da tela. O arquiteto vê cinco abas e o cliente vê quatro:</P>
           <Tabela
             colunas={["Aba", "Para que serve", "Quem vê"]}
             linhas={[
               ["Resumo", "Visão geral: em andamento, prazo, relatório, valores e gráficos principais.", "Arquiteto e cliente"],
               ["Itens", "O orçamento: lista de itens, marcar Feito e Pago, catálogo, composições e PDF.", "Arquiteto e cliente"],
+              ["Acompanhar", "Linha do tempo, visitas e reuniões, ocorrências e vistoria final.", "Arquiteto e cliente"],
               ["Gráficos", "Oito painéis visuais sobre dinheiro e andamento.", "Arquiteto e cliente"],
               ["Escopo", "Ambientes e pedidos do cliente, ligados ao orçamento.", "Só o arquiteto"],
             ]}

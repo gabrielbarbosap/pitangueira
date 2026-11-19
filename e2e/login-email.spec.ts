@@ -40,7 +40,7 @@ test("o arquiteto cria conta, sai e volta com e-mail e senha (e o Google continu
   await test.step("com os dados certos a conta é criada e a pessoa já entra no painel", async () => {
     await page.getByLabel("Senha").fill("segredo123");
     await form(page, "Criar conta").getByRole("button", { name: "Criar conta" }).click();
-    await expect(page.getByText("Olá, Marina.")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Olá, Marina." })).toBeVisible();
   });
 
   await sair(page);
@@ -54,7 +54,7 @@ test("o arquiteto cria conta, sai e volta com e-mail e senha (e o Google continu
     await expect(page.getByLabel("Senha")).toHaveAttribute("type", "text");
     await page.getByLabel("Senha").fill("segredo123");
     await form(page, "Entrar").getByRole("button", { name: "Entrar" }).click();
-    await expect(page.getByText("Olá, Marina.")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Olá, Marina." })).toBeVisible();
   });
 
   await sair(page);

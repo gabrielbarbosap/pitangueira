@@ -57,9 +57,9 @@ export const privacidade: PaginaDoc = {
           <H3>Roteiro da home do arquiteto</H3>
           <P>Bem-vindo à Pitangueira → Comece por aqui → Cada projeto é um cartão → A visão de todos os projetos → Próximas entregas → Suas ferramentas pessoais → Privacidade num toque → Pronto!</P>
           <H3>Roteiro do projeto (arquiteto)</H3>
-          <P>Este é o seu projeto → Andamento geral → Quatro áreas → O que está em andamento → Prazo do projeto → Relatório do mês → Monte o orçamento → Escopo do projeto → Ajustes do projeto → Privacidade num toque → Pronto!</P>
+          <P>Este é o seu projeto → Andamento geral → Cinco áreas → O que está em andamento → Prazo do projeto → Relatório do mês → Monte o orçamento → Acompanhe a obra → Escopo do projeto → Ajustes do projeto → Privacidade num toque → Pronto!</P>
           <H3>Roteiro do projeto (cliente)</H3>
-          <P>Acompanhe o seu projeto → Andamento geral → Três áreas → O prazo da obra → Marque o que foi feito e pago → Privacidade num toque → Pronto!</P>
+          <P>Acompanhe o seu projeto → Andamento geral → Quatro áreas → O prazo da obra → Marque o que foi feito e pago → Acompanhe a obra → Privacidade num toque → Pronto!</P>
         </>
       ),
     },

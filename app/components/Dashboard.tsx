@@ -19,6 +19,7 @@ import { ProgramaTab } from "./ProgramaTab";
 import { CatalogoDialog } from "./CatalogoDialog";
 import { EmAndamento } from "./EmAndamento";
 import { AtividadeRecente } from "./AtividadeRecente";
+import { AcompanharTab } from "./acompanhar/AcompanharTab";
 import { ComposicoesDialog } from "./ComposicoesDialog";
 import { ImportarDialog } from "./ImportarDialog";
 import { OrcamentoBarra } from "./OrcamentoBarra";
@@ -37,17 +38,19 @@ import {
   IconeGraficos,
   IconeItens,
   IconeMais,
+  IconeAcompanhar,
   IconePrograma,
   IconeResumo,
   IconeSair,
   IconeVoltar,
 } from "./Icones";
 
-type Aba = "resumo" | "itens" | "graficos" | "programa";
+type Aba = "resumo" | "itens" | "acompanhar" | "graficos" | "programa";
 
 const ABAS: readonly { id: Aba; rotulo: string; Icone: ComponentType }[] = [
   { id: "resumo", rotulo: "Resumo", Icone: IconeResumo },
   { id: "itens", rotulo: "Itens", Icone: IconeItens },
+  { id: "acompanhar", rotulo: "Acompanhar", Icone: IconeAcompanhar },
   { id: "graficos", rotulo: "Gráficos", Icone: IconeGraficos },
   { id: "programa", rotulo: "Escopo", Icone: IconePrograma },
 ];
@@ -107,8 +110,8 @@ export function Dashboard() {
   const abas = ehCliente ? ABAS.filter((a) => a.id !== "programa") : ABAS;
   const passoAbas: PassoTour = {
     alvo: "abas",
-    titulo: ehCliente ? "Três áreas" : "Quatro áreas",
-    texto: `${ehCliente ? "Resumo, Itens e Gráficos" : "Resumo, Itens, Gráficos e Escopo"}. Toque nas abas para navegar. O botão de voltar leva ao início do projeto e, de lá, à sua home.`,
+    titulo: ehCliente ? "Quatro áreas" : "Cinco áreas",
+    texto: `${ehCliente ? "Resumo, Itens, Acompanhar e Gráficos" : "Resumo, Itens, Acompanhar, Gráficos e Escopo"}. Toque nas abas para navegar. O botão de voltar leva ao início do projeto e, de lá, à sua home.`,
     aoEntrar: irPara("resumo"),
   };
   const passoProgresso: PassoTour = {
@@ -143,6 +146,12 @@ export function Dashboard() {
           titulo: "Marque o que foi feito e pago",
           texto: "Em cada item você pode marcar Feito e Pago. Fica registrado quem marcou e quando. Os itens em andamento aparecem primeiro.",
           aoEntrar: irPara("itens"),
+        },
+        {
+          alvo: "acompanhar",
+          titulo: "Acompanhe a obra",
+          texto: "Em Acompanhar você vê a linha do tempo do projeto, as visitas e reuniões marcadas, as ocorrências e a vistoria final, onde você também confere o que está ok e o que precisa de ajuste.",
+          aoEntrar: irPara("acompanhar"),
         },
         { ...passoOlho, aoEntrar: irPara("resumo") },
         { titulo: "Pronto!", texto: "Reveja este tutorial quando quiser, pelo botão ? no topo.", aoEntrar: irPara("resumo") },
@@ -179,6 +188,12 @@ export function Dashboard() {
           texto:
             "Adicione itens à mão (use o “+” de cada etapa e “Adicionar e lançar outro” para ir rápido), cole de uma planilha, ou use seu catálogo e suas composições. O total fica sempre à vista. Depois marque Feito e Pago e gere o orçamento em PDF.",
           aoEntrar: irPara("itens"),
+        },
+        {
+          alvo: "acompanhar",
+          titulo: "Acompanhe a obra",
+          texto: "Linha do tempo, visitas e reuniões, ocorrências e vistoria final. Em cada item você toca em “Enviar ao cliente”: o WhatsApp abre com a mensagem pronta e você aperta enviar. Nada sai sozinho.",
+          aoEntrar: irPara("acompanhar"),
         },
         {
           alvo: "programa-passos",
@@ -283,7 +298,7 @@ export function Dashboard() {
             </button>
             <Logo claro />
             <div className="flex gap-2">
-              <a href="/docs" target="_blank" rel="noreferrer" className={botaoTopo} aria-label="Documentação (abre em outra aba)" title="Documentação">
+              <a href="/docs" target="_blank" rel="noreferrer" className={`${botaoTopo} hidden sm:flex`} aria-label="Documentação (abre em outra aba)" title="Documentação">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                   <path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5Z" />
                   <path d="M4 19a2 2 0 0 1 2-2h13" />
@@ -323,6 +338,8 @@ export function Dashboard() {
           <div className="prancha px-6 py-16 text-center font-mono text-xs uppercase tracking-wider text-ink/40">Carregando…</div>
         ) : aba === "programa" && !ehCliente ? (
           <ProgramaTab gruposEtapa={gruposEtapa} />
+        ) : aba === "acompanhar" ? (
+          <AcompanharTab />
         ) : itens.length === 0 ? (
           <>
             {/* Projeto novo ainda sem itens: o prazo já pode ser registrado */}

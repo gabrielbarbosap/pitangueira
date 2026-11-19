@@ -41,7 +41,7 @@ test("quem entra com Google cria uma senha e passa a entrar também com e-mail e
     await page.getByLabel("E-mail").fill("gabriel@sistemap.com.br");
     await page.getByLabel("Senha").fill("segredo123");
     await page.getByRole("form", { name: "Entrar" }).getByRole("button", { name: "Entrar" }).click();
-    await expect(page.getByText("Olá, Gabriel.")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Olá, Gabriel." })).toBeVisible();
     await expect(page.locator("article").filter({ hasText: "Casa do Lago" })).toHaveCount(1);
   });
 });
@@ -55,7 +55,7 @@ test("quem criou conta com e-mail e senha vincula o Google", async ({ page }) =>
   await page.getByLabel("E-mail").fill("marina@teste.com");
   await page.getByLabel("Senha").fill("segredo123");
   await page.getByRole("form", { name: "Criar conta" }).getByRole("button", { name: "Criar conta" }).click();
-  await expect(page.getByText("Olá, Marina.")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Olá, Marina." })).toBeVisible();
 
   await page.getByRole("link", { name: /Minha conta/ }).click();
   await expect(linha(page, "E-mail e senha")).toContainText("Ativo");

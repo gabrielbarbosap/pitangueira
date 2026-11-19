@@ -42,6 +42,8 @@ export const dados: PaginaDoc = {
               ["Registrar prazo e novas previsões", "Sim", "Não"],
               ["Arquivar e excluir o projeto", "Sim", "Não"],
               ["Ver Escopo e gerar relatório", "Sim", "Não"],
+              ["Criar visitas, ocorrências e pontos da vistoria", "Sim", "Não"],
+              ["Conferir pontos da vistoria (OK ou Ajustar)", "Sim", "Sim"],
             ]}
           />
           <Aviso tipo="atencao" titulo="Escopo e segurança">

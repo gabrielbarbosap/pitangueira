@@ -13,7 +13,7 @@ test("o link de recuperação abre a página da Pitangueira e troca a senha", as
     await page.getByLabel("E-mail").fill("marina@teste.com");
     await page.getByLabel("Senha").fill("senha-antiga");
     await page.getByRole("form", { name: "Criar conta" }).getByRole("button", { name: "Criar conta" }).click();
-    await expect(page.getByText("Olá, Marina.")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Olá, Marina." })).toBeVisible();
   });
   await sair(page);
 
@@ -37,7 +37,7 @@ test("o link de recuperação abre a página da Pitangueira e troca a senha", as
   await test.step("a senha é trocada e a pessoa já entra no painel", async () => {
     await expect(page.getByRole("heading", { name: "Senha alterada" })).toBeVisible();
     await page.getByRole("link", { name: "Ir para o painel" }).click();
-    await expect(page.getByText("Olá, Marina.")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Olá, Marina." })).toBeVisible();
   });
   await sair(page);
 
@@ -48,7 +48,7 @@ test("o link de recuperação abre a página da Pitangueira e troca a senha", as
     await expect(page.getByRole("alert").filter({ hasText: "E-mail ou senha incorretos" })).toBeVisible();
     await page.getByLabel("Senha").fill("senha-nova-123");
     await page.getByRole("form", { name: "Entrar" }).getByRole("button", { name: "Entrar" }).click();
-    await expect(page.getByText("Olá, Marina.")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Olá, Marina." })).toBeVisible();
   });
 });
 

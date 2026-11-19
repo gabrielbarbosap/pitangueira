@@ -8,6 +8,7 @@ import { telaDoProjeto } from "./conteudo/tela-do-projeto";
 import { itens } from "./conteudo/itens";
 import { orcamento } from "./conteudo/orcamento";
 import { prazo } from "./conteudo/prazo";
+import { acompanhar } from "./conteudo/acompanhar";
 import { escopo } from "./conteudo/escopo";
 import { graficos } from "./conteudo/graficos";
 import { relatorio } from "./conteudo/relatorio";
@@ -36,6 +37,7 @@ export const paginas: PaginaDoc[] = [
   itens,
   orcamento,
   prazo,
+  acompanhar,
   escopo,
   graficos,
   relatorio,

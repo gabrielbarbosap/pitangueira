@@ -32,6 +32,7 @@ export const cliente: PaginaDoc = {
           <Lista>
             <li><strong>Resumo</strong>: o que está em andamento, o prazo previsto (com a previsão original e eventuais novas previsões), quanto já foi pago, quanto falta e o saldo.</li>
             <li><strong>Itens</strong>: todos os itens do orçamento, com valor e situação, e a busca por serviço, fornecedor ou etapa.</li>
+            <li><strong>Acompanhar</strong>: a linha do tempo do projeto, as visitas e reuniões marcadas, as ocorrências e a vistoria final, onde você também confere o que está ok (<Btn>OK</Btn>) e o que precisa de ajuste (<Btn>Ajustar</Btn>, com observação). Veja <Ir para="acompanhar">Acompanhar a obra</Ir>.</li>
             <li><strong>Gráficos</strong>: oito painéis sobre dinheiro e andamento.</li>
           </Lista>
           <P>Você pode gerar o orçamento em PDF pela aba Itens, em <Btn>Orçamento em PDF</Btn>.</P>

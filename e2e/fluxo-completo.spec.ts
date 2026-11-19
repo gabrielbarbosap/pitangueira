@@ -129,7 +129,7 @@ test("do projeto novo ao orçamento na mão do cliente", async ({ page, context,
     await expect(page.getByText(/cliente/i).first()).toBeVisible();
 
     const abas = page.getByRole("navigation", { name: "Seções do projeto" }).getByRole("tab");
-    await expect(abas).toHaveText(["Resumo", "Itens", "Gráficos"]);
+    await expect(abas).toHaveText(["Resumo", "Itens", "Acompanhar", "Gráficos"]);
     await expect(page.getByRole("tab", { name: "Escopo" })).toHaveCount(0);
 
     // O prazo aparece, só para leitura

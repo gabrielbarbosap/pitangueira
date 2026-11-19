@@ -26,7 +26,7 @@ test.describe("permissões", () => {
     await projetoPronto(page);
 
     const abas = page.getByRole("navigation", { name: "Seções do projeto" }).getByRole("tab");
-    await expect(abas).toHaveText(["Resumo", "Itens", "Gráficos", "Escopo"]);
+    await expect(abas).toHaveText(["Resumo", "Itens", "Acompanhar", "Gráficos", "Escopo"]);
 
     await page.getByRole("tab", { name: "Itens" }).click();
     await expect(page.getByRole("button", { name: "Item", exact: true })).toBeVisible();
@@ -44,7 +44,7 @@ test.describe("permissões", () => {
 
     // Sem aba Escopo, e nada do conteúdo dela aparece em lugar nenhum
     const abas = page.getByRole("navigation", { name: "Seções do projeto" }).getByRole("tab");
-    await expect(abas).toHaveText(["Resumo", "Itens", "Gráficos"]);
+    await expect(abas).toHaveText(["Resumo", "Itens", "Acompanhar", "Gráficos"]);
     await expect(page.getByRole("tab", { name: "Escopo" })).toHaveCount(0);
     await expect(page.getByText("Pedidos do cliente")).toHaveCount(0);
     await expect(page.getByText("Escopo do projeto")).toHaveCount(0);

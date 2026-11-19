@@ -96,6 +96,15 @@ export function IconeItens({ size = 22 }: P) {
   );
 }
 
+export function IconeAcompanhar({ size = 22 }: P) {
+  return (
+    <svg {...base(size)}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
+    </svg>
+  );
+}
+
 export function IconeGraficos({ size = 22 }: P) {
   return (
     <svg {...base(size)}>

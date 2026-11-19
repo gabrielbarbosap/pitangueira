@@ -291,3 +291,54 @@ export interface Previsao {
   /** Por que o prazo mudou. Obrigatório nas novas previsões; a original traz uma observação opcional. */
   motivo: string;
 }
+
+// ---------- Acompanhamento do projeto (visitas, ocorrências, vistoria) ----------
+
+export type StatusVisita = "agendada" | "realizada" | "cancelada";
+
+/** Visita técnica ou reunião do projeto, com a pauta antes e a ata depois. */
+export interface Visita {
+  id: string;
+  titulo: string;
+  /** Data e hora (ms). */
+  quando: number;
+  local: string;
+  participantes: string;
+  pauta: string;
+  status: StatusVisita;
+  /** O que ficou combinado (preenchida depois da visita). */
+  ata: string;
+  createdAt?: number;
+}
+
+export type Gravidade = "baixa" | "media" | "alta";
+export type StatusOcorrencia = "aberta" | "em_andamento" | "resolvida";
+
+/** Problema ou imprevisto da obra, com responsável e como foi resolvido. */
+export interface Ocorrencia {
+  id: string;
+  titulo: string;
+  descricao: string;
+  gravidade: Gravidade;
+  responsavel: string;
+  status: StatusOcorrencia;
+  abertaEm: number;
+  resolvidaEm: number | null;
+  resolucao: string;
+  createdAt?: number;
+}
+
+export type StatusVistoria = "pendente" | "ok" | "ajustar";
+
+/** Um ponto da vistoria final da obra. O cliente também confere (OK ou "ajustar", com observação). */
+export interface ItemVistoria {
+  id: string;
+  texto: string;
+  ambiente: string;
+  status: StatusVistoria;
+  obs: string;
+  conferidoPor?: string;
+  conferidoEm?: number;
+  ordem: number;
+  createdAt?: number;
+}

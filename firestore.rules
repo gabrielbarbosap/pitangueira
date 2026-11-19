@@ -80,6 +80,23 @@ service cloud.firestore {
           || (isMember(obraId) && soAltera(['feito', 'pago', 'feitoPor', 'feitoEm', 'pagoPor', 'pagoEm', 'updatedAt']));
       }
 
+      // Acompanhamento: visitas e ocorrências são do arquiteto (o cliente só lê).
+      match /visitas/{id} {
+        allow read: if isOwner(obraId) || isMember(obraId);
+        allow write: if isOwner(obraId);
+      }
+      match /ocorrencias/{id} {
+        allow read: if isOwner(obraId) || isMember(obraId);
+        allow write: if isOwner(obraId);
+      }
+      // Vistoria final: o arquiteto monta a lista; o cliente também confere (status e observação).
+      match /vistoria/{id} {
+        allow read: if isOwner(obraId) || isMember(obraId);
+        allow create, delete: if isOwner(obraId);
+        allow update: if isOwner(obraId)
+          || (isMember(obraId) && soAltera(['status', 'obs', 'conferidoPor', 'conferidoEm', 'updatedAt']));
+      }
+
       match /members/{uid} {
         allow create: if signedIn() && request.auth.uid == uid
           && request.resource.data.code == obra(obraId).accessCode;
