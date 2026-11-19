@@ -19,7 +19,9 @@ export const faq: PaginaDoc = {
           <H3>O cliente precisa digitar a chave toda vez?</H3>
           <P>Não no mesmo aparelho. Em outro aparelho, ou depois de tocar em Sair, sim.</P>
           <H3>Esqueci a senha do e-mail e senha.</H3>
-          <P>Na tela inicial, toque em <Btn>Esqueci a senha</Btn>, digite o e-mail da conta e toque em <Btn>Enviar o link</Btn>. Você recebe um e-mail para criar uma nova senha. Se não chegar, olhe o spam.</P>
+          <P>Na tela inicial, toque em <Btn>Esqueci a senha</Btn>, digite o e-mail da conta e toque em <Btn>Enviar o link</Btn>. O e-mail traz um link que abre uma página da Pitangueira para criar a nova senha. Se não chegar, olhe o spam.</P>
+          <H3>O link da nova senha diz que expirou.</H3>
+          <P>O link vale por pouco tempo e só uma vez. Volte à tela inicial e peça outro em <Btn>Esqueci a senha</Btn>.</P>
           <H3>Entro com Google e com e-mail e vejo projetos diferentes.</H3>
           <P>Se você criou a conta de e-mail e senha à parte, ela é outra conta, com projetos próprios. Para ter os dois jeitos na MESMA conta, entre pelo jeito que tem os seus projetos e, em <Btn>Minha conta</Btn> (a bolinha com a inicial, no topo do painel), crie uma senha ou vincule o Google.</P>
           <H3>Como entro com e-mail e senha se sempre usei o Google?</H3>

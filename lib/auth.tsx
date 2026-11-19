@@ -9,6 +9,8 @@ import {
 } from "react";
 import {
   EmailAuthProvider,
+  applyActionCode,
+  confirmPasswordReset,
   createUserWithEmailAndPassword,
   linkWithCredential,
   linkWithPopup,
@@ -21,6 +23,7 @@ import {
   signInWithPopup,
   signOut,
   updateProfile,
+  verifyPasswordResetCode,
   type User as FirebaseUser,
 } from "firebase/auth";
 import { auth, googleProvider, isFirebaseConfigured } from "./firebase";
@@ -67,6 +70,11 @@ function mensagemDeErro(e: unknown): string {
     case "auth/credential-already-in-use":
     case "auth/provider-already-linked":
       return "Esse jeito de entrar já está ligado a outra conta.";
+    case "auth/expired-action-code":
+    case "auth/invalid-action-code":
+      return "Este link expirou ou já foi usado. Peça um novo em “Esqueci a senha”.";
+    case "auth/user-disabled":
+      return "Esta conta está desativada. Fale com o administrador.";
     case "auth/requires-recent-login":
       return "Por segurança, saia, entre de novo e tente mais uma vez.";
     case "auth/email-already-in-use":
@@ -123,6 +131,12 @@ interface AuthContextValue {
   criarConta: (nome: string, email: string, senha: string) => Promise<ResultadoAuth>;
   /** Envia o link para criar uma nova senha. */
   recuperarSenha: (email: string) => Promise<ResultadoAuth>;
+  /** Confere o código do link do e-mail de recuperação e devolve o e-mail da conta. */
+  verificarCodigoSenha: (codigo: string) => Promise<ResultadoAuth & { email: string }>;
+  /** Grava a nova senha (código do link do e-mail) e já entra com ela. */
+  redefinirSenha: (codigo: string, email: string, senha: string) => Promise<ResultadoAuth>;
+  /** Confirma o e-mail (código do link do e-mail de verificação). */
+  confirmarEmail: (codigo: string) => Promise<ResultadoAuth>;
   /** Quem entrou com o Google passa a poder entrar também com e-mail e senha (mesma conta). */
   criarSenha: (senha: string) => Promise<ResultadoAuth>;
   /** Quem entrou com e-mail e senha passa a poder entrar também com o Google (mesma conta). */
@@ -253,6 +267,64 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { ok: true, mensagem: "Se existir uma conta com esse e-mail, enviamos o link para criar uma nova senha. Confira também a caixa de spam." };
   }
 
+  // No demo não há e-mail: o código do link é "demo:<e-mail>" e vale se a conta demo existir.
+  const emailDoCodigoDemo = (codigo: string) => (codigo.startsWith("demo:") ? codigo.slice(5).toLowerCase() : "");
+
+  async function verificarCodigoSenha(codigo: string): Promise<ResultadoAuth & { email: string }> {
+    if (!codigo) return { ok: false, email: "", mensagem: mensagemDeErro({ code: "auth/invalid-action-code" }) };
+    if (!isFirebaseConfigured || !auth) {
+      const e = emailDoCodigoDemo(codigo);
+      return lerContasDemo().some((c) => c.email === e) ? { ok: true, email: e, mensagem: "" } : { ok: false, email: "", mensagem: mensagemDeErro({ code: "auth/expired-action-code" }) };
+    }
+    try {
+      return { ok: true, email: await verifyPasswordResetCode(auth, codigo), mensagem: "" };
+    } catch (err) {
+      return { ok: false, email: "", mensagem: mensagemDeErro(err) };
+    }
+  }
+
+  async function redefinirSenha(codigo: string, email: string, senha: string): Promise<ResultadoAuth> {
+    if (senha.length < SENHA_MINIMA) return { ok: false, mensagem: `A senha precisa ter pelo menos ${SENHA_MINIMA} caracteres.` };
+    if (!isFirebaseConfigured || !auth) {
+      const e = emailDoCodigoDemo(codigo) || email.toLowerCase();
+      const contas = lerContasDemo();
+      const conta = contas.find((c) => c.email === e);
+      if (!conta) return { ok: false, mensagem: mensagemDeErro({ code: "auth/expired-action-code" }) };
+      const nova = { ...conta, senha };
+      try {
+        localStorage.setItem(LS_CONTAS_DEMO, JSON.stringify(contas.map((c) => (c.email === e ? nova : c))));
+      } catch {
+        /* sem armazenamento */
+      }
+      setUser(usuarioDemo(nova));
+      registrarEvento("senha_redefinida");
+      return { ok: true, mensagem: "" };
+    }
+    try {
+      await confirmPasswordReset(auth, codigo, senha);
+    } catch (err) {
+      return { ok: false, mensagem: mensagemDeErro(err) };
+    }
+    registrarEvento("senha_redefinida");
+    // Já entra com a senha nova (se falhar, a pessoa entra pela tela inicial: a senha já está trocada).
+    try {
+      await signInWithEmailAndPassword(auth, email, senha);
+    } catch {
+      /* ok */
+    }
+    return { ok: true, mensagem: "" };
+  }
+
+  async function confirmarEmail(codigo: string): Promise<ResultadoAuth> {
+    if (!isFirebaseConfigured || !auth) return codigo ? { ok: true, mensagem: "" } : { ok: false, mensagem: mensagemDeErro({ code: "auth/invalid-action-code" }) };
+    try {
+      await applyActionCode(auth, codigo);
+      return { ok: true, mensagem: "" };
+    } catch (err) {
+      return { ok: false, mensagem: mensagemDeErro(err) };
+    }
+  }
+
   /** Refaz o login com o Google (quando o Firebase pede "login recente" para uma ação sensível). */
   async function reautenticar(u: FirebaseUser): Promise<boolean> {
     if (!googleProvider || !metodosDe(u).includes("google")) return false;
@@ -356,7 +428,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, configured: isFirebaseConfigured, erro, login, loginComEmail, criarConta, recuperarSenha, criarSenha, vincularGoogle, entrarComoCliente, logout }}>
+    <AuthContext.Provider value={{ user, loading, configured: isFirebaseConfigured, erro, login, loginComEmail, criarConta, recuperarSenha, criarSenha, vincularGoogle, verificarCodigoSenha, redefinirSenha, confirmarEmail, entrarComoCliente, logout }}>
       {children}
     </AuthContext.Provider>
   );

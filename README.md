@@ -88,6 +88,10 @@ app/docs/
 - **CI** (`.github/workflows/ci.yml`): a cada push na `main` e em todo pull request roda `tsc`, o lint (por ora só avisa: há erros antigos de "setState em efeito") e os testes e2e completos. Se algo falhar, o relatório do Playwright fica anexado à execução.
 - **Métricas de uso e erros** (`lib/telemetria.ts`, painel em `/admin`): eventos e erros vão para a coleção `telemetria` do Firestore (qualquer conta logada só cria; quem entrou como arquiteto lê (o cliente não), conforme `firestore.rules`). Sem dados pessoais. Todo arquiteto é tratado como administrador do painel. **Depois de mudar as regras, publique-as no Firebase.** Teste: `e2e/autoria-e-metricas.spec.ts`.
 
+## Links dos e-mails do Firebase
+
+Os e-mails de recuperação de senha e de confirmação de e-mail apontam para a página própria **`/acao`** (em vez da tela genérica do Firebase). Depois do deploy, configure no console: **Authentication → Modelos de e-mail → (Redefinição de senha e Verificação de e-mail) → Editar → Personalizar URL de ação** → `https://SEU-DOMINIO/acao`. O domínio precisa estar em Authentication → Configurações → Domínios autorizados.
+
 ## Design system
 
 O padrão visual fica em **`/design`**: cores, tipografia, forma, botões, campos, chips, alertas, cartões, progresso, movimento, texto e acessibilidade, com os componentes reais e um checklist de tela nova.
@@ -104,6 +108,7 @@ Os testes simulam um arquiteto novo usando o app de verdade no navegador (Playwr
 - `e2e/permissoes.spec.ts`: só o arquiteto tem a aba Escopo e cria orçamento; o cliente só acompanha.
 - `e2e/relatorio-mensal.spec.ts`: o relatório mensal de andamento (escolher o mês, o que entra, gerar o documento; o cliente não vê).
 - `e2e/tutorial.spec.ts`: o tutorial da primeira visita.
+- `e2e/acao.spec.ts`: a página /acao dos links de e-mail (nova senha, link vencido, confirmação de e-mail).
 - `e2e/conta.spec.ts`: Minha conta (criar senha para quem entra com Google e vincular o Google a quem entra com senha, na mesma conta).
 - `e2e/login-email.spec.ts`: login do arquiteto com e-mail e senha (criar conta, validações, senha errada, e-mail repetido, recuperar senha) e o acesso do cliente sem e-mail.
 - `e2e/financeiro.spec.ts`: o financeiro (filtros, atrasos por tempo, cobrança pelo WhatsApp, recebimento com desconto, visão por cliente, planilha CSV).

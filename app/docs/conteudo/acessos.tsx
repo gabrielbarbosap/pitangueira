@@ -29,7 +29,7 @@ export const acessos: PaginaDoc = {
             linhas={[
               [<Btn key="1">Entrar</Btn>, "Digite o e-mail e a senha e toque em Entrar. O botão Mostrar deixa ver a senha digitada."],
               [<Btn key="2">Criar conta</Btn>, "Toque em “Criar conta”, digite seu nome, e-mail e uma senha de pelo menos 6 caracteres. A conta é criada e você já entra no painel."],
-              [<Btn key="3">Esqueci a senha</Btn>, "Digite o e-mail e toque em Enviar o link. Você recebe um e-mail para criar uma nova senha (olhe também o spam)."],
+              [<Btn key="3">Esqueci a senha</Btn>, "Digite o e-mail e toque em Enviar o link. Você recebe um e-mail; o link abre uma página da Pitangueira para criar a nova senha (olhe também o spam)."],
             ]}
           />
           <Lista>
@@ -48,6 +48,25 @@ export const acessos: PaginaDoc = {
             </li>
           </Lista>
           <P>Para sair, use o botão de sair (<Btn>Sair</Btn>) no topo laranja, na home ou na tela do projeto.</P>
+        </>
+      ),
+    },
+    {
+      id: "redefinir-senha",
+      titulo: "Criar a nova senha pelo link do e-mail",
+      papel: "arquiteto",
+      corpo: (
+        <>
+          <Passos>
+            <Passo>Na tela inicial, toque em <Btn>Esqueci a senha</Btn>, digite o e-mail e toque em <Btn>Enviar o link</Btn>.</Passo>
+            <Passo>Abra o e-mail e toque no link. Ele abre uma página da Pitangueira que diz para qual conta é a nova senha.</Passo>
+            <Passo>Digite a <Btn>Nova senha</Btn> (pelo menos 6 caracteres) e repita em <Btn>Repita a senha</Btn>.</Passo>
+            <Passo>Toque em <Btn>Salvar nova senha</Btn>. Pronto: a senha vale na hora e você já fica dentro da conta; toque em <Btn>Ir para o painel</Btn>.</Passo>
+          </Passos>
+          <Lista>
+            <li>O link vale por pouco tempo e só pode ser usado uma vez. Se a página disser “Este link expirou ou já foi usado”, peça outro em Esqueci a senha.</li>
+            <li>O mesmo endereço mostra “E-mail confirmado” quando você toca no link do e-mail de verificação enviado ao criar a conta.</li>
+          </Lista>
         </>
       ),
     },
