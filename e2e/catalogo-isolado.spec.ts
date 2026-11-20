@@ -25,7 +25,7 @@ test("mudar o valor de um item do catálogo da home não altera os projetos", as
   await test.step("na home, o valor do item no catálogo muda", async () => {
     await page.getByRole("tab", { name: "Resumo" }).click();
     await page.getByRole("button", { name: "Voltar ao painel" }).click();
-    await page.getByRole("button", { name: "Meu catálogo" }).click();
+    await page.getByRole("button", { name: /Meu catálogo/ }).click();
     const cat = page.getByRole("dialog", { name: /Meu catálogo/ });
     await cat.getByRole("button", { name: "Editar Tinta do catálogo" }).click();
     await cat.getByText("Valor unit. (R$)", { exact: true }).locator("..").getByRole("spinbutton").fill("150");

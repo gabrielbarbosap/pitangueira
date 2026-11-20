@@ -57,8 +57,8 @@ test.describe("permissões", () => {
     await expect(page.getByRole("button", { name: /Adicionar primeiro item/ })).toHaveCount(0);
 
     // E também não aparecem os atalhos pessoais do arquiteto
-    await expect(page.getByRole("button", { name: "Meu catálogo" })).toHaveCount(0);
-    await expect(page.getByRole("link", { name: "Financeiro" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /Meu catálogo/ })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: /Financeiro/ })).toHaveCount(0);
   });
 
   test("o tutorial do cliente não fala de escopo", async ({ page }) => {

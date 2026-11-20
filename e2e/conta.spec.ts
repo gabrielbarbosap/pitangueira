@@ -12,7 +12,7 @@ test("quem entra com Google cria uma senha e passa a entrar também com e-mail e
   await entrarComoArquiteto(page);
 
   await test.step("Minha conta mostra os jeitos de entrar", async () => {
-    await page.getByRole("link", { name: /Minha conta/ }).click();
+    await page.getByRole("link", { name: "Minha conta", exact: true }).click();
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Gabriel");
     await expect(linha(page, "Google")).toContainText("Ativo");
     await expect(linha(page, "E-mail e senha")).toContainText("Não ativado");
@@ -57,7 +57,7 @@ test("quem criou conta com e-mail e senha vincula o Google", async ({ page }) =>
   await page.getByRole("form", { name: "Criar conta" }).getByRole("button", { name: "Criar conta" }).click();
   await expect(page.getByRole("heading", { name: "Olá, Marina." })).toBeVisible();
 
-  await page.getByRole("link", { name: /Minha conta/ }).click();
+  await page.getByRole("link", { name: "Minha conta", exact: true }).click();
   await expect(linha(page, "E-mail e senha")).toContainText("Ativo");
   await expect(linha(page, "Google")).toContainText("Não ativado");
   await page.getByRole("button", { name: "Vincular Google" }).click();

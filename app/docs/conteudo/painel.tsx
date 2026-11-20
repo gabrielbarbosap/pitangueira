@@ -22,12 +22,14 @@ export const painel: PaginaDoc = {
               [<Btn key="b">Sair</Btn>, "Encerra a sessão."],
             ]}
           />
-          <P>Logo abaixo ficam as pílulas de atalho para as suas ferramentas pessoais:</P>
+          <P>Logo abaixo ficam os atalhos, em cartões grandes, fáceis de tocar no celular. Cada um mostra o que há dentro (a contagem de itens, por exemplo):</P>
           <Lista>
             <li><Btn>Meu catálogo</Btn>: seus itens e preços reutilizáveis (<Ir para="catalogo-e-composicoes">Catálogo e composições</Ir>).</li>
             <li><Btn>Composições</Btn>: custo de serviços montado por insumos.</li>
             <li><Btn>Fornecedores</Btn>: cadastro e histórico de quem trabalha com você (<Ir para="fornecedores">Fornecedores</Ir>).</li>
-            <li><Btn>Financeiro</Btn>: honorários e parcelas do escritório (<Ir para="financeiro">Financeiro</Ir>).</li>
+            <li><Btn>Financeiro</Btn>: honorários e parcelas do escritório (<Ir para="financeiro">Financeiro</Ir>). O cartão avisa quanto está em atraso (com um ponto laranja), quanto há a receber ou que está tudo recebido.</li>
+            <li><Btn>Minha conta</Btn>: login com Google e senha.</li>
+            <li><Btn>Documentação</Btn>: este manual, em outra aba.</li>
           </Lista>
         </>
       ),

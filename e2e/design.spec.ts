@@ -18,12 +18,12 @@ test("o catálogo do design system abre e mostra os componentes padrão", async 
 test("as classes do design system estão valendo no app (campos e topo)", async ({ page }) => {
   await semTutorial(page);
   await entrarComoArquiteto(page);
-  // Topo laranja: botões redondos e pílulas de atalho
+  // Topo laranja: botões redondos e atalhos grandes
   const redondo = page.getByRole("button", { name: "Ver o tutorial" });
   expect(await redondo.evaluate((e) => getComputedStyle(e).width)).toBe("40px");
   expect(await redondo.evaluate((e) => getComputedStyle(e).borderRadius)).toMatch(/9999px|3.35544e\+07px/);
-  const pilula = page.getByRole("button", { name: "Meu catálogo" });
-  expect(await pilula.evaluate((e) => getComputedStyle(e).textTransform)).toBe("uppercase");
+  const atalho = page.getByRole("button", { name: /Meu catálogo/ });
+  expect(await atalho.evaluate((e) => e.getBoundingClientRect().height)).toBeGreaterThanOrEqual(64);
 
   // Campo padrão numa janela
   await page.getByRole("button", { name: "Novo projeto" }).click();

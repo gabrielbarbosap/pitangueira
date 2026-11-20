@@ -7,6 +7,7 @@ import { Alerta } from "../components/ui/Alerta";
 import { Botao, BotaoIcone } from "../components/ui/Botao";
 import { Campo } from "../components/ui/Campo";
 import { Chip } from "../components/ui/Chip";
+import { Atalho } from "../components/ui/Atalho";
 
 export const metadata: Metadata = {
   title: "Design system — Pitangueira",
@@ -332,6 +333,21 @@ export default function DesignSystem() {
               <li>Erro aparece embaixo do campo, em laranja escuro, com <Cod>aria-invalid</Cod>.</li>
               <li>Campos de dinheiro e de código usam <Cod>inputMode</Cod> para abrir o teclado certo no celular.</li>
             </ul>
+          </Secao>
+
+          <Secao id="atalhos" titulo="Atalhos">
+            <P>
+              Componente <Cod>Atalho</Cod>. Cartão grande de acesso rápido (mais de 64px de altura) com ícone, nome e uma linha do que há dentro. Com <Cod>href</Cod> vira link; com <Cod>onClick</Cod>, botão. O tom <Cod>alerta</Cod> acende um ponto laranja para o que pede atenção.
+            </P>
+            <div className="mt-4">
+              <Exemplo legenda="Tons: neutro, alerta e ok" codigo={'<Atalho icone={...} titulo="Financeiro" detalhe="R$ 2.000 em atraso" tom="alerta" href="/financeiro" />'}>
+                <div className="grid w-full max-w-xl grid-cols-1 gap-3 sm:grid-cols-3">
+                  <Atalho icone={<span>▤</span>} titulo="Catálogo" detalhe="12 itens" href="#atalhos" />
+                  <Atalho icone={<span>$</span>} titulo="Financeiro" detalhe="R$ 2.000 em atraso" tom="alerta" href="#atalhos" />
+                  <Atalho icone={<span>✓</span>} titulo="Cobranças" detalhe="Tudo recebido" tom="ok" href="#atalhos" />
+                </div>
+              </Exemplo>
+            </div>
           </Secao>
 
           <Secao id="chips" titulo="Chips e selos">

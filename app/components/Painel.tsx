@@ -19,6 +19,7 @@ import { ComposicoesDialog } from "./ComposicoesDialog";
 import { FornecedoresDialog } from "./FornecedoresDialog";
 import { Tour, useTour, type PassoTour } from "./Tour";
 import { PrazoMini, ProximasEntregas, useHoje } from "./PrazoVisual";
+import { AtalhosHome } from "./AtalhosHome";
 import { IconeAjuda, IconeArquivo, IconeMais, IconeObra, IconeOpcoes, IconeSair } from "./Icones";
 
 type StatusObra = "nova" | "parada" | "andamento" | "concluida";
@@ -207,9 +208,9 @@ export function Painel() {
     },
     {
       alvo: "atalhos",
-      titulo: "Suas ferramentas pessoais",
+      titulo: "Seus atalhos",
       texto:
-        "Meu catálogo guarda seus itens e preços. Composições monta serviços com insumos, BDI e margem. Fornecedores mostra o histórico de prazo e custo. Financeiro controla honorários e parcelas a receber.",
+        "Cada cartão abre uma ferramenta e mostra o que há nela. Meu catálogo guarda seus itens e preços. Composições monta serviços com BDI e margem. Fornecedores mostra prazo e custo. Financeiro controla honorários e avisa em laranja quando há parcela atrasada. Minha conta define como você entra, e a Documentação ensina cada função.",
     },
     {
       alvo: "olhinho",
@@ -263,7 +264,7 @@ export function Painel() {
   return (
     <div className="grade min-h-dvh">
       {/* Topo colorido: saudação e contexto */}
-      <header className={`rounded-b-[32px] bg-pitanga text-white ${comCartoes ? "pb-16" : "pb-8"}`}>
+      <header className={`rounded-b-[32px] bg-pitanga text-white pb-16`}>
         <div className="mx-auto max-w-3xl px-4 pt-4">
           <div className="flex items-center justify-between gap-3">
             <Logo claro />
@@ -308,49 +309,17 @@ export function Painel() {
                 ? "Comece criando o seu primeiro projeto."
                 : `${ativas.length} ${ativas.length === 1 ? "projeto sob sua gestão" : "projetos sob sua gestão"}${arquivadas.length > 0 ? ` · ${arquivadas.length} arquivado${arquivadas.length > 1 ? "s" : ""}` : ""}.`}
           </p>
-          <div className="mt-3 flex flex-wrap items-center gap-2" data-tour="atalhos">
-            <button
-              onClick={() => setCatalogo(true)}
-              className="pilula-topo"
-            >
-              Meu catálogo
-            </button>
-            <button
-              onClick={() => setComposicoes(true)}
-              className="pilula-topo"
-            >
-              Composições
-            </button>
-            <button
-              onClick={() => setFornecedores(true)}
-              className="pilula-topo"
-            >
-              Fornecedores
-            </button>
-            <Link
-              href="/financeiro"
-              className="pilula-topo"
-            >
-              Financeiro
-            </Link>
-            <a
-              href="/docs"
-              target="_blank"
-              rel="noreferrer"
-              className="pilula-topo"
-            >
-              Documentação
-            </a>
-            {!configured && (
-              <p className="pilula-topo">Modo demo · dados só neste navegador</p>
-            )}
-          </div>
+          {!configured && (
+            <p className="pilula-topo mt-3">Modo demo · dados só neste navegador</p>
+          )}
         </div>
       </header>
 
-      <main className={`mx-auto max-w-3xl space-y-6 px-4 pb-32 ${comCartoes ? "-mt-9" : "pt-6"}`}>
+      <main className="mx-auto -mt-9 max-w-3xl space-y-6 px-4 pb-32">
+        <AtalhosHome onCatalogo={() => setCatalogo(true)} onComposicoes={() => setComposicoes(true)} onFornecedores={() => setFornecedores(true)} />
+
         {comCartoes && (
-          <section aria-label="Resumo geral" className="relative z-10 grid grid-cols-2 gap-3" data-tour="resumo-geral">
+          <section aria-label="Resumo geral" className="grid grid-cols-2 gap-3" data-tour="resumo-geral">
             <Cartao
               rotulo="Projetos que você toca"
               valor={String(ativas.length)}
