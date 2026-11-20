@@ -24,6 +24,7 @@ export function DocumentoBase({
   nomeArquivo,
   barra,
   rotuloImprimir = "Imprimir / salvar PDF",
+  mensagemExtra,
   children,
 }: {
   onFechar: () => void;
@@ -36,6 +37,8 @@ export function DocumentoBase({
   /** Controles extras na barra de ações (ex.: navegar entre PDFs). */
   barra?: ReactNode;
   rotuloImprimir?: string;
+  /** Bloco a mais na mensagem do WhatsApp que acompanha o PDF (ex.: total, vencimento e PIX da cobrança). */
+  mensagemExtra?: string;
   children: ReactNode;
 }) {
   const { config, projeto } = useData();
@@ -92,7 +95,7 @@ export function DocumentoBase({
         </div>
       </div>
 
-      {whatsapp && <EnviarWhatsapp alvo={folha} tipo={titulo} rotulo={etapaRotulo} nomeArquivo={nomeArquivo ?? titulo} onFechar={() => setWhatsapp(false)} />}
+      {whatsapp && <EnviarWhatsapp alvo={folha} tipo={titulo} rotulo={etapaRotulo} nomeArquivo={nomeArquivo ?? titulo} extra={mensagemExtra} onFechar={() => setWhatsapp(false)} />}
 
       <article ref={folha} className="mx-auto my-6 max-w-[800px] bg-white p-8 text-ink shadow-sm print:my-0 print:max-w-none print:p-0 print:shadow-none sm:p-12">
         <header className="flex items-start justify-between gap-4 border-b-2 pb-4" style={{ borderColor: cor }}>

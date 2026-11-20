@@ -125,6 +125,11 @@ export function ItemDialog({
 
   const valido = form.etapa.trim() && form.descricao.trim();
 
+  // Editando: o novo valor (real, ou orçado) é maior ou menor que o atual? A janela avisa antes de salvar.
+  const valorNovo = Number(form.valorReal) > 0 ? Number(form.valorReal) : Number(form.valorOrcado) || 0;
+  const valorAtual = item ? (item.valorReal > 0 ? item.valorReal : item.valorOrcado) : null;
+  const difValor = valorAtual === null ? 0 : Math.round((valorNovo - valorAtual) * 100) / 100;
+
   /** `continuar`: guarda e deixa a janela aberta para lançar o próximo item da mesma etapa. */
   async function salvar(continuar = false) {
     if (!valido || salvando) return;
@@ -271,6 +276,11 @@ export function ItemDialog({
             />
           </div>
           <p className={dica}>É calculado sozinho (quantidade × valor unitário). Se o valor for fechado, como uma verba ou empreitada, digite o total direto.</p>
+          {valorAtual !== null && difValor !== 0 && (
+            <p role="status" className={`mt-2 rounded-lg px-3 py-2 text-sm font-medium ${difValor > 0 ? "bg-pitanga/10 text-pitanga-escuro" : "bg-emerald-50 text-emerald-800"}`}>
+              {difValor > 0 ? "▲" : "▼"} {brl(Math.abs(difValor))} {difValor > 0 ? "a mais" : "a menos"} que o valor atual ({brl(valorAtual)}). Novo valor: {brl(valorNovo)}.
+            </p>
+          )}
         </div>
 
         <div>

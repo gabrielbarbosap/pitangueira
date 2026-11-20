@@ -95,6 +95,11 @@ service cloud.firestore {
         allow read: if isOwner(obraId) || isMember(obraId);
         allow write: if isOwner(obraId);
       }
+      // Cobranças da obra: o arquiteto gera e gerencia; o cliente só lê.
+      match /cobrancas/{id} {
+        allow read: if isOwner(obraId) || isMember(obraId);
+        allow write: if isOwner(obraId);
+      }
       // Feed: arquiteto e cliente publicam. Cada um remove só o que publicou (o arquiteto remove qualquer um).
       match /publicacoes/{id} {
         allow read: if isOwner(obraId) || isMember(obraId);

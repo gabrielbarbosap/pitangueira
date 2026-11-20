@@ -47,6 +47,7 @@ export const introducao: PaginaDoc = {
               ["Pede uma visita (o arquiteto aprova)", "Aprova ou recusa", "Sim"],
               ["Adiciona e confere pontos da vistoria (OK ou Ajustar)", "Sim", "Sim"],
               ["Encaminha atualizações pelo WhatsApp", "Tudo", "Só a vistoria, ao arquiteto"],
+              ["Gera e dá baixa na cobrança da obra", "Sim", "Não (só vê as em aberto)"],
               ["Vê a aba Escopo", "Sim", "Não"],
               ["Gera orçamento em PDF", "Sim", "Sim"],
               ["Gera o relatório mensal", "Sim", "Não"],

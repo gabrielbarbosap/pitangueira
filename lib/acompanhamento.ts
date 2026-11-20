@@ -1,12 +1,14 @@
 // Acompanhamento do projeto: a linha do tempo e as mensagens que o arquiteto encaminha pelo WhatsApp. Funções puras.
 import { abertura, blocos, bullets, campo, comoLista, fecho, titulo } from "./mensagens";
-import type { Gravidade, Item, ItemVistoria, Ocorrencia, Previsao, Publicacao, Visita } from "./types";
+import type { CobrancaObra, Gravidade, Item, ItemVistoria, Ocorrencia, Previsao, Publicacao, Visita } from "./types";
 
-export type TipoEvento = "publicacao" | "andamento" | "prazo" | "visita" | "ocorrencia" | "vistoria";
+export type TipoEvento = "publicacao" | "andamento" | "valor" | "cobranca" | "prazo" | "visita" | "ocorrencia" | "vistoria";
 
 export const ROTULO_TIPO: Record<TipoEvento, string> = {
   publicacao: "Avisos",
   andamento: "Andamento",
+  valor: "Valores",
+  cobranca: "Cobranças",
   prazo: "Prazo",
   visita: "Visitas",
   ocorrencia: "Ocorrências",
@@ -24,6 +26,10 @@ export interface Evento {
   porCliente?: boolean;
   /** Uid de quem criou (publicações): serve para o autor remover o que é dele. */
   donoUid?: string;
+  /** Valor que mudou (só em "valor"): a tela formata com o olhinho de privacidade. */
+  valor?: { de: number; para: number };
+  /** Total e vencimento (só em "cobranca"). */
+  dinheiro?: { total: number; vencimento: number | null };
   /** Nomes dos itens (só no andamento), para mostrar como etiquetas no cartão. */
   itens?: string[];
   /** Texto pronto para encaminhar ao cliente (vazio = não tem o que encaminhar). */
@@ -32,6 +38,7 @@ export interface Evento {
 
 export const ROTULO_GRAVIDADE: Record<Gravidade, string> = { baixa: "Baixa", media: "Média", alta: "Alta" };
 
+const reais = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 const dataBr = (ms: number) => new Date(ms).toLocaleDateString("pt-BR");
 const horaBr = (ms: number) => new Date(ms).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 export const dataHoraBr = (ms: number) => `${dataBr(ms)} às ${horaBr(ms)}`;
@@ -156,8 +163,8 @@ export function mensagemVistoria(itens: ItemVistoria[], c: ContextoMensagem): st
   ]);
 }
 
-const EMOJI_TIPO: Record<TipoEvento, string> = { publicacao: "📢", andamento: "✅", prazo: "🗓️", visita: "📅", ocorrencia: "⚠️", vistoria: "🔍" };
-const ROTULO_UNICO: Record<TipoEvento, string> = { publicacao: "Novidade da obra", andamento: "Andamento", prazo: "Prazo", visita: "Visita", ocorrencia: "Ocorrência", vistoria: "Vistoria" };
+const EMOJI_TIPO: Record<TipoEvento, string> = { publicacao: "📢", andamento: "✅", valor: "💲", cobranca: "💰", prazo: "🗓️", visita: "📅", ocorrencia: "⚠️", vistoria: "🔍" };
+const ROTULO_UNICO: Record<TipoEvento, string> = { publicacao: "Novidade da obra", andamento: "Andamento", valor: "Valor alterado", cobranca: "Cobrança", prazo: "Prazo", visita: "Visita", ocorrencia: "Ocorrência", vistoria: "Vistoria" };
 
 /** Mensagem de um fato da linha do tempo. */
 export function mensagemDoEvento(e: Evento, c: ContextoMensagem): string {
@@ -182,10 +189,11 @@ interface Fontes {
   ocorrencias: Ocorrencia[];
   vistoria: ItemVistoria[];
   publicacoes?: Publicacao[];
+  cobrancas?: CobrancaObra[];
 }
 
 /** Todos os fatos do projeto em ordem do mais recente para o mais antigo. Itens marcados no mesmo dia, pela mesma pessoa e na mesma etapa viram uma linha só. */
-export function montarLinhaDoTempo({ itens, previsoes, visitas, ocorrencias, vistoria, publicacoes = [] }: Fontes): Evento[] {
+export function montarLinhaDoTempo({ itens, previsoes, visitas, ocorrencias, vistoria, publicacoes = [], cobrancas = [] }: Fontes): Evento[] {
   const eventos: Evento[] = [];
 
   // Avisos publicados pelo arquiteto
@@ -225,6 +233,32 @@ export function montarLinhaDoTempo({ itens, previsoes, visitas, ocorrencias, vis
       quem: g.quem,
       porCliente: g.porCliente,
     });
+  }
+
+  // Valores que mudaram: de quanto para quanto, e se ficou mais caro ou mais barato.
+  for (const i of itens) {
+    for (const h of i.historicoValor ?? []) {
+      const sobe = h.para > h.de;
+      const dif = Math.abs(h.para - h.de);
+      eventos.push({
+        id: `valor|${i.id}|${h.em}`,
+        tipo: "valor",
+        titulo: `Valor alterado: ${i.descricao}`,
+        detalhe: `${reais(h.de)} → ${reais(h.para)} (${sobe ? "+" : "−"}${reais(dif)}, ficou mais ${sobe ? "caro" : "barato"})`,
+        valor: { de: h.de, para: h.para },
+        quando: h.em,
+        quem: h.por.replace(/ \(cliente\)$/, ""),
+      });
+    }
+  }
+
+  // Cobranças geradas e pagas
+  for (const c of cobrancas) {
+    const venc = c.vencimento ? ` · vence em ${dataBr(c.vencimento)}` : "";
+    eventos.push({ id: `cobranca|${c.id}`, tipo: "cobranca", titulo: `Cobrança gerada: ${c.titulo}`, detalhe: `${reais(c.total)}${venc}`, dinheiro: { total: c.total, vencimento: c.vencimento }, quando: c.createdAt ?? 0, quem: c.criadoPor });
+    if (c.status === "paga" && c.pagaEm) {
+      eventos.push({ id: `cobranca-paga|${c.id}`, tipo: "cobranca", titulo: `Cobrança paga: ${c.titulo}`, detalhe: reais(c.total), dinheiro: { total: c.total, vencimento: c.vencimento }, quando: c.pagaEm });
+    }
   }
 
   // Prazo
@@ -267,6 +301,31 @@ export function montarLinhaDoTempo({ itens, previsoes, visitas, ocorrencias, vis
     if (o.status === "resolvida" && o.resolvidaEm) {
       eventos.push({ id: `ocorrencia-resolvida|${o.id}`, tipo: "ocorrencia", titulo: `Ocorrência resolvida: ${o.titulo}`, detalhe: o.resolucao || undefined, quando: o.resolvidaEm });
     }
+  }
+
+  // Vistoria: pontos adicionados (agrupados por dia e por quem adicionou).
+  const adicionados = new Map<string, { quando: number; quem?: string; porCliente: boolean; textos: string[] }>();
+  for (const i of vistoria) {
+    if (!i.createdAt) continue;
+    const cliente = / \(cliente\)$/.test(i.criadoPorNome ?? "");
+    const quem = (i.criadoPorNome ?? "").replace(/ \(cliente\)$/, "") || undefined;
+    const chave = `${quem ?? ""}|${cliente}|${diaChave(i.createdAt)}`;
+    const g = adicionados.get(chave) ?? { quando: i.createdAt, quem, porCliente: cliente, textos: [] };
+    g.quando = Math.max(g.quando, i.createdAt);
+    g.textos.push(i.texto);
+    adicionados.set(chave, g);
+  }
+  for (const [chave, g] of adicionados) {
+    const n = g.textos.length;
+    eventos.push({
+      id: `vistoria-adicionados|${chave}`,
+      tipo: "vistoria",
+      titulo: n === 1 ? `Ponto adicionado à vistoria: ${g.textos[0]}` : `${n} pontos adicionados à vistoria`,
+      itens: n === 1 ? undefined : g.textos,
+      quando: g.quando,
+      quem: g.quem,
+      porCliente: g.porCliente,
+    });
   }
 
   // Vistoria: conferências agrupadas por dia e resultado.

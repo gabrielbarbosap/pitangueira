@@ -13,6 +13,7 @@ import {
   type ResumoFeed,
   type TipoEvento,
 } from "@/lib/acompanhamento";
+import { useDinheiro } from "@/lib/privacidade";
 import { useConfirm } from "../ConfirmProvider";
 import { IconeLixo } from "../Icones";
 import { useHoje } from "../PrazoVisual";
@@ -23,7 +24,7 @@ import { useAgora } from "./useAgora";
 
 type Secao = "tempo" | "visitas" | "ocorrencias" | "vistoria";
 
-const FILTROS: ("todos" | TipoEvento)[] = ["todos", "publicacao", "andamento", "prazo", "visita", "ocorrencia", "vistoria"];
+const FILTROS: ("todos" | TipoEvento)[] = ["todos", "publicacao", "andamento", "valor", "cobranca", "prazo", "visita", "ocorrencia", "vistoria"];
 
 const icone = (d: ReactNode) => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -35,13 +36,15 @@ const icone = (d: ReactNode) => (
 const ESTILO: Record<TipoEvento, { fundo: string; borda: string; icone: ReactNode }> = {
   publicacao: { fundo: "bg-ink text-white", borda: "border-l-ink", icone: icone(<path d="M4 5h16v11H9l-5 4V5Z" />) },
   andamento: { fundo: "bg-emerald-100 text-emerald-800", borda: "border-l-emerald-600", icone: icone(<path d="m5 12 4.5 4.5L19 7" />) },
+  valor: { fundo: "bg-amber-100 text-amber-800", borda: "border-l-amber-500", icone: icone(<path d="M12 3v18M16 7.5C16 6 14.2 5 12 5s-4 1-4 2.8c0 4.2 8 2.4 8 6.7 0 1.8-1.8 3-4 3s-4-1.2-4-3" />) },
+  cobranca: { fundo: "bg-emerald-100 text-emerald-800", borda: "border-l-emerald-600", icone: icone(<><rect x="3" y="6" width="18" height="12" rx="2" /><circle cx="12" cy="12" r="2.5" /></>) },
   prazo: { fundo: "bg-amber-100 text-amber-800", borda: "border-l-amber-500", icone: icone(<><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>) },
   visita: { fundo: "bg-sky-100 text-sky-800", borda: "border-l-sky-500", icone: icone(<><rect x="4" y="5" width="16" height="15" rx="2" /><path d="M4 10h16M9 3v4M15 3v4" /></>) },
   ocorrencia: { fundo: "bg-pitanga/15 text-pitanga-escuro", borda: "border-l-pitanga", icone: icone(<><path d="M12 4 3 20h18L12 4Z" /><path d="M12 10v4M12 17v.5" /></>) },
   vistoria: { fundo: "bg-emerald-100 text-emerald-800", borda: "border-l-emerald-600", icone: icone(<><circle cx="11" cy="11" r="6" /><path d="m20 20-4-4" /></>) },
 };
 
-const ROTULO_SINGULAR: Record<TipoEvento, string> = { publicacao: "Aviso", andamento: "Andamento", prazo: "Prazo", visita: "Visita", ocorrencia: "Ocorrência", vistoria: "Vistoria" };
+const ROTULO_SINGULAR: Record<TipoEvento, string> = { publicacao: "Aviso", andamento: "Andamento", valor: "Valor", cobranca: "Cobrança", prazo: "Prazo", visita: "Visita", ocorrencia: "Ocorrência", vistoria: "Vistoria" };
 
 const iniciais = (nome: string) =>
   nome
@@ -71,8 +74,17 @@ function Avatar({ e }: { e: Evento }) {
 }
 
 function Cartao({ e, agora, onEnviar, tituloEnvio, onRemover, contexto }: { e: Evento; agora: number; onEnviar?: (t: string, tipo: string, m: string) => void; tituloEnvio: string; onRemover?: () => void; contexto: ContextoMensagem }) {
+  const { brl } = useDinheiro();
   const est = ESTILO[e.tipo];
   const ehPost = e.tipo === "publicacao";
+  // Dinheiro no feed obedece ao olhinho de privacidade (o texto pronto para o WhatsApp, não: ele é uma mensagem de verdade).
+  const dif = e.valor ? Math.abs(e.valor.para - e.valor.de) : 0;
+  const sobe = e.valor ? e.valor.para > e.valor.de : false;
+  const detalhe = e.valor
+    ? `${brl(e.valor.de)} → ${brl(e.valor.para)}`
+    : e.dinheiro
+      ? `${brl(e.dinheiro.total)}${e.dinheiro.vencimento ? ` · vence em ${new Date(e.dinheiro.vencimento).toLocaleDateString("pt-BR")}` : ""}`
+      : e.detalhe;
   const autor = e.quem ?? ROTULO_SINGULAR[e.tipo];
   const itens = e.itens ?? [];
 
@@ -91,7 +103,14 @@ function Cartao({ e, agora, onEnviar, tituloEnvio, onRemover, contexto }: { e: E
           ) : (
             <>
               <p className="mt-1 text-[15px] font-medium leading-snug text-ink">{e.titulo}</p>
-              {e.detalhe && <p className="mt-1 whitespace-pre-line text-sm leading-snug text-ink/65">{e.detalhe}</p>}
+              {detalhe && <p className="mt-1 whitespace-pre-line text-sm leading-snug text-ink/65">{detalhe}</p>}
+              {e.valor && (
+                <p className="mt-1.5">
+                  <Chip tom={sobe ? "perigo" : "ok"}>
+                    {sobe ? "▲" : "▼"} {brl(dif)} {sobe ? "mais caro" : "mais barato"}
+                  </Chip>
+                </p>
+              )}
             </>
           )}
           {itens.length > 0 && (

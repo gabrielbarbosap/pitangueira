@@ -12,6 +12,8 @@ export interface DadosMensagem {
   /** Link e chave do projeto (só o arquiteto os tem). Vazios = não incluir. */
   link?: string;
   chave?: string;
+  /** Bloco pronto a mais na mensagem (ex.: total, vencimento e PIX de uma cobrança). */
+  extra?: string;
 }
 
 /** Só números, com o 55 do Brasil quando vier só DDD + número. "" se não parecer um telefone. */
@@ -32,7 +34,8 @@ function nomeDoDocumento(d: DadosMensagem): string {
 export function montarMensagem(d: DadosMensagem): string {
   return blocos([
     abertura({ destinatario: d.cliente, projeto: d.projeto }),
-    `${titulo("📄", d.tipo.toLowerCase().startsWith("relatório") ? `Relatório de andamento · ${d.rotulo}` : d.tipo)}\nSegue o ${nomeDoDocumento(d)} do projeto ${d.projeto}, em PDF.`,
+    `${titulo("📄", d.tipo.toLowerCase().startsWith("relatório") ? `Relatório de andamento · ${d.rotulo}` : d.tipo)}\nSegue ${nomeDoDocumento(d).startsWith("cobrança") ? "a" : "o"} ${nomeDoDocumento(d)} do projeto ${d.projeto}, em PDF.`,
+    d.extra,
     "Qualquer dúvida, é só falar! 😊",
     d.link && `${titulo("🔗", "Acompanhe tudo em tempo real")}\n${d.link}${d.chave ? `\n${campo("🔑", "Chave de acesso", d.chave)}` : ""}`,
     d.escritorio.trim() && `— ${d.escritorio.trim()}`,

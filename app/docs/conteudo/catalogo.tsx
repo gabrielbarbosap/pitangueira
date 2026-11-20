@@ -35,8 +35,8 @@ export const catalogo: PaginaDoc = {
             <Passo>Informe a quantidade na linha do item.</Passo>
             <Passo>Toque em <Btn>Adicionar ao orçamento</Btn>.</Passo>
           </Passos>
-          <Aviso tipo="nota" titulo="É uma cópia">
-            O item entra no orçamento com os valores do momento (etapa do catálogo ou “Sem etapa”, ambiente “Geral”). Se você mudar o preço no catálogo depois, os itens já criados não mudam.
+          <Aviso tipo="nota" titulo="É uma cópia: o catálogo não mexe nos projetos">
+            O item entra no orçamento com os valores do momento (etapa do catálogo ou “Sem etapa”, ambiente “Geral”). Se você mudar o preço no catálogo depois, <strong>nenhum projeto muda</strong>: o novo valor só vale para os itens que você tirar do catálogo a partir daí. Mudar o valor no projeto também não altera o catálogo. Uma exceção: composições que usam o preço do catálogo em um insumo acompanham a mudança (veja abaixo), mas os itens que você já criou a partir delas continuam com o valor da época.
           </Aviso>
           <P>Há também a busca no catálogo dentro da janela de novo item e a opção “Guardar no meu catálogo para usar em outros projetos”. Remover do catálogo não altera orçamentos já feitos.</P>
         </>

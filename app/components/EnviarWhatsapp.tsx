@@ -18,12 +18,14 @@ export function EnviarWhatsapp({
   tipo,
   rotulo,
   nomeArquivo,
+  extra,
   onFechar,
 }: {
   alvo: RefObject<HTMLElement | null>;
   tipo: string;
   rotulo: string;
   nomeArquivo: string;
+  extra?: string;
   onFechar: () => void;
 }) {
   const { projeto, config, obraId, ehCliente } = useData();
@@ -51,8 +53,9 @@ export function EnviarWhatsapp({
         escritorio: projeto.escritorio,
         link: comLink ? `${typeof window === "undefined" ? "" : window.location.origin}/obra/${obraId}` : undefined,
         chave: comLink ? chave : undefined,
+        extra,
       }),
-    [tipo, rotulo, config.nomeObra, projeto.cliente, projeto.escritorio, comLink, obraId, chave],
+    [tipo, rotulo, config.nomeObra, projeto.cliente, projeto.escritorio, comLink, obraId, chave, extra],
   );
   const mensagem = editada ? texto : sugerido;
 

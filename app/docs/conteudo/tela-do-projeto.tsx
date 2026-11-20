@@ -84,6 +84,16 @@ export const telaDoProjeto: PaginaDoc = {
       ),
     },
     {
+      id: "cobranca",
+      titulo: "Cobrança da obra",
+      papel: "todos",
+      corpo: (
+        <P>
+          Perto do relatório, o cartão <Btn>Cobrança da obra</Btn> mostra as cobranças geradas e permite gerar outra. O cliente só vê o cartão quando há cobrança em aberto. Veja <Ir para="cobranca-da-obra">Cobrança da obra</Ir>.
+        </P>
+      ),
+    },
+    {
       id: "cartoes",
       titulo: "Prazo e relatório",
       corpo: (

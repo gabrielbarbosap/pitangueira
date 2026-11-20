@@ -9,7 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { resumoDeItens } from "./calc";
+import { resumoDeItens, valorEfetivo } from "./calc";
 import {
   collection,
   onSnapshot,
@@ -49,7 +49,7 @@ interface DataContextValue {
   ehCliente: boolean;
   addItem: (data: Omit<ItemInput, "ordem">) => Promise<void>;
   /** Vários itens de uma vez (importação): uma única gravação, em vez de uma por item. */
-  addItens: (lista: Omit<ItemInput, "ordem">[]) => Promise<void>;
+  addItens: (lista: Omit<ItemInput, "ordem">[]) => Promise<string[]>;
   updateItem: (id: string, patch: Partial<ItemInput>) => Promise<void>;
   updateMany: (ids: string[], patch: Partial<ItemInput>) => Promise<void>;
   removeItem: (id: string) => Promise<void>;
@@ -205,8 +205,8 @@ export function DataProvider({ obraId, children }: { obraId: string; children: R
     }
   }
 
-  async function addItens(lista: Omit<ItemInput, "ordem">[]) {
-    if (lista.length === 0) return;
+  async function addItens(lista: Omit<ItemInput, "ordem">[]): Promise<string[]> {
+    if (lista.length === 0) return [];
     const primeira = proximaOrdem();
     const agora = Date.now();
     const prontos = lista.map((data, i) => {
@@ -214,22 +214,35 @@ export function DataProvider({ obraId, children }: { obraId: string; children: R
       return { ...data, ...auditoria, ordem: primeira + i };
     });
     registrarEvento("item_adicionado", { quantidade: lista.length });
+    const ids: string[] = [];
     if (configured && db) {
       // O Firestore aceita até 500 gravações por lote.
       for (let i = 0; i < prontos.length; i += 400) {
         const lote = writeBatch(db);
         for (const base of prontos.slice(i, i + 400)) {
-          lote.set(doc(collection(db, "obras", obraId, "itens")), semUndefined({ ...base, createdAt: agora, updatedAt: agora }));
+          const ref = doc(collection(db, "obras", obraId, "itens"));
+          ids.push(ref.id);
+          lote.set(ref, semUndefined({ ...base, createdAt: agora, updatedAt: agora }));
         }
         await lote.commit();
       }
     } else {
-      setItens((prev) => [...prev, ...prontos.map((base) => ({ ...base, id: crypto.randomUUID(), createdAt: agora, updatedAt: agora }) as Item)]);
+      const novos = prontos.map((base) => ({ ...base, id: crypto.randomUUID(), createdAt: agora, updatedAt: agora }) as Item);
+      ids.push(...novos.map((n) => n.id));
+      setItens((prev) => [...prev, ...novos]);
     }
+    return ids;
   }
 
   async function updateItem(id: string, patch: Partial<ItemInput>) {
     const dados = comAuditoria(patch);
+    // Mudou o valor do item (o efetivo: real, ou orçado)? Guarda de quanto para quanto, para o app mostrar se subiu ou desceu.
+    const atual = itens.find((i) => i.id === id);
+    if (atual && (patch.valorOrcado !== undefined || patch.valorReal !== undefined)) {
+      const antes = Math.round(valorEfetivo(atual) * 100) / 100;
+      const depois = Math.round(valorEfetivo({ ...atual, ...patch } as Item) * 100) / 100;
+      if (antes !== depois) dados.historicoValor = [...(atual.historicoValor ?? []), { em: Date.now(), de: antes, para: depois, por: ator }].slice(-20);
+    }
     if (patch.feito !== undefined) registrarEvento("item_marcado", { campo: "feito", valor: patch.feito });
     if (patch.pago !== undefined) registrarEvento("item_marcado", { campo: "pago", valor: patch.pago });
     if (configured && db) {

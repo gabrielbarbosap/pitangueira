@@ -9,6 +9,7 @@ import { itens } from "./conteudo/itens";
 import { orcamento } from "./conteudo/orcamento";
 import { prazo } from "./conteudo/prazo";
 import { acompanhar } from "./conteudo/acompanhar";
+import { cobrancaObra } from "./conteudo/cobranca-obra";
 import { escopo } from "./conteudo/escopo";
 import { graficos } from "./conteudo/graficos";
 import { relatorio } from "./conteudo/relatorio";
@@ -38,6 +39,7 @@ export const paginas: PaginaDoc[] = [
   orcamento,
   prazo,
   acompanhar,
+  cobrancaObra,
   escopo,
   graficos,
   relatorio,

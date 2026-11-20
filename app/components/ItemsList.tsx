@@ -66,6 +66,9 @@ function Linha({ item, onEditar }: { item: Item; onEditar: (i: Item) => void }) 
   const { updateItem, removeItem, ehCliente } = useData();
   const { brl } = useDinheiro();
   const confirmar = useConfirm();
+  // O valor mudou? Mostra de quanto e se subiu ou desceu (a mudança mais recente).
+  const alt = item.historicoValor?.[item.historicoValor.length - 1];
+  const subiu = alt ? alt.para > alt.de : false;
   const autoria = [item.feito && marca("Feito", item.feitoPor, item.feitoEm), item.pago && marca("Pago", item.pagoPor, item.pagoEm)].filter(Boolean).join(" · ");
   const detalhes = [item.quantidade > 0 && `${item.quantidade} × ${brl(item.valorUnitario)}`, item.fornecedor, item.observacao].filter(Boolean).join(" · ");
 
@@ -108,6 +111,11 @@ function Linha({ item, onEditar }: { item: Item; onEditar: (i: Item) => void }) 
           )}
           {item.valorReal > 0 && item.valorReal !== item.valorOrcado && (
             <p className="font-mono text-xs tabular-nums text-ink/40 line-through">{brl(item.valorOrcado)}</p>
+          )}
+          {alt && (
+            <p className={`mt-0.5 text-[11px] font-semibold ${subiu ? "text-pitanga-escuro" : "text-emerald-700"}`} data-testid="mudanca-valor">
+              {subiu ? "▲" : "▼"} {brl(Math.abs(alt.para - alt.de))} {subiu ? "a mais" : "a menos"} <span className="font-normal text-ink/45">(era {brl(alt.de)})</span>
+            </p>
           )}
         </div>
         {!ehCliente && (

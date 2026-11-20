@@ -93,15 +93,17 @@ export const acompanhar: PaginaDoc = {
             colunas={["Tipo", "Quando entra"]}
             linhas={[
               ["Avisos", "Quando o arquiteto publica."],
+              ["Valores", "Quando o valor de um item muda: de quanto para quanto, e se ficou mais caro ou mais barato."],
+              ["Cobranças", "Quando uma cobrança da obra é gerada e quando é paga (veja Cobrança da obra)."],
               ["Andamento", "Itens marcados como feitos ou pagos. Marcações da mesma etapa, no mesmo dia e pela mesma pessoa viram um cartão só (“5 itens de Elétrica marcados como feitos”), com os nomes em etiquetas."],
               ["Prazo", "O prazo original e cada nova previsão, com o motivo."],
               ["Visitas", "Agendadas, realizadas e canceladas."],
               ["Ocorrências", "Quando abriram e quando foram resolvidas."],
-              ["Vistoria", "Pontos conferidos e pontos que pedem ajuste."],
+              ["Vistoria", "Pontos adicionados à lista (o modelo entra de uma vez, num cartão só: “12 pontos adicionados à vistoria”), pontos conferidos e pontos que pedem ajuste."],
             ]}
           />
           <P>
-            Quando quem fez foi o cliente, o cartão leva a etiqueta <strong>cliente</strong> e as iniciais em azul. Os botões de filtro (<Btn>Tudo</Btn>, <Btn>Avisos</Btn>, <Btn>Andamento</Btn>, <Btn>Prazo</Btn>, <Btn>Visitas</Btn>, <Btn>Ocorrências</Btn>, <Btn>Vistoria</Btn>) mostram um tipo só, e <Btn>Ver mais</Btn> abre os mais antigos.
+            Quando quem fez foi o cliente, o cartão leva a etiqueta <strong>cliente</strong> e as iniciais em azul. Os botões de filtro (<Btn>Tudo</Btn>, <Btn>Avisos</Btn>, <Btn>Andamento</Btn>, <Btn>Valores</Btn>, <Btn>Cobranças</Btn>, <Btn>Prazo</Btn>, <Btn>Visitas</Btn>, <Btn>Ocorrências</Btn>, <Btn>Vistoria</Btn>) mostram um tipo só, e <Btn>Ver mais</Btn> abre os mais antigos.
           </P>
           <H3>Resumo da semana</H3>
           <P>

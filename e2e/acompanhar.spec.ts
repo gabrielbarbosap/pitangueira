@@ -114,6 +114,8 @@ test("o arquiteto acompanha a obra: visitas, ocorrências, vistoria e linha do t
     await expect(tempo).toContainText("Ocorrência aberta: Vazamento na laje do banheiro");
     await expect(tempo).toContainText("Ocorrência resolvida: Vazamento na laje do banheiro");
     await expect(tempo).toContainText("ponto conferido na vistoria");
+    await expect(tempo).toContainText("12 pontos adicionados à vistoria"); // o modelo entrou de uma vez, num cartão só
+    await expect(tempo.getByText("Pintura sem manchas, falhas ou respingos")).toBeVisible(); // os pontos aparecem como etiquetas
     await tempo.getByRole("button", { name: "Ocorrências", exact: true }).click();
     await expect(tempo).not.toContainText("Visita agendada");
     await tempo.getByRole("button", { name: "Tudo", exact: true }).click();
@@ -148,6 +150,9 @@ test("o arquiteto acompanha a obra: visitas, ocorrências, vistoria e linha do t
       await expect(page.getByText("Verificar o rejunte do banheiro")).toBeVisible();
       await expect(page.getByText("Adicionado por Marina (cliente)")).toBeVisible();
       await expect(page.getByText(/2 de 13 conferidos/)).toBeVisible();
+      await secao(page, /^Linha do tempo/).click();
+      await expect(page.getByRole("region", { name: "Linha do tempo" })).toContainText("Ponto adicionado à vistoria: Verificar o rejunte do banheiro");
+      await secao(page, /^Vistoria/).click();
       // só dá para remover o que ele mesmo criou
       await expect(page.getByRole("button", { name: /^Remover ponto:/ })).toHaveCount(1);
       await expect(page.getByRole("button", { name: "Remover ponto: Verificar o rejunte do banheiro" })).toBeVisible();

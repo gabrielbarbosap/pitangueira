@@ -19,6 +19,7 @@ import { ProgramaTab } from "./ProgramaTab";
 import { CatalogoDialog } from "./CatalogoDialog";
 import { EmAndamento } from "./EmAndamento";
 import { AtividadeRecente } from "./AtividadeRecente";
+import { CobrancaObraCard } from "./cobranca/CobrancaObraCard";
 import { AcompanharTab } from "./acompanhar/AcompanharTab";
 import { ComposicoesDialog } from "./ComposicoesDialog";
 import { ImportarDialog } from "./ImportarDialog";
@@ -182,6 +183,13 @@ export function Dashboard() {
           opcional: true,
           titulo: "Relatório do mês",
           texto: "No fim do mês, gere o relatório de andamento: o app reúne o que foi executado e pago, você escolhe o que entra e manda o PDF ao cliente.",
+          aoEntrar: irPara("resumo"),
+        },
+        {
+          alvo: "cobranca-obra",
+          opcional: true,
+          titulo: "Cobrança da obra",
+          texto: "Gere uma cobrança com itens que já estão no orçamento e, se precisar, itens novos cadastrados na hora. O app monta um PDF com a sua marca, e você envia pelo WhatsApp e dá baixa quando o cliente pagar.",
           aoEntrar: irPara("resumo"),
         },
         {
@@ -371,6 +379,8 @@ export function Dashboard() {
             <PrazoCard previsoes={previsoes} pctConcluido={pct} ehCliente={ehCliente} onRegistrar={registrarPrevisao} />
             {/* O relatório mensal é do arquiteto: o cliente recebe o PDF, não gera */}
             {!ehCliente && <RelatorioCard itens={itens} onAbrir={() => setRelatorio(Date.now())} />}
+            {/* A cobrança da obra: o arquiteto gera; o cliente só vê quando há alguma em aberto */}
+            <CobrancaObraCard itens={itens} />
             <AtividadeRecente itens={itens} />
             <ResumoTopo resumo={resumo} />
             <SummaryCards resumo={resumo} />

@@ -129,6 +129,14 @@ export type ObraInput = {
   orcamentoTotal: number;
 };
 
+/** Uma mudança no valor de um item: de quanto para quanto, quando e quem mudou. */
+export interface AlteracaoValor {
+  em: number;
+  de: number;
+  para: number;
+  por: string;
+}
+
 export interface Item {
   id: string;
   etapaNum: number;
@@ -153,6 +161,8 @@ export interface Item {
   /** Prazo combinado para o serviço ficar pronto (ms). Base do histórico de entregas do fornecedor. */
   prazo?: number;
   ordem: number;
+  /** Quando o valor do item (o efetivo: real, ou orçado) mudou: as últimas mudanças, da mais antiga à mais nova. */
+  historicoValor?: AlteracaoValor[];
   createdAt?: number;
   updatedAt?: number;
 }
@@ -357,5 +367,34 @@ export interface Publicacao {
   /** Nome de quem publicou (o cliente leva "(cliente)"). */
   autor: string;
   autorUid?: string;
+  createdAt?: number;
+}
+
+// ---------- Cobrança da obra ----------
+
+/** Um item numa cobrança: do orçamento (com `itemId`) ou novo, cadastrado na hora da cobrança (`novo`). */
+export interface ItemCobrado {
+  itemId?: string;
+  descricao: string;
+  etapa: string;
+  quantidade: number;
+  unidade?: string;
+  valor: number;
+  novo?: boolean;
+}
+
+/** Cobrança que o arquiteto gera ao cliente, com itens do orçamento e/ou itens novos. */
+export interface CobrancaObra {
+  id: string;
+  titulo: string;
+  itens: ItemCobrado[];
+  total: number;
+  /** Vencimento (meia-noite local, em ms); null = sem data. */
+  vencimento: number | null;
+  pix: string;
+  obs: string;
+  status: "aberta" | "paga";
+  pagaEm?: number;
+  criadoPor: string;
   createdAt?: number;
 }

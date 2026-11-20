@@ -7,7 +7,7 @@ import { useColecaoObra } from "@/lib/colecaoObra";
 import { useData } from "@/lib/data";
 import { percentual } from "@/lib/format";
 import { situacaoDoPrazo, textoDeTempo } from "@/lib/prazo";
-import type { ItemVistoria, Ocorrencia, Publicacao, Visita } from "@/lib/types";
+import type { CobrancaObra, ItemVistoria, Ocorrencia, Publicacao, Visita } from "@/lib/types";
 import { useHoje } from "../PrazoVisual";
 import { useContextoMensagem, useEnvio } from "./Envio";
 import { Feed } from "./Feed";
@@ -32,14 +32,15 @@ export function AcompanharTab({ visitaFoco = null }: { visitaFoco?: string | nul
   const ocorrencias = useColecaoObra<Ocorrencia>("ocorrencias", (a, b) => b.abertaEm - a.abertaEm);
   const vistoria = useColecaoObra<ItemVistoria>("vistoria", (a, b) => a.ordem - b.ordem);
   const publicacoes = useColecaoObra<Publicacao>("publicacoes", (a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
+  const cobrancas = useColecaoObra<CobrancaObra>("cobrancas", (a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
   const contexto = useContextoMensagem();
   const { enviar, dialogo } = useEnvio();
   // Quem chega pelo link de um pedido de visita (WhatsApp) já cai nas visitas.
   const [secao, setSecao] = useState<Secao>(visitaFoco ? "visitas" : "tempo");
 
   const eventos = useMemo(
-    () => montarLinhaDoTempo({ itens, previsoes, visitas: visitas.itens, ocorrencias: ocorrencias.itens, vistoria: vistoria.itens, publicacoes: publicacoes.itens }),
-    [itens, previsoes, visitas.itens, ocorrencias.itens, vistoria.itens, publicacoes.itens],
+    () => montarLinhaDoTempo({ itens, previsoes, visitas: visitas.itens, ocorrencias: ocorrencias.itens, vistoria: vistoria.itens, publicacoes: publicacoes.itens, cobrancas: cobrancas.itens }),
+    [itens, previsoes, visitas.itens, ocorrencias.itens, vistoria.itens, publicacoes.itens, cobrancas.itens],
   );
   const resumo = useMemo(() => resumoDoFeed(visitas.itens, ocorrencias.itens, vistoria.itens, agora), [visitas.itens, ocorrencias.itens, vistoria.itens, agora]);
 

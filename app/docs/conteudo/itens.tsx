@@ -191,6 +191,24 @@ export const itens: PaginaDoc = {
       ),
     },
     {
+      id: "valor-alterado",
+      titulo: "Quando o valor de um item muda",
+      papel: "todos",
+      corpo: (
+        <>
+          <P>
+            Sempre que o valor de um item muda (o <Btn>Total do item</Btn> ou o <Btn>Valor real</Btn>), o app deixa claro se o novo valor é <strong>maior</strong> ou <strong>menor</strong> que o anterior.
+          </P>
+          <Lista>
+            <li><strong>Ao editar</strong>, abaixo do total aparece um aviso antes de salvar: “▲ R$ 200,00 a mais que o valor atual (R$ 1.000,00). Novo valor: R$ 1.200,00.” (laranja, quando sobe) ou “▼ R$ 300,00 a menos…” (verde, quando desce).</li>
+            <li><strong>No item</strong>, depois de salvo, aparece embaixo do valor: “▲ R$ 200,00 a mais (era R$ 1.000,00)”. O cliente também vê.</li>
+            <li><strong>Na linha do tempo</strong>, cada mudança vira um cartão “Valor alterado: …”, com “R$ 1.000,00 → R$ 1.200,00” e a etiqueta “mais caro” ou “mais barato”. O filtro <Btn>Valores</Btn> mostra só elas.</li>
+          </Lista>
+          <P>O que conta é o valor efetivo (o real, se informado; senão o orçado). O app guarda as últimas 20 mudanças de cada item, com quem mudou e quando.</P>
+        </>
+      ),
+    },
+    {
       id: "editar-remover",
       titulo: "Editar e remover",
       papel: "arquiteto",
