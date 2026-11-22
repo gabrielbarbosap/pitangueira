@@ -70,6 +70,16 @@ firestore.rules       regras de segurança multi-tenant
 docs/                 análise de concorrência e roadmap
 ```
 
+## Página inicial (landing)
+
+A home de quem não entrou (`/` sem login) é a página de vendas: `app/components/landing/Landing.tsx`. O login (`LoginScreen` com `embutido`) fica na última seção (`#entrar`). Os prints do sistema ficam em `public/landing/` e vêm de dados fictícios. Para refazê-los depois de mudar a interface:
+
+```
+CAPTURAS=1 npx playwright test capturas --project=desktop
+```
+
+Sem preços nem planos por enquanto, e sem depoimentos ou números inventados: só afirme na página o que o sistema faz.
+
 ## Documentação do produto
 
 A documentação para o usuário fica em **`/docs`** (pública, sem login), no estilo de documentação de linguagens: menu lateral com busca, páginas com seções, índice "Nesta página" e navegação anterior/próxima.

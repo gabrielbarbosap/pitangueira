@@ -13,7 +13,7 @@ const TITULO: Record<Modo, string> = { entrar: "Entrar", criar: "Criar conta", e
 const ENVIAR: Record<Modo, string> = { entrar: "Entrar", criar: "Criar conta", esqueci: "Enviar o link" };
 
 /** Entrada do arquiteto: Google, ou e-mail e senha (entrar, criar conta e recuperar a senha). */
-export function LoginScreen() {
+export function LoginScreen({ embutido = false }: { embutido?: boolean } = {}) {
   const { login, loginComEmail, criarConta, recuperarSenha, erro } = useAuth();
   const [modo, setModo] = useState<Modo>("entrar");
   const [nome, setNome] = useState("");
@@ -44,14 +44,14 @@ export function LoginScreen() {
   }
 
   return (
-    <div className="grade flex min-h-dvh items-center justify-center p-5">
-      <div className="prancha w-full max-w-sm p-8">
+    <div className={embutido ? "w-full" : "grade flex min-h-dvh items-center justify-center p-5"}>
+      <div className="prancha mx-auto w-full max-w-sm p-8 text-ink">
         <div className="mb-6 text-center">
           <div className="mx-auto mb-5 flex justify-center">
             <LogoMark size={84} />
           </div>
           <p className="font-mono text-[13px] font-semibold uppercase tracking-[0.24em] text-ink">Pitangueira</p>
-          <h1 className="mt-3 text-xl font-semibold leading-tight text-ink">Gestão de projetos, do arquiteto ao cliente</h1>
+          {embutido ? <h2 className="mt-3 text-xl font-semibold leading-tight text-ink">Entre ou crie sua conta</h2> : <h1 className="mt-3 text-xl font-semibold leading-tight text-ink">Gestão de projetos, do arquiteto ao cliente</h1>}
           <p className="mt-2 text-sm text-ink/60">Orçamento, pagamentos e andamento em um só lugar.</p>
         </div>
 
