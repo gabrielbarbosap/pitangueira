@@ -8,6 +8,8 @@ export async function semTutorial(page: Page) {
     for (const c of chaves) localStorage.setItem(`pitangueira:tour:${c}:v1`, "1");
     // A escolha do catálogo do primeiro acesso também já foi feita (os testes de negócio não passam por ela).
     localStorage.setItem("pitangueira:catalogo-inicial:v1", "1");
+    // Os testes de negócio rodam no plano Pomar (sem limites); os de plano escolhem o plano que querem.
+    localStorage.setItem("reforma:assinatura-demo:v1:demo-arq", JSON.stringify({ plano: "pomar", status: "cortesia" }));
   }, TUTORIAIS);
 }
 

@@ -8,6 +8,7 @@ import { Logo } from "./Logo";
 import { Alerta } from "./ui/Alerta";
 import { Botao } from "./ui/Botao";
 import { Chip } from "./ui/Chip";
+import { PlanoConta } from "./plano/PlanoConta";
 
 /**
  * Minha conta: como a pessoa entra. Quem entrou com o Google pode criar uma senha; quem entrou com e-mail e senha
@@ -75,6 +76,8 @@ export function ContaTela() {
       </header>
 
       <main className="mx-auto max-w-3xl space-y-6 px-4 py-6 pb-16">
+        <PlanoConta />
+
         <section aria-label="Como você entra" className="prancha p-4">
           <h2 className="text-lg font-semibold text-ink">Como você entra</h2>
           <p className="mt-1 text-sm leading-snug text-ink/60">É a mesma conta, com os mesmos projetos, seja qual for o jeito de entrar. Deixe os dois ativos e entre como preferir.</p>

@@ -19,6 +19,8 @@ import { ComposicoesDialog } from "./ComposicoesDialog";
 import { FornecedoresDialog } from "./FornecedoresDialog";
 import { Tour, useTour, type PassoTour } from "./Tour";
 import { PrimeiroAcessoCatalogo } from "./PrimeiroAcessoCatalogo";
+import { FaixaPlano, LimiteDialog } from "./plano/Bloqueio";
+import { usePlano } from "@/lib/plano";
 import { PrazoMini, ProximasEntregas, useHoje } from "./PrazoVisual";
 import { AtalhosHome } from "./AtalhosHome";
 import { IconeAjuda, IconeArquivo, IconeMais, IconeObra, IconeOpcoes, IconeSair } from "./Icones";
@@ -168,6 +170,8 @@ export function Painel() {
   const { user, logout, configured } = useAuth();
   const { obras, loading, recuperarCasaPitanga } = useObras();
   const router = useRouter();
+  const { bloqueioObras, obrasAtivas, def: defPlano } = usePlano();
+  const [limite, setLimite] = useState(false);
   const [dialog, setDialog] = useState(false);
   const [recuperando, setRecuperando] = useState(false);
   const [gerenciarId, setGerenciarId] = useState<string | null>(null);
@@ -253,6 +257,10 @@ export function Painel() {
   const comCartoes = ativas.length > 0 && !loading;
 
   async function recuperar() {
+    if (bloqueioObras) {
+      setLimite(true);
+      return;
+    }
     setRecuperando(true);
     try {
       const id = await recuperarCasaPitanga();
@@ -319,6 +327,8 @@ export function Painel() {
       <main className="mx-auto -mt-9 max-w-3xl space-y-6 px-4 pb-32">
         <AtalhosHome onCatalogo={() => setCatalogo(true)} onComposicoes={() => setComposicoes(true)} onFornecedores={() => setFornecedores(true)} />
 
+        <FaixaPlano />
+
         {comCartoes && (
           <section aria-label="Resumo geral" className="grid grid-cols-2 gap-3" data-tour="resumo-geral">
             <Cartao
@@ -351,6 +361,11 @@ export function Painel() {
         <section aria-label="Projetos">
           <div className="mb-3 flex items-center gap-3">
             <h2 className="text-xl font-semibold text-ink">Seus projetos</h2>
+            {defPlano.obrasAtivas !== null && !loading && (
+              <span className={`chip ${bloqueioObras ? "chip-aviso" : ""} px-2.5 py-1 text-xs`} title="Projetos em andamento (não arquivados) no seu plano">
+                {obrasAtivas} de {defPlano.obrasAtivas} em andamento
+              </span>
+            )}
             <span className="h-px flex-1 bg-linha" />
           </div>
 
@@ -404,7 +419,7 @@ export function Painel() {
       {/* Ação principal flutuante, ao alcance do polegar */}
       <div className="pb-seguro pointer-events-none fixed inset-x-0 bottom-0 z-30 flex justify-center px-4">
         <button
-          onClick={() => setDialog(true)}
+          onClick={() => (bloqueioObras ? setLimite(true) : setDialog(true))}
           data-tour="novo-projeto"
           className="btn btn-primario pointer-events-auto gap-2 rounded-full px-7 py-4 text-base shadow-[0_14px_30px_-10px_rgba(210,58,31,0.7)]"
         >
@@ -413,6 +428,7 @@ export function Painel() {
       </div>
 
       <ObraDialog aberto={dialog} onFechar={() => setDialog(false)} />
+      <LimiteDialog aberto={limite} onFechar={() => setLimite(false)} bloqueio={bloqueioObras} tipo="obrasAtivas" />
       <GerenciarObraDialog obra={obraGerenciada} onFechar={() => setGerenciarId(null)} />
       <CatalogoDialog aberto={catalogo} onFechar={() => setCatalogo(false)} />
       <PrimeiroAcessoCatalogo pausado={tour.aberto} />

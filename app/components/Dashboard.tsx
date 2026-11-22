@@ -27,6 +27,8 @@ import { OrcamentoBarra } from "./OrcamentoBarra";
 import { BotaoOlho } from "./BotaoOlho";
 import { PrazoCard } from "./PrazoVisual";
 import { RelatorioCard, RelatorioDialog } from "./RelatorioMensal";
+import { CartaoBloqueado, PlanoBloqueado } from "./plano/Bloqueio";
+import { usePlano } from "@/lib/plano";
 import { Tour, useTour, type PassoTour } from "./Tour";
 import { OrcamentoDocumento, type ConfigOrcamentoPdf } from "./OrcamentoDocumento";
 import { OrcamentoPdfDialog } from "./OrcamentoPdfDialog";
@@ -64,6 +66,7 @@ const ETAPAS_SUGERIDAS = ["Demolição", "Alvenaria", "Elétrica", "Hidráulica"
 export function Dashboard() {
   const { user, logout } = useAuth();
   const { obraId, itens, config, loading, ehCliente, addItem, previsoes, registrarPrevisao } = useData();
+  const { pode } = usePlano();
   const [catalogoAberto, setCatalogoAberto] = useState(false);
   const [relatorio, setRelatorio] = useState<number | null>(null);
   const [composicoesAberto, setComposicoesAberto] = useState(false);
@@ -347,7 +350,7 @@ export function Dashboard() {
         {loading ? (
           <div className="prancha px-6 py-16 text-center font-mono text-xs uppercase tracking-wider text-ink/40">Carregando…</div>
         ) : aba === "programa" && !ehCliente ? (
-          <ProgramaTab gruposEtapa={gruposEtapa} />
+          pode("escopo") ? <ProgramaTab gruposEtapa={gruposEtapa} /> : <PlanoBloqueado recurso="escopo" />
         ) : aba === "acompanhar" ? (
           <AcompanharTab visitaFoco={visitaDoLink} />
         ) : itens.length === 0 ? (
@@ -378,7 +381,7 @@ export function Dashboard() {
             </div>
             <PrazoCard previsoes={previsoes} pctConcluido={pct} ehCliente={ehCliente} onRegistrar={registrarPrevisao} />
             {/* O relatório mensal é do arquiteto: o cliente recebe o PDF, não gera */}
-            {!ehCliente && <RelatorioCard itens={itens} onAbrir={() => setRelatorio(Date.now())} />}
+            {!ehCliente && (pode("relatorioMensal") ? <RelatorioCard itens={itens} onAbrir={() => setRelatorio(Date.now())} /> : <CartaoBloqueado recurso="relatorioMensal" />)}
             {/* A cobrança da obra: o arquiteto gera; o cliente só vê quando há alguma em aberto */}
             <CobrancaObraCard itens={itens} />
             <AtividadeRecente itens={itens} />

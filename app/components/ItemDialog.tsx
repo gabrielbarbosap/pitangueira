@@ -56,7 +56,7 @@ export function ItemDialog({
   const { addItem, updateItem } = useData();
   const [form, setForm] = useState(VAZIO);
   const [salvando, setSalvando] = useState(false);
-  const { catalogo, salvarItem: salvarNoCatalogo } = useArquiteto();
+  const { catalogo, salvarItem: salvarNoCatalogo, bloqueioCatalogo } = useArquiteto();
   const { brl } = useDinheiro();
   const { itens: fornecedores } = useColecaoPessoal<Fornecedor>("fornecedores", (a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
   const [buscaCat, setBuscaCat] = useState("");
@@ -348,8 +348,9 @@ export function ItemDialog({
               </div>
 
               <label className="flex cursor-pointer items-center gap-2.5 text-sm text-ink/80">
-                <input type="checkbox" className="h-4 w-4 accent-[#d23a1f]" checked={guardar} onChange={(e) => setGuardar(e.target.checked)} />
+                <input type="checkbox" className="h-4 w-4 accent-[#d23a1f]" checked={guardar && !bloqueioCatalogo} disabled={!!bloqueioCatalogo} onChange={(e) => setGuardar(e.target.checked)} />
                 Guardar no meu catálogo para usar em outros projetos
+                {bloqueioCatalogo && <span className="block text-xs text-amber-800">Catálogo cheio no seu plano. Remova itens ou conheça um plano maior.</span>}
               </label>
             </div>
           )}

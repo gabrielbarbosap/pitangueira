@@ -2,6 +2,7 @@
 
 import { useMemo, type ReactNode } from "react";
 import { useArquiteto } from "@/lib/arquiteto";
+import { usePlano } from "@/lib/plano";
 import { useColecaoPessoal } from "@/lib/colecaoPessoal";
 import { resumoFinanceiro } from "@/lib/financeiro";
 import { useDinheiro } from "@/lib/privacidade";
@@ -33,6 +34,7 @@ export function AtalhosHome({ onCatalogo, onComposicoes, onFornecedores }: { onC
   const hoje = useHoje();
   const { brlInt } = useDinheiro();
   const { catalogo } = useArquiteto();
+  const { pode } = usePlano();
   const { itens: composicoes } = useColecaoPessoal<Composicao>("composicoes", (a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
   const { itens: fornecedores } = useColecaoPessoal<Fornecedor>("fornecedores", (a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
   const { itens: honorarios } = useColecaoPessoal<Honorario>("honorarios", (a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
@@ -40,7 +42,9 @@ export function AtalhosHome({ onCatalogo, onComposicoes, onFornecedores }: { onC
 
   let finDetalhe = "Honorários e parcelas";
   let finTom: TomAtalho = "neutro";
-  if (fin && honorarios.length > 0) {
+  if (!pode("financeiro")) {
+    finDetalhe = "A partir do plano Safra";
+  } else if (fin && honorarios.length > 0) {
     if (fin.qtdVencidas > 0) {
       finDetalhe = `${brlInt(fin.vencido)} em atraso`;
       finTom = "alerta";
@@ -58,7 +62,7 @@ export function AtalhosHome({ onCatalogo, onComposicoes, onFornecedores }: { onC
       <Atalho icone={ICONE.composicoes} titulo="Composições" detalhe={composicoes.length ? quantos(composicoes.length, "composição", "composições") : "Serviços com BDI e margem"} onClick={onComposicoes} />
       <Atalho icone={ICONE.fornecedores} titulo="Fornecedores" detalhe={fornecedores.length ? quantos(fornecedores.length, "cadastrado", "cadastrados") : "Prazo e custo de cada um"} onClick={onFornecedores} />
       <Atalho icone={ICONE.financeiro} titulo="Financeiro" detalhe={finDetalhe} tom={finTom} href="/financeiro" />
-      <Atalho icone={ICONE.conta} titulo="Minha conta" detalhe="Google e senha" href="/conta" />
+      <Atalho icone={ICONE.conta} titulo="Minha conta" detalhe="Plano, recibos e senha" href="/conta" />
       <Atalho icone={ICONE.docs} titulo="Documentação" detalhe="Aprenda a usar" href="/docs" externo />
     </section>
   );

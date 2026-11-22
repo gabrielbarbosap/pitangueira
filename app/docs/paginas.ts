@@ -19,6 +19,7 @@ import { fornecedores } from "./conteudo/fornecedores";
 import { financeiro } from "./conteudo/financeiro";
 import { cliente } from "./conteudo/cliente";
 import { privacidade } from "./conteudo/privacidade";
+import { planos } from "./conteudo/planos";
 import { dados } from "./conteudo/dados";
 import { admin } from "./conteudo/admin";
 import { glossario } from "./conteudo/glossario";
@@ -49,6 +50,7 @@ export const paginas: PaginaDoc[] = [
   financeiro,
   cliente,
   privacidade,
+  planos,
   dados,
   admin,
   glossario,

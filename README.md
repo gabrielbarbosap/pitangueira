@@ -80,6 +80,17 @@ CAPTURAS=1 npx playwright test capturas --project=desktop
 
 Sem preços nem planos por enquanto, e sem depoimentos ou números inventados: só afirme na página o que o sistema faz.
 
+## Planos e limites (Broto, Safra, Pomar)
+
+Tudo sobre planos está em **`lib/planos.ts`** (limites, recursos por plano, teste de 5 dias, textos dos bloqueios): mudar um limite é mudar um número ali. O plano de cada arquiteto vem de `assinaturas/{uid}` (e os pagamentos, de `assinaturas/{uid}/recibos`); as regras só deixam o próprio arquiteto **ler**. Quem grava é o servidor (webhook do Stripe, a fazer). **Nunca guarde o plano no documento `arquitetos/{uid}`**, que o próprio usuário escreve.
+
+- **Sem assinatura:** 5 dias de teste com a Safra, contados da criação da conta; depois, Broto. **Quem já usava o app** recebeu `assinaturas/{uid}` com `plano: "pomar"` e `status: "cortesia"` (com aviso de que vai mudar). Para mudar, edite o documento.
+- **Limites no app:** obras em andamento (não arquivadas), catálogo e fornecedores são checados na interface (`usePlano()`), com a janela de motivo (`LimiteDialog`). Recursos de plano maior mostram `PlanoBloqueado`/`CartaoBloqueado`.
+- **Limite de obras no servidor (desligado por padrão):** a interface sozinha pode ser burlada. Para valer de verdade: (1) crie uma conta de serviço no Firebase e ponha o JSON, em uma linha, em `FIREBASE_SERVICE_ACCOUNT` (só no servidor); (2) ligue `PLANOS_NO_SERVIDOR=1` e `NEXT_PUBLIC_PLANOS_NO_SERVIDOR=1`; (3) rode `node scripts/regras-com-limites.mjs` e publique `firestore.rules.com-limites` no lugar de `firestore.rules`. Aí criar e restaurar projeto passam por `/api/obras/autorizar`, que confere o plano e deixa uma autorização de 2 minutos que as regras exigem. **Ordem: variáveis e deploy do app primeiro, regras por último**, ou ninguém consegue criar projeto. Os limites de catálogo e fornecedores continuam só na interface.
+- **Modo demo:** em Minha conta há um simulador de planos. Os testes rodam no Pomar (veja `semTutorial`); os de plano escolhem o plano.
+- **Stripe (a fazer):** produtos e preços, Checkout, portal do cliente e um webhook que grava `assinaturas/{uid}` e os recibos. Termos de uso em `/termos` (dados da empresa em `lib/empresa.ts`: preencha razão social, CNPJ, e-mail e foro).
+- **Analytics:** `lib/analytics.ts` guarda os eventos só em memória (aparecem em /admin); o Google Analytics ainda não está ligado.
+
 ## Documentação do produto
 
 A documentação para o usuário fica em **`/docs`** (pública, sem login), no estilo de documentação de linguagens: menu lateral com busca, páginas com seções, índice "Nesta página" e navegação anterior/próxima.

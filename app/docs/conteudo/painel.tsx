@@ -28,7 +28,7 @@ export const painel: PaginaDoc = {
             <li><Btn>Composições</Btn>: custo de serviços montado por insumos.</li>
             <li><Btn>Fornecedores</Btn>: cadastro e histórico de quem trabalha com você (<Ir para="fornecedores">Fornecedores</Ir>).</li>
             <li><Btn>Financeiro</Btn>: honorários e parcelas do escritório (<Ir para="financeiro">Financeiro</Ir>). O cartão avisa quanto está em atraso (com um ponto laranja), quanto há a receber ou que está tudo recebido.</li>
-            <li><Btn>Minha conta</Btn>: login com Google e senha.</li>
+            <li><Btn>Minha conta</Btn>: seu plano, os recibos de pagamento e o login com Google e senha (<Ir para="planos-e-assinatura">Planos e assinatura</Ir>).</li>
             <li><Btn>Documentação</Btn>: este manual, em outra aba.</li>
           </Lista>
         </>

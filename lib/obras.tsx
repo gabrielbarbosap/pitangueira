@@ -28,6 +28,7 @@ import { SEED_ITENS } from "./seed";
 import { resumoDeItens } from "./calc";
 import { CASA_PITANGA_EMAILS, EVENTO_OBRAS, LS_OBRAS, lsItensKey } from "./demo";
 import { registrarEvento } from "./telemetria";
+import { PLANOS_NO_SERVIDOR, autorizarNoServidor } from "./autorizarObra";
 
 interface ObrasContextValue {
   obras: Obra[];
@@ -223,8 +224,10 @@ export function ObrasProvider({ children }: { children: ReactNode }) {
     if (configured && db) {
       const banco = db;
       const ref = doc(collection(banco, "obras"));
+      // Com a conferência no servidor ligada, o plano é checado antes e a autorização é consumida na mesma gravação.
+      if (PLANOS_NO_SERVIDOR) await autorizarNoServidor("criar");
       // Cria o projeto PRIMEIRO: as regras dos itens checam get(obra), que só existe após o commit.
-      await setDoc(ref, {
+      const dadosObra = {
         ownerUid: user.uid,
         ownerEmail: user.email,
         ...(ownerEmails ? { ownerEmails } : {}),
@@ -236,7 +239,13 @@ export function ObrasProvider({ children }: { children: ReactNode }) {
         ...(clone?.projeto ? { projeto: clone.projeto } : {}),
         createdAt: Date.now(),
         updatedAt: Date.now(),
-      });
+      };
+      if (PLANOS_NO_SERVIDOR) {
+        const lote = writeBatch(banco);
+        lote.set(ref, dadosObra);
+        lote.delete(doc(banco, "autorizacoes", user.uid));
+        await lote.commit();
+      } else await setDoc(ref, dadosObra);
       for (let i = 0; i < iniciais.length; i += 400) {
         const batch = writeBatch(banco);
         iniciais.slice(i, i + 400).forEach((it) => {
@@ -277,11 +286,17 @@ export function ObrasProvider({ children }: { children: ReactNode }) {
   async function arquivarObra(id: string, arquivar: boolean) {
     if (configured && db) {
       // Nada é apagado: só marca a obra. A lista atualiza sozinha pelo listener.
-      await updateDoc(doc(db, "obras", id), {
-        arquivada: arquivar,
-        arquivadaEm: arquivar ? Date.now() : deleteField(),
-        updatedAt: Date.now(),
-      });
+      const mudanca = { arquivada: arquivar, arquivadaEm: arquivar ? Date.now() : deleteField(), updatedAt: Date.now() };
+      if (PLANOS_NO_SERVIDOR && !arquivar && user) {
+        // Restaurar ocupa uma vaga: o servidor confere o plano e a autorização é consumida na mesma gravação.
+        await autorizarNoServidor("restaurar");
+        const lote = writeBatch(db);
+        lote.update(doc(db, "obras", id), mudanca);
+        lote.delete(doc(db, "autorizacoes", user.uid));
+        await lote.commit();
+        return;
+      }
+      await updateDoc(doc(db, "obras", id), mudanca);
       return;
     }
     const todas = lerObrasDemo().map((o) =>

@@ -7,6 +7,8 @@ import { ROTULO_STATUS, dataCurta, dataLonga, situacaoDoPrazo, textoDeDiferenca,
 import type { Obra, Previsao } from "@/lib/types";
 import { IconeCadeado } from "./Icones";
 import { PrevisaoDialog } from "./PrevisaoDialog";
+import { RecursoDialog } from "./plano/Bloqueio";
+import { usePlano } from "@/lib/plano";
 
 /** "Hoje" (meia-noite local). Vale 0 na pré-renderização: o Next não aceita `new Date()` solto na renderização. */
 export function useHoje(): number {
@@ -150,12 +152,18 @@ export function PrazoCard({
   const hoje = useHoje();
   const [dialogo, setDialogo] = useState<number | null>(null);
   const [historico, setHistorico] = useState(false);
+  const { pode } = usePlano();
+  const [semPlano, setSemPlano] = useState(false);
   const s: SituacaoPrazo | null = useMemo(() => (hoje ? situacaoDoPrazo(previsoes, hoje, pctConcluido) : null), [previsoes, hoje, pctConcluido]);
 
   if (hoje === 0) return null;
 
-  const dialogoAberto =
-    dialogo !== null ? <PrevisaoDialog key={dialogo} aberto onFechar={() => setDialogo(null)} previsoes={previsoes} onRegistrar={onRegistrar} /> : null;
+  const dialogoAberto = (
+    <>
+      {dialogo !== null && <PrevisaoDialog key={dialogo} aberto onFechar={() => setDialogo(null)} previsoes={previsoes} onRegistrar={onRegistrar} />}
+      <RecursoDialog aberto={semPlano} onFechar={() => setSemPlano(false)} recurso="previsoesNovas" />
+    </>
+  );
 
   // Ainda sem previsão: o arquiteto é convidado a registrar a original; o cliente só vê um aviso.
   if (!s) {
@@ -229,7 +237,7 @@ export function PrazoCard({
 
       <div className="flex flex-wrap items-center gap-2 border-t border-linha pt-4">
         {!ehCliente && (
-          <button className="btn btn-linha px-4 py-2.5 text-sm" onClick={() => setDialogo(Date.now())}>
+          <button className="btn btn-linha px-4 py-2.5 text-sm" onClick={() => (pode("previsoesNovas") ? setDialogo(Date.now()) : setSemPlano(true))}>
             Registrar nova previsão
           </button>
         )}

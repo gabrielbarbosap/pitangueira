@@ -1,5 +1,6 @@
 import { addDoc, collection, getDocs, limit, orderBy, query, where } from "firebase/firestore";
 import { db, isFirebaseConfigured } from "./firebase";
+import { track } from "./analytics";
 
 /**
  * Métricas de uso e registro de erros, sem serviço de terceiros.
@@ -71,6 +72,7 @@ async function enviar(r: RegistroTelemetria) {
 /** Registra algo que aconteceu (ex.: "item_adicionado"). Nunca lança erro. */
 export function registrarEvento(nome: string, props?: Props) {
   if (typeof window === "undefined") return;
+  track(nome, props); // também vai para a camada de analytics (só em memória por enquanto)
   void enviar({ tipo: "evento", nome: nome.slice(0, 60), em: Date.now(), ...contexto, rota: rotaGenerica(), props: limpar(props) });
 }
 

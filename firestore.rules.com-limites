@@ -1,0 +1,163 @@
+// GERADO por scripts/regras-com-limites.mjs a partir de firestore.rules. Não edite à mão.
+rules_version = '2';
+
+// Regras de segurança — SaaS multi-tenant de obras.
+// - Arquiteto (dono) só enxerga/gerencia as obras que criou (por uid) ou co-gerencia (por e-mail).
+// - Cliente (membro) só acessa a obra cujo código digitou; pode marcar feito/pago e editar o orçamento.
+// - Itens vivem dentro da obra, então uma obra nunca vê dados de outra.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+    // Dono a partir dos dados da própria obra (uid ou e-mail em ownerEmails).
+    // O e-mail só vale como co-dono se for VERIFICADO (login Google já vem verificado; conta de e-mail e senha só depois
+    // de clicar no link). Sem isso, qualquer um criaria uma conta com o e-mail de outro arquiteto e entraria na obra dele.
+    function ehDono(data) {
+      return signedIn() && (
+        data.ownerUid == request.auth.uid
+        || (request.auth.token.get('email_verified', false)
+            && data.get('ownerEmails', []).hasAny([request.auth.token.email]))
+      );
+    }
+    function obra(obraId) {
+      return get(/databases/$(database)/documents/obras/$(obraId)).data;
+    }
+    // Dono a partir do id (usado nas subcoleções, que precisam buscar a obra-mãe).
+    function isOwner(obraId) {
+      return ehDono(obra(obraId));
+    }
+    function isMember(obraId) {
+      return signedIn() && exists(/databases/$(database)/documents/obras/$(obraId)/members/$(request.auth.uid));
+    }
+    // Licença de criar/restaurar projeto: existe, não venceu e é consumida (apagada) na mesma gravação.
+    function autorizado() {
+      let a = /databases/$(database)/documents/autorizacoes/$(request.auth.uid);
+      return exists(a) && get(a).data.ate > request.time.toMillis() && !existsAfter(a);
+    }
+    // Tirar um projeto do arquivo ocupa uma vaga do plano.
+    function restaurando() {
+      return resource.data.get('arquivada', false) == true && request.resource.data.get('arquivada', false) == false;
+    }
+    function soAltera(campos) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(campos);
+    }
+
+    // Previsões de prazo: o histórico só cresce. A gravação vale se a lista ficou igual ou se ganhou
+    // exatamente UMA previsão no fim, com todas as anteriores intactas. Ninguém (nem o dono) edita
+    // ou apaga a previsão original nem as novas já registradas.
+    function previsoesOk() {
+      let antigo = resource.data.get('previsoes', []);
+      let novo = request.resource.data.get('previsoes', []);
+      // Igual, ou com exatamente uma previsão a mais: todas as antigas seguem na lista (hasAll)
+      // e a primeira, a original, é idêntica. Sem fatiar a lista (corte vazio dá erro de avaliação).
+      return novo == antigo
+        || (novo.size() == antigo.size() + 1
+            && novo.hasAll(antigo)
+            && (antigo.size() == 0 || novo[0] == antigo[0]));
+    }
+
+    // Métricas de uso e erros do app: qualquer conta logada só CRIA registros (sem dados pessoais); só quem entrou como arquiteto (login Google, não o acesso anônimo do cliente) lê.
+    match /telemetria/{id} {
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['tipo', 'nome', 'em', 'uid', 'papel', 'rota', 'props', 'msg'])
+        && request.resource.data.tipo in ['evento', 'erro']
+        && request.resource.data.nome is string && request.resource.data.nome.size() <= 60
+        && request.resource.data.uid == request.auth.uid
+        && (!('msg' in request.resource.data) || request.resource.data.msg.size() <= 500);
+      allow read: if signedIn() && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
+    // Plano e recibos: o arquiteto só LÊ. Quem grava é o servidor (webhook do Stripe), nunca o navegador, senão qualquer
+    // um se daria o plano mais alto.
+    match /assinaturas/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false;
+      match /recibos/{id} {
+        allow read: if signedIn() && request.auth.uid == uid;
+        allow write: if false;
+      }
+    }
+
+    // Autorização de 2 minutos para criar/restaurar projeto, dada pelo servidor depois de conferir o plano. O navegador só
+    // apaga a própria (na mesma gravação que usa a licença). Só vale com a versão de regras "com limites" (veja o README).
+    match /autorizacoes/{uid} {
+      allow delete: if signedIn() && request.auth.uid == uid;
+      allow read, create, update: if false;
+    }
+
+    // Catálogo e marca pessoais do arquiteto: só o próprio uid lê e escreve.
+    match /arquitetos/{uid} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+
+      // Catálogo, composições, fornecedores e honorários: tudo pessoal, só o próprio uid lê e escreve.
+      match /{colecao}/{docId} {
+        allow read, write: if signedIn() && request.auth.uid == uid;
+      }
+    }
+
+    match /obras/{obraId} {
+      allow read: if ehDono(resource.data) || isMember(obraId);
+      allow create: if signedIn() && request.resource.data.ownerUid == request.auth.uid && autorizado();
+      allow update: if (ehDono(resource.data) && previsoesOk() && (!restaurando() || autorizado()))
+        || (isMember(obraId) && soAltera(['orcamentoTotal', 'resumo', 'programaAprovacao', 'updatedAt']));
+      allow delete: if ehDono(resource.data);
+
+      match /itens/{itemId} {
+        allow read: if isOwner(obraId) || isMember(obraId);
+        allow create, delete: if isOwner(obraId);
+        allow update: if isOwner(obraId)
+          || (isMember(obraId) && soAltera(['feito', 'pago', 'feitoPor', 'feitoEm', 'pagoPor', 'pagoEm', 'updatedAt']));
+      }
+
+      // Visitas: o arquiteto agenda e decide. O cliente lê e PEDE uma visita (status 'solicitada'); só cancela o próprio pedido.
+      match /visitas/{id} {
+        allow read: if isOwner(obraId) || isMember(obraId);
+        allow create: if isOwner(obraId)
+          || (isMember(obraId) && request.resource.data.status == 'solicitada' && request.resource.data.criadoPorUid == request.auth.uid);
+        allow update: if isOwner(obraId);
+        allow delete: if isOwner(obraId)
+          || (isMember(obraId) && resource.data.get('criadoPorUid', '') == request.auth.uid && resource.data.status == 'solicitada');
+      }
+      // Ocorrências são do arquiteto (o cliente só lê).
+
+      match /ocorrencias/{id} {
+        allow read: if isOwner(obraId) || isMember(obraId);
+        allow write: if isOwner(obraId);
+      }
+      // Cobranças da obra: o arquiteto gera e gerencia; o cliente só lê.
+      match /cobrancas/{id} {
+        allow read: if isOwner(obraId) || isMember(obraId);
+        allow write: if isOwner(obraId);
+      }
+      // Feed: arquiteto e cliente publicam. Cada um remove só o que publicou (o arquiteto remove qualquer um).
+      match /publicacoes/{id} {
+        allow read: if isOwner(obraId) || isMember(obraId);
+        allow create: if isOwner(obraId)
+          || (isMember(obraId) && request.resource.data.autorUid == request.auth.uid);
+        allow update: if isOwner(obraId);
+        allow delete: if isOwner(obraId)
+          || (isMember(obraId) && resource.data.get('autorUid', '') == request.auth.uid);
+      }
+      // Vistoria final: arquiteto e cliente montam e conferem a lista. O cliente cria pontos (marcados como dele),
+      // remove só os que ele mesmo criou e altera apenas a conferência (status e observação).
+      match /vistoria/{id} {
+        allow read: if isOwner(obraId) || isMember(obraId);
+        allow create: if isOwner(obraId)
+          || (isMember(obraId) && request.resource.data.criadoPorUid == request.auth.uid);
+        allow delete: if isOwner(obraId)
+          || (isMember(obraId) && resource.data.get('criadoPorUid', '') == request.auth.uid);
+        allow update: if isOwner(obraId)
+          || (isMember(obraId) && soAltera(['status', 'obs', 'conferidoPor', 'conferidoEm', 'updatedAt']));
+      }
+
+      match /members/{uid} {
+        allow create: if signedIn() && request.auth.uid == uid
+          && request.resource.data.code == obra(obraId).accessCode;
+        allow read: if request.auth.uid == uid || isOwner(obraId);
+        allow delete: if isOwner(obraId) || request.auth.uid == uid;
+      }
+    }
+  }
+}

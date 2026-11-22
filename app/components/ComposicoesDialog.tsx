@@ -5,6 +5,8 @@ import { Modal } from "./Modal";
 import { useConfirm } from "./ConfirmProvider";
 import { IconeBusca, IconeEditar, IconeLixo } from "./Icones";
 import { useArquiteto } from "@/lib/arquiteto";
+import { usePlano } from "@/lib/plano";
+import { RecursoDialog } from "./plano/Bloqueio";
 import { useColecaoPessoal } from "@/lib/colecaoPessoal";
 import { calcularComposicao, valorDoInsumo } from "@/lib/composicoes";
 import { useDinheiro } from "@/lib/privacidade";
@@ -53,7 +55,7 @@ const paraInsumo = (d: InsumoDraft): InsumoComposicao => ({
  * (tinta, massa, mão de obra), com BDI e margem dele. Com `onAdicionar`, cada composição
  * entra no orçamento do projeto com a quantidade informada.
  */
-export function ComposicoesDialog({
+function ComposicoesDialogInterno({
   aberto,
   onFechar,
   etapas = [],
@@ -382,4 +384,11 @@ export function ComposicoesDialog({
       )}
     </Modal>
   );
+}
+
+/** Composições são do plano Safra em diante: nos outros, a janela explica por quê. */
+export function ComposicoesDialog(props: { aberto: boolean; onFechar: () => void; etapas?: string[]; onAdicionar?: (c: Composicao, quantidade: number, precoUnitario: number) => Promise<void> }) {
+  const { pode } = usePlano();
+  if (props.aberto && !pode("composicoes")) return <RecursoDialog aberto onFechar={props.onFechar} recurso="composicoes" />;
+  return <ComposicoesDialogInterno {...props} />;
 }

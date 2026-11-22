@@ -51,3 +51,6 @@ dadosfirebate.txt
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Backups locais do Firestore (dados reais: nunca commitar)
+/backup-firestore/

@@ -5,6 +5,8 @@ import { arrayUnion, collection, deleteDoc, doc, getDocs, onSnapshot, setDoc, wr
 import { db } from "./firebase";
 import { useAuth } from "./auth";
 import { useObras } from "./obras";
+import { usePlano } from "./plano";
+import { ErroDePlano, vagas, type Bloqueio } from "./planos";
 import { PERFIL_VAZIO, type CatalogoItem, type Item, type PerfilArquiteto } from "./types";
 
 type CatalogoInput = Omit<CatalogoItem, "id" | "createdAt">;
@@ -31,6 +33,9 @@ interface ArquitetoContextValue {
   /** BDI e margem padrão (em %) das composições novas. */
   parametros: ParametrosCusto;
   salvarParametros: (p: ParametrosCusto) => Promise<void>;
+  /** Quantos itens ainda cabem no catálogo do plano (null = sem limite) e, se estiver cheio, o motivo. */
+  vagasCatalogo: number | null;
+  bloqueioCatalogo: Bloqueio | null;
   /** Como o arquiteto montou o catálogo no primeiro acesso (null = ainda não escolheu; undefined = perfil não chegou). */
   escolhaCatalogo: EscolhaCatalogo | null | undefined;
   registrarEscolhaCatalogo: (e: EscolhaCatalogo) => Promise<void>;
@@ -70,6 +75,7 @@ function gravar(key: string, valor: unknown) {
 export function ArquitetoProvider({ children }: { children: ReactNode }) {
   const { user, configured } = useAuth();
   const { obras } = useObras();
+  const { def: planoDef, bloqueio: bloqueioDoPlano } = usePlano();
   const [catalogo, setCatalogo] = useState<CatalogoItem[]>([]);
   const [perfil, setPerfil] = useState<PerfilArquiteto>(PERFIL_VAZIO);
   const [carregando, setCarregando] = useState(true);
@@ -130,6 +136,10 @@ export function ArquitetoProvider({ children }: { children: ReactNode }) {
   const salvarItem = useCallback(
     async (data: CatalogoInput, id?: string) => {
       if (!uid) return;
+      if (!id) {
+        const b = bloqueioDoPlano("catalogoItens", catalogo.length);
+        if (b) throw new ErroDePlano(b);
+      }
       if (configured && db) {
         const ref = id ? doc(db, "arquitetos", uid, "catalogo", id) : doc(collection(db, "arquitetos", uid, "catalogo"));
         await setDoc(ref, { ...data, createdAt: Date.now() }, { merge: true });
@@ -143,7 +153,7 @@ export function ArquitetoProvider({ children }: { children: ReactNode }) {
       gravar(lsCatalogo(uid), novo);
       setCatalogo(novo);
     },
-    [uid, configured],
+    [uid, configured, catalogo.length, bloqueioDoPlano],
   );
 
   const removerItem = useCallback(
@@ -171,6 +181,9 @@ export function ArquitetoProvider({ children }: { children: ReactNode }) {
         existentes.add(k);
         novos.push(it);
       }
+      // O plano pode limitar o catálogo: entram só os que cabem.
+      const cabem = vagas(planoDef, "catalogoItens", catalogo.length);
+      if (cabem !== null && novos.length > cabem) novos.length = cabem;
       if (novos.length === 0) return 0;
       if (configured && db) {
         const banco = db;
@@ -191,7 +204,7 @@ export function ArquitetoProvider({ children }: { children: ReactNode }) {
       }
       return novos.length;
     },
-    [uid, configured, catalogo],
+    [uid, configured, catalogo, planoDef],
   );
 
   const salvarPerfil = useCallback(
@@ -242,8 +255,8 @@ export function ArquitetoProvider({ children }: { children: ReactNode }) {
   }, [uid, configured, carregando, semeadas, obras, importar]);
 
   const value = useMemo(
-    () => ({ catalogo, perfil, carregando, salvarItem, removerItem, importar, salvarPerfil, parametros, salvarParametros, escolhaCatalogo, registrarEscolhaCatalogo }),
-    [catalogo, perfil, carregando, salvarItem, removerItem, importar, salvarPerfil, parametros, salvarParametros, escolhaCatalogo, registrarEscolhaCatalogo],
+    () => ({ catalogo, perfil, carregando, salvarItem, removerItem, importar, salvarPerfil, parametros, salvarParametros, escolhaCatalogo, registrarEscolhaCatalogo, vagasCatalogo: vagas(planoDef, "catalogoItens", catalogo.length), bloqueioCatalogo: bloqueioDoPlano("catalogoItens", catalogo.length) }),
+    [catalogo, perfil, carregando, salvarItem, removerItem, importar, salvarPerfil, parametros, salvarParametros, escolhaCatalogo, registrarEscolhaCatalogo, planoDef, bloqueioDoPlano],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

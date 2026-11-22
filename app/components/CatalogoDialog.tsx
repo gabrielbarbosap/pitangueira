@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Modal } from "./Modal";
 import { CatalogoProntoDialog } from "./CatalogoProntoDialog";
+import { LimiteDialog } from "./plano/Bloqueio";
 import { useConfirm } from "./ConfirmProvider";
 import { IconeBusca, IconeEditar, IconeLixo } from "./Icones";
 import { catalogoDeItem, useArquiteto } from "@/lib/arquiteto";
@@ -40,7 +41,8 @@ export function CatalogoDialog({
   itensObra?: Item[];
   onAdicionar?: (c: CatalogoItem, quantidade: number) => Promise<void>;
 }) {
-  const { catalogo, salvarItem, removerItem, importar } = useArquiteto();
+  const { catalogo, salvarItem, removerItem, importar, vagasCatalogo, bloqueioCatalogo } = useArquiteto();
+  const [limite, setLimite] = useState(false);
   const confirmar = useConfirm();
   const { brl } = useDinheiro();
   const [busca, setBusca] = useState("");
@@ -88,10 +90,15 @@ export function CatalogoDialog({
 
   async function importarDaObra() {
     if (!itensObra || ocupado) return;
+    if (bloqueioCatalogo) {
+      setLimite(true);
+      return;
+    }
     setOcupado(true);
     try {
       const n = await importar(itensObra.map(catalogoDeItem));
-      setAviso(n > 0 ? `${n} ${n === 1 ? "item novo entrou" : "itens novos entraram"} no catálogo.` : "Nada novo para importar: tudo isso já está no catálogo.");
+      const cheio = vagasCatalogo !== null && n >= vagasCatalogo;
+      setAviso((n > 0 ? `${n} ${n === 1 ? "item novo entrou" : "itens novos entraram"} no catálogo.` : "Nada novo para importar: tudo isso já está no catálogo.") + (cheio ? " O catálogo do seu plano chegou ao limite: os demais itens ficaram de fora." : ""));
     } finally {
       setOcupado(false);
     }
@@ -154,7 +161,7 @@ export function CatalogoDialog({
           </div>
         ) : (
           <div className="flex flex-wrap gap-2">
-            <button className="btn btn-primario px-4 py-2.5 text-sm" onClick={() => abrirForm("novo")}>+ Novo item</button>
+            <button className="btn btn-primario px-4 py-2.5 text-sm" onClick={() => (bloqueioCatalogo ? setLimite(true) : abrirForm("novo"))}>+ Novo item</button>
             {itensObra && itensObra.length > 0 && (
               <button className="btn btn-linha px-4 py-2.5 text-sm" disabled={ocupado} onClick={importarDaObra} title="Copia os itens deste projeto para o seu catálogo (sem repetir)">
                 Importar deste projeto
@@ -223,6 +230,7 @@ export function CatalogoDialog({
       </div>
     </Modal>
     <CatalogoProntoDialog aberto={pronto} onFechar={() => setPronto(false)} />
+    <LimiteDialog aberto={limite} onFechar={() => setLimite(false)} bloqueio={bloqueioCatalogo} tipo="catalogoItens" />
     </>
   );
 }

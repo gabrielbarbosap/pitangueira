@@ -21,14 +21,16 @@ export const chavePrimeiroAcesso = (uid: string) => `${CHAVE_PRIMEIRO_ACESSO}:${
  * (só ele vê e edita). No primeiro acesso (`primeiroAcesso`) também oferece começar do zero.
  */
 export function CatalogoProntoDialog({ aberto, onFechar, primeiroAcesso = false }: { aberto: boolean; onFechar: () => void; primeiroAcesso?: boolean }) {
-  const { importar, registrarEscolhaCatalogo } = useArquiteto();
+  const { importar, registrarEscolhaCatalogo, vagasCatalogo } = useArquiteto();
   const { brl } = useDinheiro();
   const { user } = useAuth();
   const [marcadas, setMarcadas] = useState<Set<string>>(() => new Set(CATALOGO_PRONTO.map((g) => g.etapa)));
   const [ocupado, setOcupado] = useState(false);
   const [erro, setErro] = useState("");
 
-  const total = useMemo(() => CATALOGO_PRONTO.filter((g) => marcadas.has(g.etapa)).reduce((s, g) => s + g.itens.length, 0), [marcadas]);
+  const marcados = useMemo(() => CATALOGO_PRONTO.filter((g) => marcadas.has(g.etapa)).reduce((s, g) => s + g.itens.length, 0), [marcadas]);
+  // O plano pode limitar o catálogo: entram só os que cabem.
+  const total = vagasCatalogo === null ? marcados : Math.min(marcados, vagasCatalogo);
 
   function alternar(etapa: string) {
     setMarcadas((m) => {
@@ -111,6 +113,11 @@ export function CatalogoProntoDialog({ aberto, onFechar, primeiroAcesso = false 
         ))}
       </ul>
 
+      {vagasCatalogo !== null && marcados > vagasCatalogo && (
+        <Alerta tom="aviso" className="mt-3">
+          O catálogo do seu plano só comporta mais {vagasCatalogo} {vagasCatalogo === 1 ? "item" : "itens"}. Vamos adicionar os primeiros {vagasCatalogo}; marque menos etapas para escolher quais.
+        </Alerta>
+      )}
       {erro && <Alerta tom="perigo" className="mt-3">{erro}</Alerta>}
 
       <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-end">

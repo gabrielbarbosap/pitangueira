@@ -59,7 +59,7 @@ test("do projeto novo ao orçamento na mão do cliente", async ({ page, context,
     await expect(documento).toContainText("Tinta acrílica 18L");
     await expect(documento).toContainText("Pontos de tomada");
     await expect(documento).toContainText(reais("2.600,00"));
-    await expect(documento).toContainText("Gerado com Pitangueira");
+    await expect(documento).not.toContainText("Gerado com Pitangueira"); // o selo é do plano Broto (veja planos.spec)
     await documento.getByRole("button", { name: /Fechar/ }).click();
     await expect(documento).toBeHidden();
   });

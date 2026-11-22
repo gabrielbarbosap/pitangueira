@@ -137,7 +137,7 @@ test("o arquiteto gera o relatório mensal de andamento", async ({ page }) => {
     await expect(documento).toContainText("Instalação das luminárias.");
     await expect(documento).toContainText(/Pagamentos em/);
     await expect(documento).toContainText(/R\$\s*1\.400,00/); // 4 x 350, o único pago
-    await expect(documento).toContainText("Gerado com Pitangueira");
+    await expect(documento).not.toContainText("Gerado com Pitangueira"); // o selo é do plano Broto (veja planos.spec)
   });
 
   await test.step("volta e ajusta sem perder a escolha, e gera sem os valores em R$", async () => {

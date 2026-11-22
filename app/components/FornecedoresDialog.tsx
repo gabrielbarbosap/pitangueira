@@ -8,6 +8,8 @@ import { useColecaoPessoal } from "@/lib/colecaoPessoal";
 import { calcularDesempenho, type Desempenho } from "@/lib/fornecedores";
 import { useItensDeTodosOsProjetos } from "@/lib/historico";
 import { useDinheiro } from "@/lib/privacidade";
+import { usePlano } from "@/lib/plano";
+import { LimiteDialog } from "./plano/Bloqueio";
 import type { Fornecedor } from "@/lib/types";
 
 const campo = "input-pit";
@@ -140,6 +142,9 @@ export function FornecedoresDialog({ aberto, onFechar }: { aberto: boolean; onFe
   const { itens: cadastro, salvar, remover } = useColecaoPessoal<Fornecedor>("fornecedores", (a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
   const { itens, carregando, erro, carregar } = useItensDeTodosOsProjetos();
   const confirmar = useConfirm();
+  const { bloqueio } = usePlano();
+  const bloqueioForn = bloqueio("fornecedores", cadastro.length);
+  const [limite, setLimite] = useState(false);
   const [busca, setBusca] = useState("");
   const [form, setForm] = useState<Form | null>(null);
   const [ocupado, setOcupado] = useState(false);
@@ -171,6 +176,10 @@ export function FornecedoresDialog({ aberto, onFechar }: { aberto: boolean; onFe
 
   async function gravar() {
     if (!form || !form.nome.trim() || ocupado) return;
+    if (!form.id && bloqueioForn) {
+      setLimite(true);
+      return;
+    }
     setOcupado(true);
     try {
       await salvar({
@@ -200,6 +209,7 @@ export function FornecedoresDialog({ aberto, onFechar }: { aberto: boolean; onFe
   }
 
   return (
+    <>
     <Modal aberto={aberto} onFechar={onFechar} titulo={form ? (form.id ? "Editar fornecedor" : "Novo fornecedor") : "Fornecedores"} largo>
       {form ? (
         <div className="space-y-4">
@@ -246,7 +256,7 @@ export function FornecedoresDialog({ aberto, onFechar }: { aberto: boolean; onFe
           </p>
 
           <div className="flex flex-wrap items-center gap-2">
-            <button className="btn btn-primario px-4 py-2.5 text-sm" onClick={() => setForm({ ...VAZIO })}>+ Novo fornecedor</button>
+            <button className="btn btn-primario px-4 py-2.5 text-sm" onClick={() => (bloqueioForn ? setLimite(true) : setForm({ ...VAZIO }))}>+ Novo fornecedor</button>
             {carregando && <span className="text-xs text-ink/50">Lendo o histórico dos projetos…</span>}
           </div>
 
@@ -281,5 +291,7 @@ export function FornecedoresDialog({ aberto, onFechar }: { aberto: boolean; onFe
         </div>
       )}
     </Modal>
+    <LimiteDialog aberto={limite} onFechar={() => setLimite(false)} bloqueio={bloqueioForn} tipo="fornecedores" />
+    </>
   );
 }

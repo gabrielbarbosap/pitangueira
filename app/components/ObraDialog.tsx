@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Modal } from "./Modal";
 import { useObras } from "@/lib/obras";
+import { ErroDePlano } from "@/lib/planos";
 
 function geraCodigo() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -65,8 +66,8 @@ export function ObraDialog({ aberto, onFechar }: { aberto: boolean; onFechar: ()
       );
       onFechar();
       router.push(`/obra/${id}`);
-    } catch {
-      setErro("Não consegui criar o projeto. Tente de novo.");
+    } catch (e) {
+      setErro(e instanceof ErroDePlano ? `${e.bloqueio.texto} ${e.bloqueio.dica}` : "Não consegui criar o projeto. Tente de novo.");
     } finally {
       setSalvando(false);
     }

@@ -150,6 +150,13 @@ export function LoginScreen({ embutido = false }: { embutido?: boolean } = {}) {
             Veja a documentação
           </Link>
         </p>
+        <p className="mt-3 text-center text-xs leading-snug text-ink/50">
+          Ao entrar ou criar a conta, você concorda com os{" "}
+          <Link href="/termos" className="font-medium underline underline-offset-2">
+            Termos de uso
+          </Link>
+          .
+        </p>
       </div>
     </div>
   );

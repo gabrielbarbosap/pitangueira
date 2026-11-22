@@ -59,6 +59,24 @@ service cloud.firestore {
       allow read: if signedIn() && request.auth.token.firebase.sign_in_provider != 'anonymous';
     }
 
+    // Plano e recibos: o arquiteto só LÊ. Quem grava é o servidor (webhook do Stripe), nunca o navegador, senão qualquer
+    // um se daria o plano mais alto.
+    match /assinaturas/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false;
+      match /recibos/{id} {
+        allow read: if signedIn() && request.auth.uid == uid;
+        allow write: if false;
+      }
+    }
+
+    // Autorização de 2 minutos para criar/restaurar projeto, dada pelo servidor depois de conferir o plano. O navegador só
+    // apaga a própria (na mesma gravação que usa a licença). Só vale com a versão de regras "com limites" (veja o README).
+    match /autorizacoes/{uid} {
+      allow delete: if signedIn() && request.auth.uid == uid;
+      allow read, create, update: if false;
+    }
+
     // Catálogo e marca pessoais do arquiteto: só o próprio uid lê e escreve.
     match /arquitetos/{uid} {
       allow read, write: if signedIn() && request.auth.uid == uid;

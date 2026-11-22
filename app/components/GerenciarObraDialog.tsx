@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { Modal } from "./Modal";
 import { IconeArquivo, IconeLixo } from "./Icones";
 import { useObras } from "@/lib/obras";
+import { usePlano } from "@/lib/plano";
+import { ErroDePlano } from "@/lib/planos";
 import type { Obra } from "@/lib/types";
 
 const norm = (s: string) => s.trim().toLowerCase().replace(/\s+/g, " ");
@@ -23,6 +25,7 @@ export function GerenciarObraDialog({
   aoConcluir?: (acao: "arquivada" | "restaurada" | "excluida") => void;
 }) {
   const { arquivarObra, removerObra } = useObras();
+  const { bloqueioObras } = usePlano();
   const [confirmacao, setConfirmacao] = useState("");
   const [ocupado, setOcupado] = useState<"arquivar" | "excluir" | null>(null);
   const [erro, setErro] = useState<string | null>(null);
@@ -39,14 +42,19 @@ export function GerenciarObraDialog({
 
   async function alternarArquivo() {
     if (!obra || ocupado) return;
+    // Restaurar ocupa uma vaga de projeto em andamento: se o plano não tem vaga, explica por quê.
+    if (arquivada && bloqueioObras) {
+      setErro(`${bloqueioObras.texto} ${bloqueioObras.dica}`);
+      return;
+    }
     setOcupado("arquivar");
     setErro(null);
     try {
       await arquivarObra(obra.id, !arquivada);
       onFechar();
       aoConcluir?.(arquivada ? "restaurada" : "arquivada");
-    } catch {
-      setErro("Não deu certo agora. Tente de novo em instantes.");
+    } catch (e) {
+      setErro(e instanceof ErroDePlano ? `${e.bloqueio.texto} ${e.bloqueio.dica}` : "Não deu certo agora. Tente de novo em instantes.");
       setOcupado(null);
     }
   }

@@ -186,6 +186,7 @@ export function Landing() {
             <a href="#para-quem" className="hover:text-ink">Para quem</a>
             <a href="#como-funciona" className="hover:text-ink">Como funciona</a>
             <a href="#perguntas" className="hover:text-ink">Dúvidas</a>
+            <Link href="/planos" className="hover:text-ink">Planos</Link>
             <Link href="/docs" className="hover:text-ink">Documentação</Link>
           </nav>
           <div className="flex items-center gap-2">
@@ -518,7 +519,9 @@ export function Landing() {
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-8 text-sm text-ink/60">
           <Logo />
           <nav aria-label="Rodapé" className="flex flex-wrap items-center gap-5">
+            <Link href="/planos" className="hover:text-ink">Planos</Link>
             <Link href="/docs" className="hover:text-ink">Documentação</Link>
+            <Link href="/termos" className="hover:text-ink">Termos de uso</Link>
             <a href="#recursos" className="hover:text-ink">Recursos</a>
             <a href="#perguntas" className="hover:text-ink">Dúvidas</a>
           </nav>

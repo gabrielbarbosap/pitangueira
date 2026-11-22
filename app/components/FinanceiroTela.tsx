@@ -26,6 +26,8 @@ import {
 } from "@/lib/financeiro";
 import { registrarEvento } from "@/lib/telemetria";
 import { useArquiteto } from "@/lib/arquiteto";
+import { usePlano } from "@/lib/plano";
+import { CartaoBloqueado, PlanoBloqueado } from "./plano/Bloqueio";
 import type { ConfigCobranca, Honorario } from "@/lib/types";
 import { RecebimentoDialog, type DadosRecebimento } from "./RecebimentoDialog";
 import { CobrancaDialog } from "./CobrancaDialog";
@@ -125,6 +127,7 @@ export function FinanceiroTela() {
   const { itens: honorarios, carregando, salvar, remover } = useColecaoPessoal<Honorario>("honorarios", (a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
   const { itens: configs, salvar: salvarConfig } = useColecaoPessoal<ConfigCobranca>("configuracoes", (a, b) => a.id.localeCompare(b.id));
   const { perfil } = useArquiteto();
+  const { pode } = usePlano();
   const { oculto, brlCompacto, brlInt, brl } = useDinheiro();
   const confirmar = useConfirm();
   // "Hoje" só existe no navegador (0 durante a pré-renderização): o Next não aceita `new Date()` solto na renderização.
@@ -222,6 +225,30 @@ export function FinanceiroTela() {
     );
   }
 
+  if (!pode("financeiro")) {
+    return (
+      <div className="grade min-h-dvh">
+        <header className="rounded-b-[32px] bg-pitanga pb-8 text-white">
+          <div className="mx-auto max-w-3xl px-4 pt-4">
+            <div className="flex items-center justify-between gap-3">
+              <Link href="/" className={botaoTopo} aria-label="Voltar ao painel" title="Voltar ao painel">
+                <IconeVoltar />
+              </Link>
+              <Logo claro />
+              <span className="h-10 w-10" />
+            </div>
+            <p className="rotulo-tec mt-6 text-white/85">Financeiro do escritório</p>
+            <h1 className="mt-1 text-3xl font-semibold leading-tight tracking-tight">Honorários</h1>
+          </div>
+        </header>
+        <main className="mx-auto max-w-3xl px-4 pb-24 pt-8">
+          <PlanoBloqueado recurso="financeiro" />
+        </main>
+      </div>
+    );
+  }
+
+  const completo = pode("financeiroCompleto");
   const comCartoes = honorarios.length > 0;
 
   return (
@@ -262,7 +289,9 @@ export function FinanceiroTela() {
           </section>
         )}
 
-        {comCartoes && (
+        {comCartoes && !completo && <CartaoBloqueado recurso="financeiroCompleto" />}
+
+        {comCartoes && completo && (
           <section aria-label="Indicadores" className="prancha grid grid-cols-3 divide-x divide-linha p-1">
             <div className="p-3">
               <p className="rotulo-tec text-ink/50">Previsão 90 dias</p>
@@ -289,7 +318,7 @@ export function FinanceiroTela() {
           </div>
         )}
 
-        {totalAtraso > 0 && (
+        {completo && totalAtraso > 0 && (
           <section aria-label="Atrasos por tempo" className="prancha p-4">
             <p className="rotulo-tec text-ink/50">Atrasos por tempo</p>
             <div className="mt-3 flex h-3 overflow-hidden rounded-full bg-ink/10" role="img" aria-label={`${brlInt(totalAtraso)} em atraso, por faixa de dias`}>
@@ -312,7 +341,7 @@ export function FinanceiroTela() {
           </section>
         )}
 
-        {comCartoes && (
+        {comCartoes && completo && (
           <Painel titulo="Parcelas por mês" subtitulo="Pelo mês de vencimento: o que já entrou, o que ainda vem e o que está atrasado." altura={260}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={serie} margin={{ left: 0, right: 8, top: 8, bottom: 0 }}>

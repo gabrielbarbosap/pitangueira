@@ -8,6 +8,7 @@ import { Botao, BotaoIcone } from "../components/ui/Botao";
 import { Campo } from "../components/ui/Campo";
 import { Chip } from "../components/ui/Chip";
 import { Atalho } from "../components/ui/Atalho";
+import { CartaoBloqueado } from "../components/plano/Bloqueio";
 
 export const metadata: Metadata = {
   title: "Design system — Pitangueira",
@@ -345,6 +346,19 @@ export default function DesignSystem() {
                   <Atalho icone={<span>▤</span>} titulo="Catálogo" detalhe="12 itens" href="#atalhos" />
                   <Atalho icone={<span>$</span>} titulo="Financeiro" detalhe="R$ 2.000 em atraso" tom="alerta" href="#atalhos" />
                   <Atalho icone={<span>✓</span>} titulo="Cobranças" detalhe="Tudo recebido" tom="ok" href="#atalhos" />
+                </div>
+              </Exemplo>
+            </div>
+          </Secao>
+
+          <Secao id="plano" titulo="Bloqueio por plano">
+            <P>
+              Recurso que o plano não tem nunca some em silêncio: aparece bloqueado, com o motivo e o caminho. Componentes em <Cod>components/plano/Bloqueio.tsx</Cod>: <Cod>PlanoBloqueado</Cod> (no lugar de uma tela), <Cod>CartaoBloqueado</Cod> (no lugar de um bloco), <Cod>RecursoDialog</Cod> e <Cod>LimiteDialog</Cod> (janelas para botões e limites) e <Cod>FaixaPlano</Cod> (teste, cortesia, sem assinatura). Os textos vêm de <Cod>lib/planos.ts</Cod>.
+            </P>
+            <div className="mt-4">
+              <Exemplo legenda="CartaoBloqueado: bloco de um recurso de plano maior" codigo={'<CartaoBloqueado recurso="relatorioMensal" />'}>
+                <div className="w-full max-w-xl">
+                  <CartaoBloqueado recurso="relatorioMensal" />
                 </div>
               </Exemplo>
             </div>

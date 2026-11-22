@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/lib/auth";
+import { limparEventosAnalytics, useEventosAnalytics } from "@/lib/analytics";
 import { resumirUso } from "@/lib/metricas";
 import { lerTelemetria, type RegistroTelemetria } from "@/lib/telemetria";
 import { Logo } from "../components/Logo";
@@ -36,6 +37,43 @@ function Numero({ rotulo, valor, apoio, destaque = false }: { rotulo: string; va
 }
 
 /** Painel de uso: quem usa o app, o que faz e que erros apareceram. Aberto a todo arquiteto; fechado ao cliente. */
+/** Eventos da camada de analytics (pensada para o Google Analytics): por enquanto só em memória, nesta aba. */
+function AnalyticsEmMemoria() {
+  const eventos = useEventosAnalytics();
+  const recentes = [...eventos].reverse().slice(0, 40);
+  const porNome = new Map<string, number>();
+  for (const e of eventos) porNome.set(e.nome, (porNome.get(e.nome) ?? 0) + 1);
+  return (
+    <section aria-label="Analytics em memória" className="prancha overflow-hidden">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-linha p-4 pb-3">
+        <p className="rotulo-tec text-ink/50">Analytics · só em memória, nesta aba</p>
+        <button type="button" className="text-xs font-semibold text-pitanga hover:underline" onClick={limparEventosAnalytics}>Limpar</button>
+      </div>
+      <p className="px-4 pt-3 text-xs leading-relaxed text-ink/55">Estes são os eventos que um dia mandaríamos ao Google Analytics. Nada sai do navegador e tudo some ao recarregar a página.</p>
+      {eventos.length === 0 ? (
+        <p className="p-4 text-sm text-ink/55">Nenhum evento nesta aba ainda.</p>
+      ) : (
+        <>
+          <div className="flex flex-wrap gap-1.5 px-4 pt-3">
+            {[...porNome.entries()].sort((a, b) => b[1] - a[1]).map(([nome, n]) => (
+              <Chip key={nome}>{nome} · {n}</Chip>
+            ))}
+          </div>
+          <ul className="mt-2 max-h-72 divide-y divide-linha overflow-auto">
+            {recentes.map((e, i) => (
+              <li key={i} className="flex flex-wrap items-center gap-x-3 px-4 py-2 text-xs">
+                <span className="font-mono font-semibold text-ink">{e.nome}</span>
+                <span className="font-mono text-ink/45">{e.rota} · {quando(e.em)}</span>
+                {e.params && <span className="font-mono text-ink/60">{JSON.stringify(e.params)}</span>}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </section>
+  );
+}
+
 export default function Admin() {
   const { user, loading, login } = useAuth();
   const [dias, setDias] = useState(7);
@@ -160,6 +198,8 @@ export default function Admin() {
                 </ul>
               )}
             </section>
+
+            <AnalyticsEmMemoria />
 
             <section aria-label="Erros recentes" className="prancha overflow-hidden">
               <p className="rotulo-tec border-b border-linha p-4 pb-3 text-ink/50">Erros recentes</p>

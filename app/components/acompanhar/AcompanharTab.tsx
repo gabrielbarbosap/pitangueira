@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import { montarLinhaDoTempo, resumoDoFeed } from "@/lib/acompanhamento";
 import { useAuth } from "@/lib/auth";
+import { usePlano } from "@/lib/plano";
+import { PlanoBloqueado } from "../plano/Bloqueio";
 import { useColecaoObra } from "@/lib/colecaoObra";
 import { useData } from "@/lib/data";
 import { percentual } from "@/lib/format";
@@ -26,6 +28,8 @@ type Secao = "tempo" | "visitas" | "ocorrencias" | "vistoria";
 export function AcompanharTab({ visitaFoco = null }: { visitaFoco?: string | null }) {
   const { itens, previsoes, ehCliente, ator } = useData();
   const { user } = useAuth();
+  const { pode } = usePlano();
+  const completo = pode("acompanharCompleto");
   const hoje = useHoje();
   const agora = useAgora();
   const visitas = useColecaoObra<Visita>("visitas", (a, b) => a.quando - b.quando);
@@ -96,9 +100,10 @@ export function AcompanharTab({ visitaFoco = null }: { visitaFoco?: string | nul
           onRemoverPublicacao={publicacoes.remover}
         />
       )}
-      {secao === "visitas" && <Visitas visitas={visitas.itens} contexto={contexto} ehCliente={ehCliente} uid={user?.uid ?? ""} ator={ator} foco={visitaFoco} onSalvar={visitas.salvar} onRemover={visitas.remover} onEnviar={enviar} />}
-      {secao === "ocorrencias" && <Ocorrencias ocorrencias={ocorrencias.itens} contexto={contexto} somenteLeitura={ehCliente} onSalvar={async (o) => void (await ocorrencias.salvar(o))} onRemover={ocorrencias.remover} onEnviar={onEnviarArquiteto} />}
-      {secao === "vistoria" && (
+      {!completo && ["visitas", "ocorrencias", "vistoria"].includes(secao) && <PlanoBloqueado recurso="acompanharCompleto" />}
+      {completo && secao === "visitas" && <Visitas visitas={visitas.itens} contexto={contexto} ehCliente={ehCliente} uid={user?.uid ?? ""} ator={ator} foco={visitaFoco} onSalvar={visitas.salvar} onRemover={visitas.remover} onEnviar={enviar} />}
+      {completo && secao === "ocorrencias" && <Ocorrencias ocorrencias={ocorrencias.itens} contexto={contexto} somenteLeitura={ehCliente} onSalvar={async (o) => void (await ocorrencias.salvar(o))} onRemover={ocorrencias.remover} onEnviar={onEnviarArquiteto} />}
+      {completo && secao === "vistoria" && (
         <Vistoria itens={vistoria.itens} contexto={contexto} ehCliente={ehCliente} ator={ator} uid={user?.uid ?? ""} onSalvar={async (i) => void (await vistoria.salvar(i))} onRemover={vistoria.remover} onEnviar={enviar} />
       )}
       {dialogo}

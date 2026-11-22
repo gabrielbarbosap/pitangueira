@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { registrarEvento } from "@/lib/telemetria";
 import { useData } from "@/lib/data";
+import { usePlano } from "@/lib/plano";
 import type { AprovacaoPrograma } from "@/lib/types";
 import { LogoMark } from "./Logo";
 import { EnviarWhatsapp } from "./EnviarWhatsapp";
@@ -41,7 +42,10 @@ export function DocumentoBase({
   mensagemExtra?: string;
   children: ReactNode;
 }) {
-  const { config, projeto } = useData();
+  const { config, projeto, ehCliente } = useData();
+  const { pode } = usePlano();
+  // O selo sai a partir do plano Safra. O cliente, que não tem plano, vê o documento com o selo.
+  const mostrarSelo = ehCliente || !pode("pdfSemSelo");
   const folha = useRef<HTMLElement>(null);
   const [whatsapp, setWhatsapp] = useState(false);
 
@@ -146,13 +150,15 @@ export function DocumentoBase({
           </div>
         </footer>
 
-        {/* Selo do produto: discreto, depois das assinaturas, em todo PDF. */}
+        {/* Selo do produto: discreto, depois das assinaturas (nos planos que o levam). */}
+        {mostrarSelo && (
         <div className="mt-10 flex break-inside-avoid items-center justify-center gap-2.5 border-t border-linha pt-4 text-ink/45">
           <LogoMark size={20} />
           <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em]">
             Gerado com <span className="text-ink/70">Pitangueira</span> · gestão de projetos
           </p>
         </div>
+        )}
       </article>
     </div>
   );
