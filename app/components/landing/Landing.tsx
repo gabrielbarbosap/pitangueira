@@ -120,25 +120,15 @@ const RECURSOS: { icone: keyof typeof IC; titulo: string; texto: string }[] = [
   { icone: "grafico", titulo: "Gráficos que explicam", texto: "Onde está o dinheiro, o que já foi executado e como o custo se distribui entre as etapas." },
 ];
 
-const PUBLICO: { icone: keyof typeof IC; titulo: string; texto: string; itens: string[] }[] = [
-  {
-    icone: "camada",
-    titulo: "Arquitetos",
-    texto: "Da proposta à entrega, com o cliente acompanhando e você no controle do orçamento e do honorário.",
-    itens: ["Orçamento com marca do escritório", "Visitas aprovadas por link", "Financeiro dos honorários"],
-  },
-  {
-    icone: "grafico",
-    titulo: "Engenheiros",
-    texto: "Custo, prazo e execução num só lugar, com histórico de cada valor e de cada entrega de fornecedor.",
-    itens: ["Executado × pago por etapa", "Composições com BDI e margem", "Previsões de prazo registradas"],
-  },
-  {
-    icone: "check",
-    titulo: "Mestres de obra",
-    texto: "Marque o que ficou pronto direto do celular e mostre ao dono da obra, com data e nome de quem marcou.",
-    itens: ["Marcar feito e pago em um toque", "Registro de ocorrências e visitas", "Cobrança clara do que foi feito"],
-  },
+const PERFIS = ["Arquitetos", "Engenheiros", "Mestres de obra", "Designers de interiores", "Empreiteiros", "Construtores e reformistas", "Gestores de obra", "Profissionais autônomos"];
+
+const SITUACOES: { icone: keyof typeof IC; quando: string; ganho: string; itens: string[] }[] = [
+  { icone: "planilha", quando: "Você orça em planilha", ganho: "Cole o que já tem e ganhe um orçamento vivo, com teto, saldo e avanço de cada etapa.", itens: ["Colar da planilha em minutos", "PDF com a sua marca"] },
+  { icone: "camada", quando: "Toca várias obras ao mesmo tempo", ganho: "Um painel com todos os projetos, as próximas entregas e o progresso geral.", itens: ["Resumo de todos os projetos", "Alertas do que está atrasado"] },
+  { icone: "wpp", quando: "O cliente cobra notícias", ganho: "Ele acompanha sozinho pela linha do tempo e você para de repetir as mesmas respostas.", itens: ["Feed da obra com publicações", "Visitas aprovadas por link"] },
+  { icone: "grana", quando: "Corre atrás de pagamento", ganho: "Cobrança em PDF com itens e PIX, honorários em parcelas e baixa em um toque.", itens: ["Cobrança da obra pelo WhatsApp", "Financeiro do escritório"] },
+  { icone: "gente", quando: "Trabalha com equipe e fornecedores", ganho: "Cada marcação leva nome e data de quem fez. Fornecedores com prazo combinado × cumprido.", itens: ["Histórico de cada entrega", "Quem marcou e quando"] },
+  { icone: "check", quando: "Quer parecer do tamanho do que entrega", ganho: "Documentos com logo e registro, relatório mensal e vistoria final de entrega.", itens: ["Relatório mensal", "Vistoria final na linha do tempo"] },
 ];
 
 const PASSOS = [
@@ -157,7 +147,7 @@ const COMPARA: { tema: string; antes: string; agora: string }[] = [
 
 const PERGUNTAS: { p: string; r: string }[] = [
   { p: "Preciso saber usar programa complicado?", r: "Não. Se você usa planilha, aprende em uma tarde. Dá para colar a planilha que já tem e começar a partir dela." },
-  { p: "Meu cliente precisa criar conta?", r: "Não. Ele entra com o código do projeto e o próprio nome. As ações dele ficam identificadas na linha do tempo." },
+  { p: "Meu cliente precisa criar conta?", r: "Não. Ele entra só com o código do projeto e o próprio nome. Tudo o que ele fizer fica identificado na linha do tempo, com nome e horário." },
   { p: "As mensagens saem sozinhas pelo WhatsApp?", r: "Nunca. O sistema monta a mensagem e abre o WhatsApp com o texto pronto. Você revisa e aperta enviar." },
   { p: "Funciona no celular?", r: "Sim. O sistema foi pensado para tela pequena, para usar na obra, na visita e no carro." },
   { p: "Meus dados e os do meu cliente ficam seguros?", r: "Cada projeto é isolado. Só você e as pessoas que você autoriza acessam os dados dele, e o cliente enxerga apenas o projeto dele." },
@@ -222,6 +212,39 @@ export function Landing() {
           </div>
         </section>
 
+        {/* A virada: logo depois do herói */}
+        <section aria-labelledby="virada" className="border-y border-linha bg-white/70">
+          <div className="mx-auto max-w-5xl px-4 py-16 sm:py-24">
+            <div className="text-center">
+              <Rotulo>A virada</Rotulo>
+              <h2 id="virada" className="mt-3 text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-6xl">
+                Planilha e papel <span className="text-ink/30">×</span> <span className="text-pitanga">Pitangueira</span>
+              </h2>
+              <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-ink/70">O que muda no seu dia quando a obra sai do arquivo solto e passa a morar num lugar só.</p>
+            </div>
+            <div className="prancha mt-12 overflow-hidden shadow-[0_30px_60px_-34px_rgba(20,17,15,0.4)]">
+              <div className="hidden grid-cols-[0.8fr_1fr_1.1fr] border-b border-linha bg-papel sm:grid">
+                <span />
+                <span className="rotulo-tec px-6 py-4 text-ink/50">Hoje, na planilha</span>
+                <span className="rotulo-tec bg-pitanga px-6 py-4 text-white">Com a Pitangueira</span>
+              </div>
+              <ul className="divide-y divide-linha">
+                {COMPARA.map((c) => (
+                  <li key={c.tema} className="grid sm:grid-cols-[0.8fr_1fr_1.1fr] sm:items-stretch">
+                    <span className="px-6 pt-5 text-lg font-semibold sm:py-6">{c.tema}</span>
+                    <span className="flex items-start gap-2.5 px-6 py-2 text-base text-ink/55 sm:py-6">
+                      <Icone nome="x" className="mt-1 h-4 w-4 shrink-0 text-ink/35" /> {c.antes}
+                    </span>
+                    <span className="flex items-start gap-2.5 bg-pitanga/[0.07] px-6 pb-5 pt-2 text-base font-semibold text-ink sm:py-6">
+                      <Icone nome="ok" className="mt-1 h-4 w-4 shrink-0 text-pitanga" /> {c.agora}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+
         {/* Dor */}
         <section className="border-y border-linha bg-white/70">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
@@ -268,6 +291,51 @@ export function Landing() {
           ))}
         </section>
 
+        {/* O cliente não precisa de conta */}
+        <section aria-labelledby="sem-cadastro" className="border-y border-linha bg-white/70">
+          <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 sm:py-24 lg:grid-cols-2 lg:gap-16">
+            <div>
+              <Rotulo>Para o seu cliente</Rotulo>
+              <h2 id="sem-cadastro" className="mt-3 text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl">
+                Seu cliente <span className="text-pitanga">não precisa criar conta.</span>
+              </h2>
+              <p className="mt-5 text-lg leading-relaxed text-ink/70">
+                Ele abre o link, digita o código do projeto e o próprio nome. Pronto. Tudo o que ele faz na obra fica identificado na linha do tempo, com nome e horário. Sem cadastro, sem senha e sem desculpa para não acompanhar.
+              </p>
+              <ol className="mt-8 space-y-4">
+                {["Você manda o link e o código pelo WhatsApp", "Ele digita o código e o próprio nome", "Acompanha, publica, pede visitas e vê as cobranças"].map((t, i) => (
+                  <li key={t} className="flex items-center gap-4">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-pitanga font-mono text-sm font-semibold text-white">{i + 1}</span>
+                    <span className="text-[17px] font-medium">{t}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+            <div className="space-y-4" aria-label="Exemplo de linha do tempo">
+              <div className="prancha p-5">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-ink font-mono text-xs font-semibold text-white">MA</span>
+                  <div>
+                    <p className="text-sm font-semibold">Marina Alves <span className="chip chip-info ml-1 px-2 py-0.5 text-[11px]">cliente</span></p>
+                    <p className="text-xs text-ink/50">há 1 dia</p>
+                  </div>
+                </div>
+                <p className="mt-3 text-[15px] leading-relaxed">Adorei o tom do piso! Podemos conversar sobre a iluminação da sala na visita de sexta?</p>
+              </div>
+              <div className="prancha border-l-4 border-l-ink p-5">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-ink font-mono text-xs font-semibold text-white">HD</span>
+                  <div>
+                    <p className="text-sm font-semibold">Helena Duarte</p>
+                    <p className="text-xs text-ink/50">há 2 h</p>
+                  </div>
+                </div>
+                <p className="mt-3 text-[15px] leading-relaxed">Porcelanato da sala e do corredor assentado. Amanhã começa o rejunte e a limpeza fina.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Recursos */}
         <section id="recursos" className="scroll-mt-20 bg-ink text-white">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:py-24">
@@ -292,18 +360,26 @@ export function Landing() {
 
         {/* Para quem */}
         <section id="para-quem" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 sm:py-24">
-          <div className="max-w-2xl">
+          <div className="max-w-3xl">
             <Rotulo>Para quem</Rotulo>
-            <Titulo>Feito para quem toca obra de verdade</Titulo>
+            <Titulo>Se você toca obra, a Pitangueira é para você</Titulo>
+            <p className="mt-4 text-lg leading-relaxed text-ink/70">Não importa o cargo no cartão. Importa o problema: orçar, acompanhar, cobrar e prestar contas sem se perder.</p>
           </div>
-          <div className="mt-10 grid gap-4 md:grid-cols-3">
-            {PUBLICO.map((p) => (
-              <article key={p.titulo} className="prancha flex flex-col p-6">
-                <Selo nome={p.icone} />
-                <h3 className="mt-4 text-xl font-semibold">{p.titulo}</h3>
-                <p className="mt-2 text-[15px] leading-relaxed text-ink/65">{p.texto}</p>
+          <ul className="mt-6 flex flex-wrap gap-2" aria-label="Quem usa">
+            {PERFIS.map((p) => (
+              <li key={p} className="chip chip-ink px-3.5 py-1.5 text-sm">{p}</li>
+            ))}
+            <li className="chip px-3.5 py-1.5 text-sm">e quem ainda organiza tudo em planilha e papel</li>
+          </ul>
+          <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {SITUACOES.map((x) => (
+              <article key={x.quando} className="prancha flex flex-col p-6">
+                <Selo nome={x.icone} />
+                <p className="rotulo-tec mt-5 text-ink/45">Quando</p>
+                <h3 className="mt-1 text-xl font-semibold leading-snug">{x.quando}</h3>
+                <p className="mt-2 text-[15px] leading-relaxed text-ink/65">{x.ganho}</p>
                 <ul className="mt-4 space-y-2 border-t border-linha pt-4">
-                  {p.itens.map((i) => (
+                  {x.itens.map((i) => (
                     <li key={i} className="flex items-start gap-2 text-sm text-ink/80">
                       <Icone nome="ok" className="mt-0.5 h-4 w-4 shrink-0 text-pitanga" />
                       {i}
@@ -312,36 +388,6 @@ export function Landing() {
                 </ul>
               </article>
             ))}
-          </div>
-        </section>
-
-        {/* Antes × agora */}
-        <section className="border-y border-linha bg-white/70">
-          <div className="mx-auto max-w-4xl px-4 py-16 sm:py-24">
-            <div className="text-center">
-              <Rotulo>A virada</Rotulo>
-              <Titulo>Planilha e papel × Pitangueira</Titulo>
-            </div>
-            <div className="prancha mt-10 overflow-hidden">
-              <div className="hidden grid-cols-[0.8fr_1fr_1fr] border-b border-linha bg-papel px-5 py-3 sm:grid">
-                <span />
-                <span className="rotulo-tec text-ink/50">Hoje, na planilha</span>
-                <span className="rotulo-tec text-pitanga">Com a Pitangueira</span>
-              </div>
-              <ul className="divide-y divide-linha">
-                {COMPARA.map((c) => (
-                  <li key={c.tema} className="grid gap-1.5 px-5 py-4 sm:grid-cols-[0.8fr_1fr_1fr] sm:items-center sm:gap-3">
-                    <span className="font-semibold">{c.tema}</span>
-                    <span className="flex items-start gap-2 text-[15px] text-ink/55">
-                      <Icone nome="x" className="mt-0.5 h-4 w-4 shrink-0 text-ink/35" /> {c.antes}
-                    </span>
-                    <span className="flex items-start gap-2 text-[15px] font-medium text-ink">
-                      <Icone nome="ok" className="mt-0.5 h-4 w-4 shrink-0 text-pitanga" /> {c.agora}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
           </div>
         </section>
 

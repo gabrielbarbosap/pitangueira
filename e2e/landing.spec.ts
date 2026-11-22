@@ -7,9 +7,10 @@ test("a home de quem não entrou vende o produto e leva ao login", async ({ page
 
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Largue a planilha");
   for (const id of ["recursos", "para-quem", "como-funciona", "perguntas", "entrar"]) await expect(page.locator("#" + id)).toBeAttached();
-  await expect(page.getByRole("heading", { name: "Arquitetos" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Engenheiros" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Mestres de obra" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Planilha e papel/ })).toBeVisible(); // a virada, logo depois do herói
+  await expect(page.getByRole("heading", { name: /não precisa criar conta/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /a Pitangueira é para você/ })).toBeVisible();
+  for (const perfil of ["Arquitetos", "Engenheiros", "Mestres de obra"]) await expect(page.getByRole("list", { name: "Quem usa" })).toContainText(perfil);
 
   // Os prints do sistema carregam (nenhuma imagem quebrada).
   await page.evaluate(async () => { for (let y = 0; y < document.body.scrollHeight; y += 700) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 60)); } });
