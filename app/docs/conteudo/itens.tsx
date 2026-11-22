@@ -1,5 +1,5 @@
 import type { PaginaDoc } from "../tipos";
-import { Aviso, Btn, Cod, H3, Ir, Lista, P, Passo, Passos, Tabela } from "../ui";
+import { Aviso, Btn, H3, Ir, Lista, P, Passo, Passos, Tabela } from "../ui";
 
 export const itens: PaginaDoc = {
   slug: "itens",
@@ -75,7 +75,7 @@ export const itens: PaginaDoc = {
             colunas={["Caminho", "Quando usar"]}
             linhas={[
               [<Btn key="1">Adicionar primeiro item</Btn>, "Você vai digitando. Na janela, “Adicionar e lançar outro” guarda o item e deixa tudo pronto para o próximo."],
-              [<Btn key="2">Colar da planilha</Btn>, "Você já tem o orçamento no Excel ou no Google Planilhas. Veja a seção abaixo."],
+              [<Btn key="2">Importar planilha</Btn>, "Você já tem o orçamento no Excel ou no Google Planilhas. Veja a seção abaixo."],
               [<Btn key="3">Usar meu catálogo</Btn>, "Você reaproveita itens e preços salvos de outros projetos."],
               ["Atalhos de etapa (Demolição, Alvenaria, Elétrica…)", "Abrem o novo item já com a etapa preenchida."],
             ]}
@@ -112,21 +112,28 @@ export const itens: PaginaDoc = {
     },
     {
       id: "planilha",
-      titulo: "Colar da planilha",
+      titulo: "Importar planilha",
       papel: "arquiteto",
       corpo: (
         <>
           <P>
-            Em <Btn>Colar da planilha</Btn> (na aba Itens, ou no projeto vazio) você copia as linhas no Excel ou no Google Planilhas e cola em uma caixa. Antes de importar, o app mostra uma tabela de como entendeu cada linha, com o total e os avisos. Só então você toca em <Btn>Importar N itens</Btn>.
+            Em <Btn>Importar planilha</Btn> (na aba Itens, ou no projeto vazio) você traz o orçamento que já tem no Excel ou no Google Planilhas, de dois jeitos: <strong>escolhendo o arquivo</strong> (.xlsx ou .csv, ou arrastando para a janela) ou <strong>colando as linhas</strong> numa caixa. Antes de importar, o app mostra uma tabela de como entendeu cada linha, com o total e os avisos. Só então você toca em <Btn>Importar N itens</Btn>.
           </P>
           <Passos>
-            <Passo>No Excel ou Planilhas, selecione as linhas e copie.</Passo>
-            <Passo>Na Pitangueira, abra <Btn>Colar da planilha</Btn> e cole em <Btn>Cole as linhas aqui</Btn>.</Passo>
-            <Passo>Confira a tabela. Linhas sem etapa usam a <Btn>Etapa para as linhas sem etapa</Btn> (padrão “Sem etapa”).</Passo>
+            <Passo>Toque em <Btn>Importar planilha</Btn>.</Passo>
+            <Passo>Toque em <Btn>Escolher arquivo (.xlsx ou .csv)</Btn> (ou arraste o arquivo), ou copie as linhas no Excel e cole em <Btn>Ou cole as linhas aqui</Btn>. Se não tem planilha pronta, <Btn>Baixar uma planilha modelo</Btn> traz um exemplo para preencher.</Passo>
+            <Passo>Se o arquivo tem várias abas, escolha a certa em <Btn>Aba da planilha</Btn>.</Passo>
+            <Passo>Confira a tabela e, se precisar, ajuste as colunas (veja abaixo). Desmarque as linhas que não quer.</Passo>
             <Passo>Toque em <Btn>Importar N itens</Btn>.</Passo>
           </Passos>
-          <H3>Ordem das colunas</H3>
-          <P>A ordem padrão é <strong>Etapa · Descrição · Qtd · Unid · Valor unit.</strong> Se a primeira linha tiver títulos (como “Etapa”, “Descrição”, “Qtd”, “Unid”, “Valor”), o app reconhece e a ordem pode ser qualquer uma. Sem títulos, vale a quantidade de colunas da linha:</P>
+          <H3>O app descobre as colunas sozinho</H3>
+          <P>
+            Ele procura a linha de títulos nas primeiras linhas (pode haver o nome da obra antes) e reconhece nomes como Etapa, Descrição (ou Serviço, Material), Qtd (ou Quantidade), Unid (ou Und), Valor unit. (ou Preço), Valor total, Ambiente, Fornecedor e Observação. A numeração do item (1.1, 1.2…) é ignorada. A ordem das colunas pode ser qualquer uma.
+          </P>
+          <P>
+            Errou alguma? Abra <Btn>Colunas</Btn>: ali você escolhe a <Btn>Linha dos títulos</Btn> e o que é cada coluna (inclusive <Btn>Ignorar esta coluna</Btn>). A tabela se atualiza na hora.
+          </P>
+          <P>Sem linha de títulos, vale a quantidade de colunas:</P>
           <Tabela
             colunas={["Colunas", "O app entende como"]}
             linhas={[
@@ -137,15 +144,36 @@ export const itens: PaginaDoc = {
               ["1", "Só a descrição"],
             ]}
           />
-          <H3>Regras de leitura</H3>
+          <H3>Etapas, totais e valores</H3>
           <Lista>
-            <li>Separadores aceitos: tabulação (o que vem do Excel), ponto e vírgula <Cod>;</Cod> e barra vertical <Cod>|</Cod>.</li>
+            <li><strong>Etapas em linhas de título</strong>: uma linha só com o texto (“1 - Demolição”, “ETAPA 2” ou “FUNDAÇÃO” em maiúsculas) vira a etapa dos itens que vêm abaixo dela. A tabela avisa quais etapas encontrou.</li>
+            <li><strong>Totais e subtotais</strong> (“Total”, “Subtotal”, “Soma”) são ignorados de propósito.</li>
+            <li><strong>Só o valor total</strong>: sem coluna de valor unitário, o app divide o total pela quantidade. Se vierem os dois e não baterem, a linha ganha um aviso.</li>
+            <li><strong>Unidades</strong> são padronizadas: m2 vira m², und e unid viram un, ml vira m.</li>
             <li>Valores aceitam “R$ 1.234,56”, “1234,56” e “1234.56”. “1.234” vale mil duzentos e trinta e quatro.</li>
             <li>Quantidade vazia ou inválida vira 1. O total de cada linha é a quantidade × o valor unitário.</li>
             <li>Linha sem valor entra mesmo assim, marcada “sem valor”, para você preencher depois.</li>
-            <li>Linha sem descrição é ignorada, e o app diz quantas ignorou.</li>
-            <li>Todos os itens importados entram com ambiente “Geral”.</li>
+            <li>Linha sem descrição é ignorada, e o app diz quantas ignorou. Ambiente, fornecedor e observação entram se tiverem coluna; senão o ambiente é “Geral”.</li>
           </Lista>
+          <H3>Itens que já estão no orçamento</H3>
+          <P>
+            O app compara com o orçamento do projeto (mesma descrição e etapa). Os que já existem aparecem com o aviso “já está no orçamento” e, por padrão, são pulados: desmarque <Btn>Pular os itens que já estão no orçamento</Btn> se quiser importá-los mesmo assim. Dá para desmarcar qualquer linha antes de importar.
+          </P>
+          <H3>Se der erro</H3>
+          <P>Todo problema aparece em vermelho com três coisas: o que aconteceu, o motivo e <strong>Como resolver</strong>. Os mais comuns:</P>
+          <Tabela
+            colunas={["O que aparece", "O que fazer"]}
+            linhas={[
+              ["Formato antigo do Excel (.xls) ou arquivo protegido por senha", "Abra no Excel, tire a senha e use Salvar como › .xlsx (ou CSV)."],
+              ["Este arquivo não parece uma planilha .xlsx", "O arquivo está corrompido ou não é do Excel. Salve de novo como .xlsx ou CSV."],
+              ["Esse tipo de arquivo não funciona aqui (PDF, foto, Word)", "Copie os dados para uma planilha e cole na caixa de texto."],
+              ["O arquivo é grande demais (limite de 5 MB)", "Tire abas, colunas e imagens que não precisa, ou envie em partes."],
+              ["Não sei qual coluna é a descrição do item", "Em Colunas, escolha Descrição na coluna do nome do serviço."],
+              ["Não encontrei nenhum item", "Confira a linha dos títulos e a coluna de Descrição em Colunas."],
+              ["Itens demais de uma vez (limite de 2.000)", "Divida a planilha em partes, por etapa, por exemplo."],
+              ["Não consegui salvar os itens", "Confira a internet e a lista de itens: se alguns já entraram, pule os existentes antes de importar de novo."],
+            ]}
+          />
         </>
       ),
     },

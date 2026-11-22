@@ -11,7 +11,7 @@ test("o arquiteto monta o orçamento rápido: etapas, itens em sequência e plan
 
   await test.step("o projeto vazio oferece três caminhos e atalhos de etapa", async () => {
     await expect(page.getByRole("button", { name: /Adicionar primeiro item/ })).toBeVisible();
-    await expect(page.getByRole("button", { name: /Colar da planilha/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Importar planilha/ })).toBeVisible();
     await expect(page.getByRole("button", { name: /Usar meu catálogo/ })).toBeVisible();
     await page.getByRole("button", { name: "Pintura", exact: true }).click();
     const dialogo = page.getByRole("dialog", { name: "Novo item" });
@@ -57,8 +57,8 @@ test("o arquiteto monta o orçamento rápido: etapas, itens em sequência e plan
   });
 
   await test.step("colar da planilha: o app mostra como entendeu e só então importa", async () => {
-    await page.getByRole("button", { name: "Colar da planilha" }).click();
-    const janela = page.getByRole("dialog", { name: "Colar da planilha" });
+    await page.getByRole("button", { name: "Importar planilha" }).click();
+    const janela = page.getByRole("dialog", { name: "Importar planilha" });
     await expect(janela.getByRole("button", { name: "Importar" })).toBeDisabled();
     await janela.getByLabel("Cole as linhas aqui").fill(
       "Etapa;Descrição;Qtd;Unid;Valor unit.\nElétrica;Pontos de tomada;10;un;R$ 120,00\nElétrica;Quadro de luz;1;un;1.500,50\nAlvenaria;Verba de limpeza;;;",
@@ -89,7 +89,7 @@ test("o arquiteto monta o orçamento rápido: etapas, itens em sequência e plan
     await page.getByRole("button", { name: "Entrar no projeto" }).click();
     await page.getByRole("tab", { name: "Itens" }).click();
     await expect(page.getByRole("region", { name: "Resumo do orçamento" })).toContainText(reais("4.150,50")); // o total ele vê
-    await expect(page.getByRole("button", { name: "Colar da planilha" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Importar planilha" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: /Adicionar item em/ })).toHaveCount(0);
   });
 });

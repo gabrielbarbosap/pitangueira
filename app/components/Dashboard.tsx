@@ -268,7 +268,7 @@ export function Dashboard() {
             </button>
             <button onClick={() => setImportar(Date.now())} className="prancha prancha-clicavel p-4 text-left">
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ink font-mono text-xs font-semibold text-white">XLS</span>
-              <span className="mt-2 block text-sm font-semibold text-ink">Colar da planilha</span>
+              <span className="mt-2 block text-sm font-semibold text-ink">Importar planilha</span>
               <span className="mt-0.5 block text-xs leading-snug text-ink/55">Já tem no Excel? Copie e cole as linhas.</span>
             </button>
             <button onClick={() => setCatalogoAberto(true)} className="prancha prancha-clicavel p-4 text-left">
@@ -405,7 +405,7 @@ export function Dashboard() {
               )}
               {!ehCliente && (
                 <button onClick={() => setImportar(Date.now())} className="btn btn-linha rounded-full px-3.5 py-2 font-mono text-[11px] font-semibold uppercase tracking-wider">
-                  Colar da planilha
+                  Importar planilha
                 </button>
               )}
               {!ehCliente && (

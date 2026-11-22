@@ -7,6 +7,7 @@ const LINKS = [
   ["#para-quem", "Para quem"],
   ["#como-funciona", "Como funciona"],
   ["#perguntas", "Dúvidas"],
+  ["/docs", "Documentação"],
   ["#entrar", "Já tenho conta"],
 ] as const;
 

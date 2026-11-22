@@ -47,7 +47,7 @@ export const faq: PaginaDoc = {
           <H3>Como sei quem marcou um item como pago?</H3>
           <P>Embaixo do item aparece “Pago por {"{nome}"} em {"{data}"}”, e no Resumo o cartão Atividade recente lista as últimas marcações. Marcações do cliente trazem “(cliente)”.</P>
           <H3>Já tenho o orçamento numa planilha. Preciso digitar tudo de novo?</H3>
-          <P>Não. Em <Btn>Colar da planilha</Btn> você copia as linhas do Excel e cola. Veja a ordem das colunas e as regras em <Ir para="itens">Itens do orçamento</Ir>.</P>
+          <P>Não. Em <Btn>Importar planilha</Btn> você escolhe o arquivo (.xlsx ou .csv) ou cola as linhas do Excel. Veja a ordem das colunas e as regras em <Ir para="itens">Itens do orçamento</Ir>.</P>
           <H3>Quero lançar vários itens da mesma etapa.</H3>
           <P>Abra o novo item pelo <Btn>+</Btn> da etapa e use <Btn>Adicionar e lançar outro</Btn>: a etapa continua e o resto é limpo.</P>
           <H3>Cadê os campos de ambiente, fornecedor e prazo?</H3>

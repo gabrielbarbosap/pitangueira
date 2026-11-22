@@ -131,7 +131,7 @@ const RECURSOS: { icone: keyof typeof IC; titulo: string; texto: string }[] = [
 const PERFIS = ["Arquitetos", "Engenheiros", "Mestres de obra", "Designers de interiores", "Empreiteiros", "Construtores e reformistas", "Gestores de obra", "Profissionais autônomos"];
 
 const SITUACOES: { icone: keyof typeof IC; quando: string; ganho: string; itens: string[] }[] = [
-  { icone: "planilha", quando: "Você orça em planilha", ganho: "Cole o que já tem e ganhe um orçamento vivo, com teto, saldo e avanço de cada etapa.", itens: ["Colar da planilha em minutos", "PDF com a sua marca"] },
+  { icone: "planilha", quando: "Você orça em planilha", ganho: "Cole o que já tem e ganhe um orçamento vivo, com teto, saldo e avanço de cada etapa.", itens: ["Importar planilha em minutos", "PDF com a sua marca"] },
   { icone: "camada", quando: "Toca várias obras ao mesmo tempo", ganho: "Um painel com todos os projetos, as próximas entregas e o progresso geral.", itens: ["Resumo de todos os projetos", "Alertas do que está atrasado"] },
   { icone: "wpp", quando: "O cliente cobra notícias", ganho: "Ele acompanha sozinho pela linha do tempo e você para de repetir as mesmas respostas.", itens: ["Feed da obra com publicações", "Visitas aprovadas por link"] },
   { icone: "grana", quando: "Corre atrás de pagamento", ganho: "Cobrança em PDF com itens e PIX, honorários em parcelas e baixa em um toque.", itens: ["Cobrança da obra pelo WhatsApp", "Financeiro do escritório"] },
@@ -186,6 +186,7 @@ export function Landing() {
             <a href="#para-quem" className="hover:text-ink">Para quem</a>
             <a href="#como-funciona" className="hover:text-ink">Como funciona</a>
             <a href="#perguntas" className="hover:text-ink">Dúvidas</a>
+            <Link href="/docs" className="hover:text-ink">Documentação</Link>
           </nav>
           <div className="flex items-center gap-2">
             <MenuMovel />

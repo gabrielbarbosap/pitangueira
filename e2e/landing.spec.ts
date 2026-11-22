@@ -7,6 +7,8 @@ test("a home de quem não entrou vende o produto e leva ao login", async ({ page
 
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Largue a planilha");
   for (const id of ["recursos", "para-quem", "como-funciona", "perguntas", "entrar"]) await expect(page.locator("#" + id)).toBeAttached();
+  // Menu do topo com a documentação (no celular, dentro do menu).
+  if (!(await page.getByRole("button", { name: "Abrir o menu" }).isVisible())) await expect(page.getByRole("navigation", { name: "Seções" }).getByRole("link", { name: "Documentação" })).toHaveAttribute("href", "/docs");
   await expect(page.getByRole("heading", { name: /Planilha e papel/ })).toBeVisible(); // a virada, logo depois do herói
   await expect(page.getByRole("heading", { name: /não precisa criar conta/ })).toBeVisible();
   await expect(page.getByRole("heading", { name: /Uma obra ou dez/ })).toBeVisible(); // várias obras
@@ -48,6 +50,7 @@ test("no celular: menu do topo e barra fixa de “Começar agora”", async ({ p
 
   // Menu: abre, leva à seção e fecha.
   await page.getByRole("button", { name: "Abrir o menu" }).click();
+  await expect(page.getByRole("navigation", { name: "Seções" }).getByRole("link", { name: "Documentação" })).toHaveAttribute("href", "/docs");
   await page.getByRole("navigation", { name: "Seções" }).getByRole("link", { name: "Dúvidas" }).click();
   await expect(page.getByRole("navigation", { name: "Seções" })).toBeHidden();
   await expect(page.getByRole("heading", { name: "Perguntas frequentes" })).toBeInViewport();

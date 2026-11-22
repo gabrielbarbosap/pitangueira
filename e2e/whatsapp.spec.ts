@@ -7,9 +7,9 @@ async function abrirOrcamento(page: Page) {
   await entrarComoArquiteto(page);
   const projeto = await criarProjeto(page, "Casa do Lago");
   await page.getByRole("tab", { name: "Itens" }).click();
-  await page.getByRole("button", { name: /Colar da planilha/ }).click();
+  await page.getByRole("button", { name: /Importar planilha/ }).click();
   const linhas = Array.from({ length: 70 }, (_, i) => `Etapa ${1 + (i % 5)};Serviço de teste número ${i + 1};${i + 1};un;${100 + i}`).join("\n");
-  const j = page.getByRole("dialog", { name: "Colar da planilha" });
+  const j = page.getByRole("dialog", { name: "Importar planilha" });
   await j.getByLabel("Cole as linhas aqui").fill(linhas);
   await j.getByRole("button", { name: "Importar 70 itens" }).click();
   await expect(j).toBeHidden();
@@ -105,8 +105,8 @@ test("o WhatsApp do cliente salvo nos dados do projeto já vem preenchido, e o n
   await expect(dados).toBeHidden();
 
   await page.getByRole("tab", { name: "Itens" }).click();
-  await page.getByRole("button", { name: /Colar da planilha/ }).click();
-  const j = page.getByRole("dialog", { name: "Colar da planilha" });
+  await page.getByRole("button", { name: /Importar planilha/ }).click();
+  const j = page.getByRole("dialog", { name: "Importar planilha" });
   await j.getByLabel("Cole as linhas aqui").fill("Pintura;Tinta;2;un;100");
   await j.getByRole("button", { name: "Importar 1 item" }).click();
   await page.getByRole("button", { name: "Orçamento em PDF" }).click();

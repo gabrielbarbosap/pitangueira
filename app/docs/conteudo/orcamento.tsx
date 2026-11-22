@@ -77,7 +77,7 @@ export const orcamento: PaginaDoc = {
           <H3>Do seu jeito</H3>
           <Lista>
             <li>Digitar item por item, em sequência, com o <Btn>+</Btn> de cada etapa (<Ir para="itens">Itens do orçamento</Ir>).</li>
-            <li>Colar as linhas de uma planilha do Excel ou Google Planilhas (<Btn>Colar da planilha</Btn>).</li>
+            <li>Colar as linhas de uma planilha do Excel ou Google Planilhas (<Btn>Importar planilha</Btn>).</li>
             <li>Reaproveitar do seu catálogo e das suas composições (<Ir para="catalogo-e-composicoes">Catálogo e composições</Ir>).</li>
             <li>Começar a partir de outro projeto seu (<Ir para="criar-e-gerenciar-projetos">Criar e gerenciar projetos</Ir>).</li>
           </Lista>

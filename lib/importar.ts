@@ -1,114 +1,119 @@
 /**
- * Leitura de itens colados de uma planilha (Excel, Google Sheets) ou de texto separado por ; ou |.
- * Funciona com ou sem linha de títulos. Sem títulos, o que vale é a quantidade de colunas da linha:
- *   5: etapa · descrição · qtd · unid · valor unit.
- *   4: descrição · qtd · unid · valor unit.
- *   3: descrição · qtd · valor unit.
- *   2: descrição · valor unit.
- *   1: descrição
+ * Importação de itens a partir de planilha: texto colado (Excel, Google Planilhas) ou arquivo .xlsx/.csv/.txt.
+ * A leitura em si está em `planilha.ts`; aqui ficam a entrada por arquivo e as mensagens de erro para a pessoa.
  */
+import {
+  ErroPlanilha,
+  ITENS_MAXIMO,
+  TAMANHO_MAXIMO,
+  decodificar,
+  detectar,
+  gradeDeTexto,
+  lerXlsx,
+  montarLinhas,
+  type Deteccao,
+  type Grade,
+  type Planilha,
+  type ResultadoImportacao,
+} from "./planilha";
 
-export interface LinhaImportada {
-  etapa: string;
-  descricao: string;
-  quantidade: number;
-  unidade: string;
-  valorUnitario: number;
-  valorOrcado: number;
-  /** Aviso sobre a linha (ela ainda entra): ex. "sem valor". */
-  aviso?: string;
+export { lerNumero, type CampoImp, type LinhaImportada, type ResultadoImportacao } from "./planilha";
+
+/** Texto colado → linhas do orçamento, com a detecção automática de colunas. */
+export function lerItensColados(texto: string, etapaPadrao = "Sem etapa"): ResultadoImportacao {
+  const grade = gradeDeTexto(texto);
+  const det = detectar(grade);
+  return montarLinhas(grade, { ...det, etapaPadrao });
 }
 
-export interface ResultadoImportacao {
-  linhas: LinhaImportada[];
-  /** Linhas ignoradas por não terem descrição. */
-  ignoradas: number;
-  /** Se a primeira linha foi lida como títulos de colunas. */
-  comTitulos: boolean;
+const PEDIR_OUTRO_FORMATO = "Abra a planilha no Excel ou no Google Planilhas e use Salvar como › .xlsx (ou CSV). Depois escolha o arquivo novo.";
+
+/** Lê um arquivo escolhido ou arrastado. Todo problema vira um `ErroPlanilha` com explicação e o que fazer. */
+export async function lerArquivo(arquivo: File): Promise<Planilha[]> {
+  const nome = arquivo.name.toLowerCase();
+  const ext = nome.includes(".") ? nome.slice(nome.lastIndexOf(".") + 1) : "";
+  if (arquivo.size === 0) {
+    throw new ErroPlanilha("O arquivo está vazio", "Não há nada dentro de “" + arquivo.name + "”.", "Confira se escolheu o arquivo certo. Se ele abre com dados no Excel, salve de novo e tente outra vez.");
+  }
+  if (arquivo.size > TAMANHO_MAXIMO) {
+    throw new ErroPlanilha(
+      "O arquivo é grande demais",
+      `“${arquivo.name}” tem ${(arquivo.size / 1048576).toFixed(1).replace(".", ",")} MB e o limite é ${TAMANHO_MAXIMO / 1048576} MB.`,
+      "Apague as abas, colunas e imagens que não precisa e salve de novo, ou envie a planilha em partes.",
+    );
+  }
+  let planilhas: Planilha[];
+  try {
+    if (ext === "xlsx" || ext === "xlsm") planilhas = await lerXlsx(await arquivo.arrayBuffer());
+    else if (ext === "csv" || ext === "tsv" || ext === "txt") {
+      const grade = gradeDeTexto(decodificar(new Uint8Array(await arquivo.arrayBuffer())), { csv: ext !== "txt" });
+      planilhas = [{ nome: arquivo.name, grade }];
+    } else if (ext === "xls") {
+      throw new ErroPlanilha("Formato antigo do Excel (.xls)", "Esse formato antigo não pode ser lido pelo app.", PEDIR_OUTRO_FORMATO);
+    } else if (ext === "ods" || ext === "numbers") {
+      throw new ErroPlanilha(`Arquivo ${ext === "ods" ? "do LibreOffice" : "do Numbers"} não é aceito`, "O app lê arquivos .xlsx, .csv e .txt.", PEDIR_OUTRO_FORMATO);
+    } else {
+      throw new ErroPlanilha(
+        "Esse tipo de arquivo não funciona aqui",
+        ext ? `Arquivos .${ext} não são planilhas que o app consiga ler.` : "O arquivo não tem uma extensão conhecida.",
+        "Use um arquivo .xlsx, .csv ou .txt. Se o orçamento está num PDF ou foto, copie os dados para uma planilha e cole na caixa de texto.",
+      );
+    }
+  } catch (e) {
+    throw explicarErro(e);
+  }
+  const comDados = planilhas.filter((p) => p.grade.length > 0);
+  if (comDados.length === 0) {
+    throw new ErroPlanilha("A planilha está vazia", "Não encontrei nenhuma célula preenchida no arquivo.", "Confira se os dados estão na primeira aba e se o arquivo salvo é o certo. Também dá para copiar as células e colar na caixa de texto.");
+  }
+  return comDados;
 }
 
-type Campo = "etapa" | "descricao" | "quantidade" | "unidade" | "valorUnitario";
-
-const POR_QUANTIDADE: Record<number, Campo[]> = {
-  1: ["descricao"],
-  2: ["descricao", "valorUnitario"],
-  3: ["descricao", "quantidade", "valorUnitario"],
-  4: ["descricao", "quantidade", "unidade", "valorUnitario"],
-  5: ["etapa", "descricao", "quantidade", "unidade", "valorUnitario"],
-};
-
-const semAcento = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
-
-/** "R$ 1.234,56" → 1234.56. Aceita vírgula ou ponto como decimal. Texto vazio vale 0; texto inválido, NaN. */
-export function lerNumero(texto: string): number {
-  let t = texto.replace(/R\$/gi, "").replace(/\s/g, "");
-  if (!t) return 0;
-  if (t.includes(",") && t.includes(".")) t = t.replace(/\./g, "").replace(",", ".");
-  else if (t.includes(",")) t = t.replace(",", ".");
-  else if (/^\d{1,3}(\.\d{3})+$/.test(t)) t = t.replace(/\./g, ""); // 1.234 = mil duzentos e trinta e quatro
-  const n = Number(t);
-  return Number.isFinite(n) ? n : NaN;
+/** Qualquer erro vira uma mensagem que a pessoa entende, com o próximo passo. */
+export function explicarErro(e: unknown): ErroPlanilha {
+  if (e instanceof ErroPlanilha) return e;
+  return new ErroPlanilha(
+    "Não consegui ler este arquivo",
+    "Algo inesperado aconteceu ao abrir a planilha.",
+    "Salve o arquivo de novo como .xlsx ou CSV e tente outra vez. Se continuar, copie as células e cole na caixa de texto: funciona do mesmo jeito.",
+  );
 }
 
-function dividir(linha: string): string[] {
-  const sep = linha.includes("\t") ? "\t" : linha.includes(";") ? ";" : linha.includes("|") ? "|" : null;
-  return (sep ? linha.split(sep) : [linha]).map((c) => c.trim());
-}
-
-function campoDoTitulo(titulo: string): Campo | null {
-  const t = semAcento(titulo);
-  if (/[0-9]/.test(t) || t.length > 24) return null; // título de coluna é curto e não tem número: "Etapa 1" é dado, não título
-  if (/^etapa|^fase/.test(t)) return "etapa";
-  if (/^descri|^servi|^item|^material|^nome/.test(t)) return "descricao";
-  if (/^qt|^quant/.test(t)) return "quantidade";
-  if (/^un/.test(t)) return "unidade";
-  if (/^(valor|preco|custo|vlr|unit)/.test(t)) return "valorUnitario";
+/**
+ * Problemas que impedem de importar o que foi lido. Devolve nulo quando está tudo certo.
+ * (Avisos de linhas individuais, como "sem valor", não impedem e aparecem na própria tabela.)
+ */
+export function diagnosticar(grade: Grade, det: Deteccao, r: ResultadoImportacao): ErroPlanilha | null {
+  if (grade.length === 0) return null;
+  if (!det.mapa.includes("descricao")) {
+    return new ErroPlanilha(
+      "Não sei qual coluna é a descrição do item",
+      "Nenhuma coluna está marcada como Descrição, e é ela que dá nome a cada item.",
+      "Em “Colunas”, escolha Descrição na coluna que traz o nome do serviço ou material.",
+    );
+  }
+  if (r.linhas.length === 0) {
+    return new ErroPlanilha(
+      "Não encontrei nenhum item",
+      det.linhaTitulo >= 0 && grade.length <= det.linhaTitulo + 1 ? "A planilha só tem a linha de títulos, sem itens abaixo dela." : "Nenhuma linha tem texto na coluna de Descrição (ou todas parecem totais).",
+      "Confira se a coluna marcada como Descrição é a certa (em “Colunas”) e se a linha de títulos está certa. Linhas de total e subtotal são ignoradas de propósito.",
+    );
+  }
+  if (r.linhas.length > ITENS_MAXIMO) {
+    return new ErroPlanilha(
+      "Itens demais de uma vez",
+      `A planilha tem ${r.linhas.length} itens e o limite por importação é ${ITENS_MAXIMO}.`,
+      "Divida a planilha em partes (por etapa, por exemplo) e importe uma de cada vez.",
+    );
+  }
   return null;
 }
 
-export function lerItensColados(texto: string, etapaPadrao = "Sem etapa"): ResultadoImportacao {
-  const brutas = texto.split(/\r?\n/).filter((l) => l.trim() !== "");
-  if (brutas.length === 0) return { linhas: [], ignoradas: 0, comTitulos: false };
-
-  // Títulos: a primeira linha só vale se reconhecermos pelo menos 2 colunas e a descrição entre elas.
-  const primeira = dividir(brutas[0]);
-  const mapaTitulos = primeira.map(campoDoTitulo);
-  const comTitulos = mapaTitulos.filter(Boolean).length >= 2 && mapaTitulos.includes("descricao");
-  const dados = comTitulos ? brutas.slice(1) : brutas;
-
-  const linhas: LinhaImportada[] = [];
-  let ignoradas = 0;
-  for (const bruta of dados) {
-    const colunas = dividir(bruta);
-    const campos = comTitulos ? mapaTitulos : POR_QUANTIDADE[Math.min(colunas.length, 5)];
-    const v: Partial<Record<Campo, string>> = {};
-    campos.forEach((c, i) => {
-      if (c && colunas[i] !== undefined && v[c] === undefined) v[c] = colunas[i];
-    });
-
-    const descricao = (v.descricao ?? "").trim();
-    if (!descricao) {
-      ignoradas += 1;
-      continue;
-    }
-    const qtdLida = v.quantidade === undefined ? 1 : lerNumero(v.quantidade);
-    const unitLido = v.valorUnitario === undefined ? 0 : lerNumero(v.valorUnitario);
-    const quantidade = Number.isNaN(qtdLida) || qtdLida <= 0 ? 1 : qtdLida;
-    const valorUnitario = Number.isNaN(unitLido) || unitLido < 0 ? 0 : unitLido;
-    const avisos: string[] = [];
-    if (Number.isNaN(qtdLida)) avisos.push("quantidade ilegível, usei 1");
-    if (Number.isNaN(unitLido)) avisos.push("valor ilegível");
-    else if (valorUnitario === 0) avisos.push("sem valor");
-
-    linhas.push({
-      etapa: (v.etapa ?? "").trim() || etapaPadrao.trim() || "Sem etapa",
-      descricao,
-      quantidade,
-      unidade: (v.unidade ?? "").trim(),
-      valorUnitario,
-      valorOrcado: Math.round(quantidade * valorUnitario * 100) / 100,
-      aviso: avisos.length ? avisos.join("; ") : undefined,
-    });
-  }
-  return { linhas, ignoradas, comTitulos };
+/** A gravação no banco falhou: explica e diz como proceder sem duplicar itens. */
+export function erroDeGravacao(): ErroPlanilha {
+  return new ErroPlanilha(
+    "Não consegui salvar os itens",
+    "A leitura da planilha deu certo, mas a gravação falhou, quase sempre por conexão instável.",
+    "Confira a internet e olhe a lista de itens do projeto: se alguns já entraram, tire-os da planilha (ou marque “Pular os itens que já estão no orçamento”) antes de importar de novo, para não duplicar.",
+  );
 }
