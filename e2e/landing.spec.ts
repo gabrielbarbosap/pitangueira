@@ -9,6 +9,7 @@ test("a home de quem não entrou vende o produto e leva ao login", async ({ page
   for (const id of ["recursos", "para-quem", "como-funciona", "perguntas", "entrar"]) await expect(page.locator("#" + id)).toBeAttached();
   await expect(page.getByRole("heading", { name: /Planilha e papel/ })).toBeVisible(); // a virada, logo depois do herói
   await expect(page.getByRole("heading", { name: /não precisa criar conta/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Uma obra ou dez/ })).toBeVisible(); // várias obras
   await expect(page.getByRole("heading", { name: /a Pitangueira é para você/ })).toBeVisible();
   for (const perfil of ["Arquitetos", "Engenheiros", "Mestres de obra"]) await expect(page.getByRole("list", { name: "Quem usa" })).toContainText(perfil);
 
