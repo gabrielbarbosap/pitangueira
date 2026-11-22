@@ -251,6 +251,55 @@ export function Landing() {
           </div>
         </section>
 
+        {/* Várias obras */}
+        <section aria-labelledby="varias-obras" className="bg-ink text-white">
+          <div className="mx-auto grid max-w-6xl px-4 py-20 sm:py-28 items-center gap-10 lg:grid-cols-[1fr_1.05fr] lg:gap-16">
+            <div>
+              <Rotulo claro>Várias obras, um só lugar</Rotulo>
+              <h2 id="varias-obras" className="mt-3 text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-6xl">
+                Uma obra ou <span className="text-pitanga">dez</span>. O controle é o mesmo.
+              </h2>
+              <p className="mt-5 text-lg leading-relaxed text-white/70">
+                Crie quantos projetos precisar. Cada um tem o seu orçamento, o seu cliente e o seu código de acesso, e o painel mostra todos juntos: quem está no prazo, quem atrasou e o que entrega primeiro.
+              </p>
+              <ul className="mt-6 space-y-3">
+                {["Painel com o progresso geral de todas as obras", "Próximas entregas em ordem, com os dias que faltam", "Cada cliente enxerga só o projeto dele", "Reaproveite o catálogo e as composições em todas"].map((t) => (
+                  <li key={t} className="flex items-start gap-2.5 text-[16px] font-medium text-white/90">
+                    <Icone nome="ok" className="mt-1 h-4 w-4 shrink-0 text-pitanga" />
+                    {t}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="prancha p-5 text-ink shadow-[0_30px_80px_-30px_rgba(0,0,0,0.8)] sm:p-6" aria-label="Exemplo de painel com três projetos">
+              <div className="flex items-end justify-between gap-3 border-b border-linha pb-4">
+                <div>
+                  <p className="rotulo-tec text-ink/50">Seus projetos</p>
+                  <p className="mt-1 text-2xl font-semibold">3 em andamento</p>
+                </div>
+                <span className="chip chip-ok px-3 py-1 text-xs">todos no prazo</span>
+              </div>
+              <ul className="divide-y divide-linha">
+                {OBRAS_EXEMPLO.map((o) => (
+                  <li key={o.nome} className="py-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate text-[16px] font-semibold">{o.nome}</p>
+                        <p className="truncate text-xs text-ink/50">{o.cliente}</p>
+                      </div>
+                      <span className="shrink-0 font-mono text-lg font-semibold">{o.pct}%</span>
+                    </div>
+                    <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-ink/10">
+                      <div className="h-full rounded-full bg-pitanga" style={{ width: `${o.pct}%` }} />
+                    </div>
+                    <p className="mt-2 text-xs font-medium text-ink/55">{o.prazo}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+
         {/* Dor */}
         <section className="border-y border-linha bg-white/70">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
@@ -295,55 +344,6 @@ export function Landing() {
               <Tela src={v.src} alt={v.alt} altura={v.altura} className={i % 2 === 1 ? "lg:order-1" : ""} />
             </div>
           ))}
-        </section>
-
-        {/* Várias obras */}
-        <section aria-labelledby="varias-obras" className="mx-auto max-w-6xl px-4 py-16 sm:py-24">
-          <div className="grid items-center gap-10 lg:grid-cols-[1fr_1.05fr] lg:gap-16">
-            <div>
-              <Rotulo>Várias obras, um só lugar</Rotulo>
-              <h2 id="varias-obras" className="mt-3 text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl">
-                Uma obra ou <span className="text-pitanga">dez</span>. O controle é o mesmo.
-              </h2>
-              <p className="mt-5 text-lg leading-relaxed text-ink/70">
-                Crie quantos projetos precisar. Cada um tem o seu orçamento, o seu cliente e o seu código de acesso, e o painel mostra todos juntos: quem está no prazo, quem atrasou e o que entrega primeiro.
-              </p>
-              <ul className="mt-6 space-y-3">
-                {["Painel com o progresso geral de todas as obras", "Próximas entregas em ordem, com os dias que faltam", "Cada cliente enxerga só o projeto dele", "Reaproveite o catálogo e as composições em todas"].map((t) => (
-                  <li key={t} className="flex items-start gap-2.5 text-[16px] font-medium text-ink/85">
-                    <Icone nome="ok" className="mt-1 h-4 w-4 shrink-0 text-pitanga" />
-                    {t}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="prancha p-5 shadow-[0_30px_60px_-34px_rgba(20,17,15,0.4)] sm:p-6" aria-label="Exemplo de painel com três projetos">
-              <div className="flex items-end justify-between gap-3 border-b border-linha pb-4">
-                <div>
-                  <p className="rotulo-tec text-ink/50">Seus projetos</p>
-                  <p className="mt-1 text-2xl font-semibold">3 em andamento</p>
-                </div>
-                <span className="chip chip-ok px-3 py-1 text-xs">todos no prazo</span>
-              </div>
-              <ul className="divide-y divide-linha">
-                {OBRAS_EXEMPLO.map((o) => (
-                  <li key={o.nome} className="py-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="truncate text-[16px] font-semibold">{o.nome}</p>
-                        <p className="truncate text-xs text-ink/50">{o.cliente}</p>
-                      </div>
-                      <span className="shrink-0 font-mono text-lg font-semibold">{o.pct}%</span>
-                    </div>
-                    <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-ink/10">
-                      <div className="h-full rounded-full bg-pitanga" style={{ width: `${o.pct}%` }} />
-                    </div>
-                    <p className="mt-2 text-xs font-medium text-ink/55">{o.prazo}</p>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
         </section>
 
         {/* O cliente não precisa de conta */}
