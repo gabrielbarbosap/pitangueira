@@ -3,7 +3,7 @@ import { semTutorial } from "./ajudas";
 
 /**
  * Gera os prints do sistema usados na página inicial (public/landing). Só roda com CAPTURAS=1, em modo demo,
- * com dados fictícios (nada de cliente real). Para refazer:  CAPTURAS=1 npx playwright test capturas --project=desktop
+ * com dados fictícios (nada de cliente real). Para refazer:  CAPTURAS=1 npx playwright test capturas (gera os prints de desktop e de celular, com prefixo m-)
  */
 test.skip(!process.env.CAPTURAS, "só com CAPTURAS=1");
 
@@ -81,9 +81,11 @@ const honorarios = [
     parcelas: [parcela("a", "Entrada", 4500, agora - 40 * DIA, agora - 40 * DIA), parcela("b", "Parcela 2/3", 4500, agora - 10 * DIA, null), parcela("c", "Parcela 3/3", 4500, agora + 20 * DIA, null)] },
 ];
 
-test("prints do sistema para a página inicial", async ({ page }) => {
+test("prints do sistema para a página inicial", async ({ page }, info) => {
   test.setTimeout(120_000);
-  await page.setViewportSize({ width: 1200, height: 780 });
+  const celular = info.project.name === "celular";
+  const pre = celular ? "m-" : "";
+  if (!celular) await page.setViewportSize({ width: 1200, height: 780 });
   await semTutorial(page);
   await page.addInitScript(
     ([o, its, pubs, hon]) => {
@@ -99,13 +101,15 @@ test("prints do sistema para a página inicial", async ({ page }) => {
   // Troca o nome do arquiteto de exemplo e esconde o aviso de modo demo só na hora da foto.
   const limpar = () =>
     page.evaluate(() => {
+      window.scrollTo(0, 0);
       const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
       for (let n = w.nextNode(); n; n = w.nextNode()) n.textContent = (n.textContent ?? "").replace("Gabriel (demo)", "Helena Duarte").replace("Gabriel", "Helena");
+      document.querySelectorAll("button").forEach((b) => { if (b.textContent?.includes("Recuperar Casa Pitanga")) (b.parentElement as HTMLElement | null)?.style.setProperty("display", "none"); });
       document.querySelectorAll(".pilula-topo").forEach((e) => ((e as HTMLElement).style.display = "none"));
     });
   const foto = async (nome: string) => {
     await limpar();
-    await page.screenshot({ path: `public/landing/${nome}.jpg`, type: "jpeg", quality: 90 });
+    await page.screenshot({ path: `public/landing/${pre}${nome}.jpg`, type: "jpeg", quality: celular ? 80 : 90 });
   };
 
   await page.goto("/");
@@ -114,7 +118,7 @@ test("prints do sistema para a página inicial", async ({ page }) => {
   await page.mouse.move(5, 5);
   await page.waitForTimeout(600);
   await limpar();
-  await page.screenshot({ path: "public/landing/painel.jpg", type: "jpeg", quality: 90, clip: { x: 0, y: 0, width: 1200, height: 700 } });
+  await page.screenshot({ path: `public/landing/${pre}painel.jpg`, type: "jpeg", quality: celular ? 80 : 90, ...(celular ? {} : { clip: { x: 0, y: 0, width: 1200, height: 700 } }) });
 
   await page.locator('article a[href^="/obra/o1"]').first().click();
   await page.getByRole("tab", { name: "Resumo" }).click();

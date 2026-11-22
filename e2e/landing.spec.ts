@@ -34,3 +34,25 @@ test("o login pela landing leva ao painel (modo demo)", async ({ page }) => {
   await expect(page.getByText(/Modo demo/)).toBeVisible();
   await expect(page.getByRole("region", { name: "Atalhos" })).toBeVisible();
 });
+
+test("no celular: menu do topo e barra fixa de “Começar agora”", async ({ page }, info) => {
+  test.skip(info.project.name !== "celular", "só no celular");
+  await page.goto("/");
+  await page.getByRole("button", { name: /entrar com google/i }).waitFor();
+  const barra = page.locator("div.fixed", { hasText: "Começar agora" });
+
+  // No topo a barra não aparece; depois de rolar, aparece.
+  await expect.poll(async () => (await barra.boundingBox())!.y - (await page.evaluate(() => window.innerHeight))).toBeGreaterThan(-5);
+  await page.evaluate(() => window.scrollTo(0, 1500));
+  await expect.poll(async () => (await barra.boundingBox())!.y - (await page.evaluate(() => window.innerHeight))).toBeLessThan(-40);
+
+  // Menu: abre, leva à seção e fecha.
+  await page.getByRole("button", { name: "Abrir o menu" }).click();
+  await page.getByRole("navigation", { name: "Seções" }).getByRole("link", { name: "Dúvidas" }).click();
+  await expect(page.getByRole("navigation", { name: "Seções" })).toBeHidden();
+  await expect(page.getByRole("heading", { name: "Perguntas frequentes" })).toBeInViewport();
+
+  // A barra leva ao login (e some quando o login está na tela).
+  await page.locator("div.fixed").getByRole("link", { name: "Começar agora" }).click();
+  await expect(page.getByRole("button", { name: /entrar com google/i })).toBeInViewport();
+});
