@@ -3,6 +3,8 @@ import { entrarComoArquiteto, sair } from "./ajudas";
 
 /** O arquiteto novo é recebido por um tutorial na home, que só abre sozinho na primeira vez. */
 test("o tutorial abre na primeira visita, pode ser pulado e volta pelo botão ?", async ({ page }) => {
+  // Aqui só o tutorial importa: a escolha do catálogo (que vem depois dele) tem teste próprio.
+  await page.addInitScript(() => localStorage.setItem("pitangueira:catalogo-inicial:v1", "1"));
   await entrarComoArquiteto(page);
 
   const tutorial = page.getByRole("dialog", { name: "Bem-vindo à Pitangueira" });

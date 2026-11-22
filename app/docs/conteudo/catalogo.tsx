@@ -19,6 +19,16 @@ export const catalogo: PaginaDoc = {
           <P>
             Abra pela pílula <Btn>Meu catálogo</Btn> na home (para gerenciar) ou pela pílula <Btn>Catálogo</Btn> na aba Itens de um projeto (para adicionar ao orçamento).
           </P>
+          <H3>No primeiro acesso: catálogo pronto ou do zero</H3>
+          <P>
+            Na primeira vez que entra (depois do tutorial da home), o app oferece <Btn>Bem-vindo! Monte o seu catálogo</Btn>. Você marca as etapas que quer (demolição, elétrica, hidráulica, pintura e outras; <Btn>Ver os itens</Btn> mostra cada um) e toca em <Btn>Adicionar N itens ao meu catálogo</Btn>. Ou prefere começar vazio: <Btn>Criar os meus itens do zero</Btn>.
+          </P>
+          <Aviso tipo="atencao" titulo="Os valores do catálogo pronto são só referência">
+            São preços médios aproximados, só para você não começar do zero. Variam por região e fornecedor: ajuste no <Btn>Meu catálogo</Btn>. Os itens entram como uma <strong>cópia só sua</strong>: mudar um valor nunca aparece para outro arquiteto, e o que os outros fazem nunca aparece para você.
+          </Aviso>
+          <P>
+            A janela aparece uma única vez por conta. Se escolheu o zero e mudou de ideia, abra <Btn>Meu catálogo</Btn> vazio e toque em <Btn>Ou use o catálogo pronto de reforma</Btn>.
+          </P>
           <H3>Cadastrar um item</H3>
           <Passos>
             <Passo>Toque em <Btn>+ Novo item</Btn>.</Passo>

@@ -11,10 +11,13 @@ service cloud.firestore {
       return request.auth != null;
     }
     // Dono a partir dos dados da própria obra (uid ou e-mail em ownerEmails).
+    // O e-mail só vale como co-dono se for VERIFICADO (login Google já vem verificado; conta de e-mail e senha só depois
+    // de clicar no link). Sem isso, qualquer um criaria uma conta com o e-mail de outro arquiteto e entraria na obra dele.
     function ehDono(data) {
       return signedIn() && (
         data.ownerUid == request.auth.uid
-        || data.get('ownerEmails', []).hasAny([request.auth.token.email])
+        || (request.auth.token.get('email_verified', false)
+            && data.get('ownerEmails', []).hasAny([request.auth.token.email]))
       );
     }
     function obra(obraId) {

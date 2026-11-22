@@ -31,7 +31,13 @@ interface ArquitetoContextValue {
   /** BDI e margem padrão (em %) das composições novas. */
   parametros: ParametrosCusto;
   salvarParametros: (p: ParametrosCusto) => Promise<void>;
+  /** Como o arquiteto montou o catálogo no primeiro acesso (null = ainda não escolheu; undefined = perfil não chegou). */
+  escolhaCatalogo: EscolhaCatalogo | null | undefined;
+  registrarEscolhaCatalogo: (e: EscolhaCatalogo) => Promise<void>;
 }
+
+/** "pronto" = copiou o catálogo pronto; "proprio" = vai criar os seus. */
+export type EscolhaCatalogo = "pronto" | "proprio";
 
 export interface ParametrosCusto {
   bdi: number;
@@ -70,6 +76,7 @@ export function ArquitetoProvider({ children }: { children: ReactNode }) {
   const [parametros, setParametros] = useState<ParametrosCusto>({ bdi: 0, margem: 0 });
   // Obras de onde o catálogo já foi semeado (null = o perfil ainda não chegou).
   const [semeadas, setSemeadas] = useState<string[] | null>(null);
+  const [escolhaCatalogo, setEscolha] = useState<EscolhaCatalogo | null | undefined>(undefined);
   const semeando = useRef(new Set<string>());
   const uid = user && !user.anonimo ? user.uid : null;
 
@@ -78,6 +85,7 @@ export function ArquitetoProvider({ children }: { children: ReactNode }) {
       setCatalogo([]);
       setPerfil(PERFIL_VAZIO);
       setSemeadas(null);
+      setEscolha(undefined);
       setCarregando(false);
       return;
     }
@@ -86,6 +94,7 @@ export function ArquitetoProvider({ children }: { children: ReactNode }) {
       const guardado = ler<Record<string, unknown>>(lsPerfil(uid), {});
       setPerfil({ ...PERFIL_VAZIO, ...(guardado as Partial<PerfilArquiteto>) });
       setParametros({ bdi: Number(guardado.bdiPadrao) || 0, margem: Number(guardado.margemPadrao) || 0 });
+      setEscolha((guardado.catalogoInicial as EscolhaCatalogo | undefined) ?? null);
       setCarregando(false);
       return;
     }
@@ -108,6 +117,7 @@ export function ArquitetoProvider({ children }: { children: ReactNode }) {
         setPerfil(marca as unknown as PerfilArquiteto);
         setParametros({ bdi: Number(dados.bdiPadrao) || 0, margem: Number(dados.margemPadrao) || 0 });
         setSemeadas((dados.catalogoSemeadoDe as string[] | undefined) ?? []);
+        setEscolha((dados.catalogoInicial as EscolhaCatalogo | undefined) ?? null);
       },
       () => {},
     );
@@ -204,6 +214,16 @@ export function ArquitetoProvider({ children }: { children: ReactNode }) {
     [uid, configured],
   );
 
+  const registrarEscolhaCatalogo = useCallback(
+    async (e: EscolhaCatalogo) => {
+      if (!uid) return;
+      setEscolha(e);
+      if (configured && db) await setDoc(doc(db, "arquitetos", uid), { catalogoInicial: e }, { merge: true });
+      else gravar(lsPerfil(uid), { ...ler<Record<string, unknown>>(lsPerfil(uid), {}), catalogoInicial: e });
+    },
+    [uid, configured],
+  );
+
   // Obra compartilhada entre arquitetos (a Casa Pitanga): cada co-dono recebe, uma única vez,
   // o catálogo dela. O registro fica no perfil para não recriar itens que ele apagar depois.
   useEffect(() => {
@@ -222,8 +242,8 @@ export function ArquitetoProvider({ children }: { children: ReactNode }) {
   }, [uid, configured, carregando, semeadas, obras, importar]);
 
   const value = useMemo(
-    () => ({ catalogo, perfil, carregando, salvarItem, removerItem, importar, salvarPerfil, parametros, salvarParametros }),
-    [catalogo, perfil, carregando, salvarItem, removerItem, importar, salvarPerfil, parametros, salvarParametros],
+    () => ({ catalogo, perfil, carregando, salvarItem, removerItem, importar, salvarPerfil, parametros, salvarParametros, escolhaCatalogo, registrarEscolhaCatalogo }),
+    [catalogo, perfil, carregando, salvarItem, removerItem, importar, salvarPerfil, parametros, salvarParametros, escolhaCatalogo, registrarEscolhaCatalogo],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

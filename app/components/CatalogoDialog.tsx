@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Modal } from "./Modal";
+import { CatalogoProntoDialog } from "./CatalogoProntoDialog";
 import { useConfirm } from "./ConfirmProvider";
 import { IconeBusca, IconeEditar, IconeLixo } from "./Icones";
 import { catalogoDeItem, useArquiteto } from "@/lib/arquiteto";
@@ -43,6 +44,7 @@ export function CatalogoDialog({
   const confirmar = useConfirm();
   const { brl } = useDinheiro();
   const [busca, setBusca] = useState("");
+  const [pronto, setPronto] = useState(false);
   const [editando, setEditando] = useState<CatalogoItem | "novo" | null>(null);
   const [form, setForm] = useState<Form>(FORM_VAZIO);
   const [qtds, setQtds] = useState<Record<string, string>>({});
@@ -112,6 +114,7 @@ export function CatalogoDialog({
   const titulo = onAdicionar ? "Meu catálogo" : "Meu catálogo de itens";
 
   return (
+    <>
     <Modal aberto={aberto} onFechar={onFechar} titulo={titulo}>
       <div className="space-y-4">
         <p className="text-[13px] leading-snug text-ink/65">
@@ -174,6 +177,9 @@ export function CatalogoDialog({
         {catalogo.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-ink/30 px-4 py-8 text-center text-sm text-ink/55">
             Seu catálogo está vazio. Crie itens ou {itensObra && itensObra.length > 0 ? "importe os deste projeto" : "salve itens ao cadastrá-los em um projeto"} para reaproveitar depois.
+            <button type="button" onClick={() => setPronto(true)} className="mx-auto mt-3 block font-semibold text-pitanga hover:underline">
+              Ou use o catálogo pronto de reforma
+            </button>
           </p>
         ) : filtrados.length === 0 ? (
           <p className="py-6 text-center text-sm text-ink/55">Nenhum item para “{busca}”.</p>
@@ -216,5 +222,7 @@ export function CatalogoDialog({
         )}
       </div>
     </Modal>
+    <CatalogoProntoDialog aberto={pronto} onFechar={() => setPronto(false)} />
+    </>
   );
 }

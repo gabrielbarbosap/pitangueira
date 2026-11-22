@@ -6,6 +6,8 @@ const TUTORIAIS = ["painel", "projeto", "projeto-cliente"];
 export async function semTutorial(page: Page) {
   await page.addInitScript((chaves) => {
     for (const c of chaves) localStorage.setItem(`pitangueira:tour:${c}:v1`, "1");
+    // A escolha do catálogo do primeiro acesso também já foi feita (os testes de negócio não passam por ela).
+    localStorage.setItem("pitangueira:catalogo-inicial:v1", "1");
   }, TUTORIAIS);
 }
 

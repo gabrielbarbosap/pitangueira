@@ -18,6 +18,7 @@ import { CatalogoDialog } from "./CatalogoDialog";
 import { ComposicoesDialog } from "./ComposicoesDialog";
 import { FornecedoresDialog } from "./FornecedoresDialog";
 import { Tour, useTour, type PassoTour } from "./Tour";
+import { PrimeiroAcessoCatalogo } from "./PrimeiroAcessoCatalogo";
 import { PrazoMini, ProximasEntregas, useHoje } from "./PrazoVisual";
 import { AtalhosHome } from "./AtalhosHome";
 import { IconeAjuda, IconeArquivo, IconeMais, IconeObra, IconeOpcoes, IconeSair } from "./Icones";
@@ -414,6 +415,7 @@ export function Painel() {
       <ObraDialog aberto={dialog} onFechar={() => setDialog(false)} />
       <GerenciarObraDialog obra={obraGerenciada} onFechar={() => setGerenciarId(null)} />
       <CatalogoDialog aberto={catalogo} onFechar={() => setCatalogo(false)} />
+      <PrimeiroAcessoCatalogo pausado={tour.aberto} />
       <ComposicoesDialog aberto={composicoes} onFechar={() => setComposicoes(false)} />
       <FornecedoresDialog aberto={fornecedores} onFechar={() => setFornecedores(false)} />
       <Tour passos={passosTour} aberto={tour.aberto} onFechar={tour.fechar} />
