@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { ORDEM_PLANOS, PLANOS } from "@/lib/planos";
+import { emReais, precoAnualPorMes, PRECO_MENSAL, temPreco } from "@/lib/precos";
 import { classeBotao } from "../ui/Botao";
 import { Logo, LogoMark } from "../Logo";
 import { LoginScreen } from "../LoginScreen";
@@ -474,6 +476,49 @@ export function Landing() {
               </li>
             ))}
           </ol>
+        </section>
+
+        {/* Planos e preços */}
+        <section id="precos" className="scroll-mt-20 border-t border-linha bg-white/70">
+          <div className="mx-auto max-w-6xl px-4 py-12 sm:py-24">
+            <div className="max-w-2xl">
+              <Rotulo>Planos e preços</Rotulo>
+              <Titulo>Teste 5 dias grátis. Depois, um preço que cabe no escritório.</Titulo>
+              <p className="mt-4 text-lg leading-relaxed text-ink/70">
+                Experimente tudo por 5 dias, sem cartão. Para continuar, escolha um plano — mensal ou anual (com 2 meses grátis). Cancele quando quiser.
+              </p>
+            </div>
+            <div className="mt-10 grid gap-4 lg:grid-cols-3">
+              {ORDEM_PLANOS.map((id) => {
+                const p = PLANOS[id];
+                return (
+                  <article key={id} aria-label={`Plano ${p.nome}`} className={`prancha relative flex flex-col p-6 ${p.destaque ? "border-2 border-pitanga shadow-[0_24px_50px_-30px_rgba(210,58,31,0.6)]" : ""}`}>
+                    {p.destaque && <span className="absolute -top-3 left-6 rounded-full bg-pitanga px-3 py-1 font-mono text-[10px] font-semibold uppercase tracking-wider text-white">Mais escolhido</span>}
+                    <h3 className="text-xl font-semibold text-ink">{p.nome}</h3>
+                    <p className="mt-1 text-sm text-ink/60">{p.frase}</p>
+                    {temPreco(id) ? (
+                      <div className="mt-4">
+                        <p className="text-3xl font-semibold text-ink">
+                          {emReais(PRECO_MENSAL[id])}
+                          <span className="text-base font-normal text-ink/55">/mês</span>
+                        </p>
+                        <p className="mt-0.5 text-xs text-ink/50">ou {emReais(precoAnualPorMes(id))}/mês no plano anual</p>
+                      </div>
+                    ) : (
+                      <p className="mt-4 text-sm text-ink/50">Valor em breve</p>
+                    )}
+                    <p className="mt-4 text-xs font-medium uppercase tracking-wider text-ink/45">
+                      {p.obrasAtivas === null ? "Projetos ilimitados" : `Até ${p.obrasAtivas} projetos em andamento`}
+                    </p>
+                  </article>
+                );
+              })}
+            </div>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+              <Link href="/planos" className={classeBotao("primario", "grande", "w-full sm:w-auto")}>Ver os planos e assinar</Link>
+              <a href={IR_PARA_ENTRAR} className={classeBotao("linha", "grande", "w-full sm:w-auto")}>Começar o teste grátis</a>
+            </div>
+          </div>
         </section>
 
         {/* Perguntas */}
