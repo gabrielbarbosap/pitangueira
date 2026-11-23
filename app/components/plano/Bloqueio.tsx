@@ -72,7 +72,7 @@ export function FaixaPlano() {
   if (efetivo.origem === "teste") {
     texto = (
       <>
-        <strong>Teste grátis do plano Safra: {efetivo.diasDeTeste === 1 ? "falta 1 dia" : `faltam ${efetivo.diasDeTeste} dias`}.</strong> Depois dele, vale o plano Broto (até {PLANOS.broto.obrasAtivas} projetos em andamento) até você assinar.
+        <strong>Teste grátis do plano Safra: {efetivo.diasDeTeste === 1 ? "falta 1 dia" : `faltam ${efetivo.diasDeTeste} dias`}.</strong> Depois dele, é preciso assinar um plano para continuar usando.
       </>
     );
   } else if (efetivo.origem === "cortesia") {
@@ -86,14 +86,14 @@ export function FaixaPlano() {
     tom = "alerta-aviso";
     texto = (
       <>
-        <strong>Seu teste grátis terminou.</strong> Você está no plano Broto: até {PLANOS.broto.obrasAtivas} projetos em andamento, 200 itens no catálogo e 7 fornecedores. Nada foi apagado.
+        <strong>Seu teste grátis terminou.</strong> Assine um plano para voltar a usar — nada foi apagado.
       </>
     );
   } else if (efetivo.atrasada) {
     tom = "alerta-aviso";
     texto = (
       <>
-        <strong>O pagamento do seu plano não foi aprovado.</strong> Atualize a forma de pagamento para não voltar ao plano Broto.
+        <strong>O pagamento do seu plano não foi aprovado.</strong> Atualize a forma de pagamento para não perder o acesso.
       </>
     );
   }

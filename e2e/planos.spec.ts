@@ -26,7 +26,7 @@ test.describe("regras dos planos (sem navegador)", () => {
   test("teste de 5 dias na Safra, depois Broto; assinatura, cortesia e atraso", () => {
     expect(planoEfetivo(null, agora, agora + 1000)).toMatchObject({ plano: "safra", origem: "teste", diasDeTeste: 5 });
     expect(planoEfetivo(null, agora, agora + 4 * DIA + 1000)).toMatchObject({ plano: "safra", origem: "teste", diasDeTeste: 1 });
-    expect(planoEfetivo(null, agora, agora + 5 * DIA)).toMatchObject({ plano: "broto", origem: "sem-assinatura" });
+    expect(planoEfetivo(null, agora, agora + 5 * DIA)).toMatchObject({ plano: "broto", origem: "sem-assinatura", semAcesso: true });
     expect(planoEfetivo({ plano: "pomar", status: "cortesia" }, agora - 99 * DIA, agora)).toMatchObject({ plano: "pomar", origem: "cortesia" });
     expect(planoEfetivo({ plano: "safra", status: "ativa", ate: agora + DIA }, agora - 99 * DIA, agora)).toMatchObject({ plano: "safra", origem: "assinatura" });
     expect(planoEfetivo({ plano: "safra", status: "ativa", ate: agora - 1 }, agora - 99 * DIA, agora).plano).toBe("broto");
@@ -68,7 +68,7 @@ test.describe("planos no app", () => {
   test("conta nova: teste grátis da Safra, com os dias que faltam", async ({ page }) => {
     await entrarNoPlano(page, "teste");
     await expect(page.getByRole("note", { name: "Seu plano" })).toContainText("Teste grátis do plano Safra: faltam 5 dias");
-    await expect(page.getByRole("note", { name: "Seu plano" })).toContainText("Depois dele, vale o plano Broto");
+    await expect(page.getByRole("note", { name: "Seu plano" })).toContainText("é preciso assinar um plano para continuar");
   });
 
   test("Broto: 2 projetos em andamento; o terceiro é bloqueado com o motivo; arquivar libera; restaurar também respeita", async ({ page }) => {

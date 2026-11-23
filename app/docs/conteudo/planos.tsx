@@ -39,7 +39,7 @@ export const planos: PaginaDoc = {
       corpo: (
         <>
           <P>
-            Toda conta nova tem <strong>5 dias com os recursos da Safra</strong>, sem cobrança e sem cartão. Uma faixa na home mostra quantos dias faltam. Quando o teste acaba, a conta passa a valer como plano <strong>Broto</strong> até você assinar. <strong>Nada é apagado</strong>.
+            Toda conta nova tem <strong>5 dias com os recursos da Safra</strong>, sem cobrança e sem cartão. Uma faixa na home mostra quantos dias faltam. Quando o teste acaba, é preciso <strong>assinar um plano para continuar</strong> — não há plano grátis. <strong>Nada é apagado</strong>: seus projetos voltam assim que você assinar.
           </P>
         </>
       ),

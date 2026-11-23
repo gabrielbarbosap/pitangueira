@@ -63,7 +63,7 @@ export function PlanoConta() {
         <p className="mt-1 text-sm leading-snug text-ink/60">{def.frase}.</p>
         {efetivo.origem === "teste" && (
           <p className="mt-2 text-sm text-ink/75">
-            Teste grátis do plano Safra: <strong>{efetivo.diasDeTeste === 1 ? "falta 1 dia" : `faltam ${efetivo.diasDeTeste} dias`}</strong> (são {TESTE_DIAS} no total). Depois dele, vale o plano Broto até você assinar.
+            Teste grátis do plano Safra: <strong>{efetivo.diasDeTeste === 1 ? "falta 1 dia" : `faltam ${efetivo.diasDeTeste} dias`}</strong> (são {TESTE_DIAS} no total). Depois dele, é preciso assinar um plano para continuar.
           </p>
         )}
         {efetivo.origem === "cortesia" && (
@@ -71,7 +71,7 @@ export function PlanoConta() {
             <strong>Plano de cortesia:</strong> {efetivo.aviso ?? "você tem acesso sem limites por enquanto. Vamos mudar os planos de quem já usava a Pitangueira e avisaremos antes de qualquer mudança."}
           </p>
         )}
-        {efetivo.origem === "sem-assinatura" && <p className="mt-2 text-sm text-ink/75">O seu teste terminou. Nada foi apagado: o plano Broto vale até você assinar.</p>}
+        {efetivo.origem === "sem-assinatura" && <p className="mt-2 text-sm text-ink/75">O seu teste terminou e o acesso está pausado. Assine um plano para voltar a usar — nada foi apagado.</p>}
 
         <dl className="mt-4 grid gap-3 sm:grid-cols-3">
           <div className="rounded-xl bg-papel p-3">

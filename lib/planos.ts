@@ -137,6 +137,11 @@ export interface PlanoEfetivo {
   /** Pagamento atrasado, ainda no período de carência. */
   atrasada?: boolean;
   aviso?: string;
+  /**
+   * Sem acesso ao app: não há assinatura em vigor e o teste grátis já acabou. Não existe plano grátis — é preciso assinar
+   * para voltar a usar. O `plano` fica como "broto" só para a interface não quebrar; o que vale é esta flag.
+   */
+  semAcesso?: boolean;
 }
 
 /**
@@ -150,13 +155,13 @@ export function planoEfetivo(assinatura: Assinatura | null, criadoEm: number | n
     if (assinatura.status === "ativa" && emVigor) return { plano: assinatura.plano, origem: "assinatura", aviso: assinatura.aviso };
     if (assinatura.status === "atrasada" && (assinatura.carenciaAte ?? 0) > agora) return { plano: assinatura.plano, origem: "assinatura", atrasada: true, aviso: assinatura.aviso };
     if (assinatura.status === "cancelada" && emVigor && assinatura.ate !== undefined) return { plano: assinatura.plano, origem: "assinatura", aviso: assinatura.aviso };
-    return { plano: "broto", origem: "sem-assinatura" };
+    return { plano: "broto", origem: "sem-assinatura", semAcesso: true };
   }
   if (criadoEm !== null) {
     const fim = criadoEm + TESTE_DIAS * DIA;
     if (agora < fim) return { plano: PLANO_DO_TESTE, origem: "teste", testeAte: fim, diasDeTeste: Math.max(1, Math.ceil((fim - agora) / DIA)) };
   }
-  return { plano: "broto", origem: "sem-assinatura" };
+  return { plano: "broto", origem: "sem-assinatura", semAcesso: true };
 }
 
 /** O menor plano que tem o recurso (para dizer "disponível na Safra"). */

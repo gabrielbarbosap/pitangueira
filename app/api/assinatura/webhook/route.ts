@@ -2,8 +2,6 @@ import { PLANOS, type Assinatura, type PlanoId } from "@/lib/planos";
 import { consultar, gravarDocumento, lerDocumento } from "@/lib/servidor/firebaseAdmin";
 import { lerAssinaturaStripe, normalizarAssinatura, planoDoPrice, verificarEvento, type AssinaturaStripe } from "@/lib/servidor/stripe";
 
-export const runtime = "nodejs";
-
 /**
  * Webhook do Stripe: a ÚNICA porta que grava `assinaturas/{uid}` e os recibos. Confere a assinatura do evento sobre o
  * corpo cru e mantém o Firestore em dia com o Stripe. Configure a URL e o segredo no painel do Stripe (veja o
