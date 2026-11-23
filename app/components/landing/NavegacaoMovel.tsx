@@ -1,11 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const LINKS = [
   ["#recursos", "Recursos"],
   ["#para-quem", "Para quem"],
   ["#como-funciona", "Como funciona"],
+  ["#precos", "Preços"],
   ["#perguntas", "Dúvidas"],
   ["/planos", "Planos"],
   ["/docs", "Documentação"],
@@ -78,9 +80,9 @@ export function BarraComecar() {
       aria-hidden={!visivel}
       className={`fixed inset-x-0 bottom-0 z-30 border-t border-linha bg-papel/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur transition duration-200 md:hidden ${visivel ? "translate-y-0" : "pointer-events-none translate-y-full"}`}
     >
-      <a href="#entrar" tabIndex={visivel ? 0 : -1} className="btn btn-primario w-full px-5 py-3.5 text-[15px]">
+      <Link href="/planos" tabIndex={visivel ? 0 : -1} className="btn btn-primario w-full px-5 py-3.5 text-[15px]">
         Começar agora
-      </a>
+      </Link>
     </div>
   );
 }

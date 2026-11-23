@@ -187,6 +187,7 @@ export function Landing() {
             <a href="#recursos" className="hover:text-ink">Recursos</a>
             <a href="#para-quem" className="hover:text-ink">Para quem</a>
             <a href="#como-funciona" className="hover:text-ink">Como funciona</a>
+            <a href="#precos" className="hover:text-ink">Preços</a>
             <a href="#perguntas" className="hover:text-ink">Dúvidas</a>
             <Link href="/planos" className="hover:text-ink">Planos</Link>
             <Link href="/docs" className="hover:text-ink">Documentação</Link>
@@ -194,7 +195,7 @@ export function Landing() {
           <div className="flex items-center gap-2">
             <MenuMovel />
             <a href={IR_PARA_ENTRAR} className="hidden px-3 py-2 text-sm font-semibold text-ink/80 hover:text-ink sm:block">Já tenho conta</a>
-            <a href={IR_PARA_ENTRAR} className={classeBotao("primario", "pequeno", "max-md:hidden")}>Começar agora</a>
+            <Link href="/planos" className={classeBotao("primario", "pequeno", "max-md:hidden")}>Começar agora</Link>
           </div>
         </div>
       </header>
@@ -212,9 +213,12 @@ export function Landing() {
                 Orçamento, andamento, cobranças e conversa com o cliente num só lugar. Feito para arquitetos, engenheiros e mestres de obra que querem passar mais confiança e perder menos tempo.
               </p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-                <a href={IR_PARA_ENTRAR} className={classeBotao("primario", "grande", "w-full sm:w-auto")}>Começar agora</a>
+                <Link href="/planos" className={classeBotao("primario", "grande", "w-full sm:w-auto")}>Começar agora</Link>
                 <a href="#recursos" className={classeBotao("linha", "grande", "w-full sm:w-auto")}>Ver o que tem dentro</a>
               </div>
+              <p className="mt-3 text-sm text-ink/65">
+                Já tem conta? <a href={IR_PARA_ENTRAR} className="font-semibold text-pitanga hover:underline">Entrar</a>
+              </p>
               <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm font-medium text-ink/65">
                 <li className="flex items-center gap-2"><Icone nome="ok" className="h-4 w-4 text-pitanga" /> Preço que cabe no pequeno escritório</li>
                 <li className="flex items-center gap-2"><Icone nome="ok" className="h-4 w-4 text-pitanga" /> Cliente entra só com um código</li>
