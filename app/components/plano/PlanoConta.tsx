@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { collection, onSnapshot } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth";
 import { CANCELAMENTO_DIAS } from "@/lib/empresa";
 import { usePlano } from "@/lib/plano";
@@ -32,6 +32,24 @@ export function PlanoConta() {
 
   const recibos = useMemo(() => [...(nuvem?.uid === uid ? nuvem.lista : [])].sort((a, b) => b.em - a.em), [nuvem, uid]);
   const carregandoRecibos = !!db && configured && nuvem?.uid !== uid;
+
+  const [abrindoPortal, setAbrindoPortal] = useState(false);
+  const [erroPortal, setErroPortal] = useState<string | null>(null);
+  async function abrirPortal() {
+    setAbrindoPortal(true);
+    setErroPortal(null);
+    try {
+      const token = await auth?.currentUser?.getIdToken();
+      if (!token) throw new Error("Seu login expirou. Entre de novo.");
+      const r = await fetch("/api/assinatura/portal", { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+      const d = (await r.json().catch(() => ({}))) as { url?: string; mensagem?: string };
+      if (!r.ok || !d.url) throw new Error(d.mensagem ?? "Não consegui abrir o portal agora.");
+      window.location.href = d.url;
+    } catch (e) {
+      setErroPortal(e instanceof Error ? e.message : "Não consegui abrir o portal agora.");
+      setAbrindoPortal(false);
+    }
+  }
 
   return (
     <>
@@ -69,9 +87,17 @@ export function PlanoConta() {
             <dd className="mt-1 text-lg font-semibold text-ink">{def.fornecedores === null ? "Sem limite" : `Até ${def.fornecedores}`}</dd>
           </div>
         </dl>
-        <Link href="/planos" className={classeBotao("linha", "medio", "mt-4")}>
-          Ver e comparar os planos
-        </Link>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Link href="/planos" className={classeBotao("linha")}>
+            Ver e comparar os planos
+          </Link>
+          {efetivo.origem === "assinatura" && (
+            <button type="button" onClick={abrirPortal} disabled={abrindoPortal} className={classeBotao("solido")}>
+              {abrindoPortal ? "Abrindo…" : "Gerenciar assinatura"}
+            </button>
+          )}
+        </div>
+        {erroPortal && <p className="mt-2 text-sm font-medium text-pitanga">{erroPortal}</p>}
         <p className="mt-3 text-xs text-ink/50">
           Cancelamento em até {CANCELAMENTO_DIAS} dias com reembolso. <Link href="/termos" className="font-semibold text-pitanga hover:underline">Termos de uso</Link>
         </p>

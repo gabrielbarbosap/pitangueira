@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { track } from "@/lib/analytics";
 import { CANCELAMENTO_DIAS } from "@/lib/empresa";
 import { usePlano } from "@/lib/plano";
+import { emReais, precoAnualTotal, precoPorMes, temPreco, type Ciclo } from "@/lib/precos";
 import { LIMITE_FRASE, ORDEM_PLANOS, PLANOS, TESTE_DIAS } from "@/lib/planos";
 import { IconeVoltar } from "../Icones";
 import { Logo } from "../Logo";
@@ -52,7 +53,9 @@ function ComPlano() {
 }
 
 function Cartoes({ atual, origem, diasDeTeste, logado }: { atual: keyof typeof PLANOS | null; origem?: string; diasDeTeste?: number; logado: boolean }) {
+  const [ciclo, setCiclo] = useState<Ciclo>("mensal");
   useEffect(() => track("planos_visualizados", { logado, plano: atual ?? "nenhum" }), [logado, atual]);
+  const algumComPreco = ORDEM_PLANOS.some((id) => temPreco(id));
   return (
     <main className="mx-auto max-w-5xl px-4 py-8 pb-12">
       {logado && atual && (
@@ -62,6 +65,16 @@ function Cartoes({ atual, origem, diasDeTeste, logado }: { atual: keyof typeof P
           {origem === "cortesia" && " (cortesia, por enquanto)"}
           {origem === "sem-assinatura" && " (sem assinatura)"}.
         </p>
+      )}
+      {algumComPreco && (
+        <div className="mb-6 flex flex-wrap items-center justify-center gap-2" role="group" aria-label="Ciclo de cobrança">
+          <button type="button" onClick={() => setCiclo("mensal")} aria-pressed={ciclo === "mensal"} className={classeBotao(ciclo === "mensal" ? "solido" : "linha", "pequeno")}>
+            Mensal
+          </button>
+          <button type="button" onClick={() => setCiclo("anual")} aria-pressed={ciclo === "anual"} className={classeBotao(ciclo === "anual" ? "solido" : "linha", "pequeno")}>
+            Anual · 2 meses grátis
+          </button>
+        </div>
       )}
       <div className="grid gap-4 lg:grid-cols-3">
         {ORDEM_PLANOS.map((id) => {
@@ -75,8 +88,19 @@ function Cartoes({ atual, origem, diasDeTeste, logado }: { atual: keyof typeof P
                 {eAtual && <Chip tom="ok">Seu plano</Chip>}
               </div>
               <p className="mt-1 text-sm text-ink/60">{p.frase}</p>
+              {temPreco(id) ? (
+                <div className="mt-4">
+                  <p className="text-3xl font-semibold text-ink">
+                    {emReais(precoPorMes(id, ciclo))}
+                    <span className="text-base font-normal text-ink/55">/mês</span>
+                  </p>
+                  <p className="mt-0.5 text-xs text-ink/55">{ciclo === "anual" ? `${emReais(precoAnualTotal(id))} por ano · 2 meses grátis` : "cobrança mensal"}</p>
+                </div>
+              ) : (
+                <p className="mt-4 text-sm text-ink/50">Valor em breve</p>
+              )}
               <p className="mt-4 font-mono text-xs uppercase tracking-wider text-ink/50">Projetos em andamento</p>
-              <p className="text-3xl font-semibold text-ink">{p.obrasAtivas === null ? "Ilimitados" : p.obrasAtivas}</p>
+              <p className="text-xl font-semibold text-ink">{p.obrasAtivas === null ? "Ilimitados" : p.obrasAtivas}</p>
               <p className="mt-1 text-xs text-ink/50">
                 Catálogo {LIMITE_FRASE(p, "catalogoItens")} itens · fornecedores {LIMITE_FRASE(p, "fornecedores")}
               </p>
@@ -91,6 +115,10 @@ function Cartoes({ atual, origem, diasDeTeste, logado }: { atual: keyof typeof P
               <div className="mt-5">
                 {eAtual && origemFixa(origem) ? (
                   <p className="text-center text-sm font-medium text-ink/60">Este é o seu plano</p>
+                ) : logado && temPreco(id) ? (
+                  <Link href={`/assinar?plano=${id}&ciclo=${ciclo}`} onClick={() => track("upgrade_clicado", { origem: "planos", plano: id, ciclo })} className={`${classeBotao(p.destaque ? "primario" : "linha")} w-full`}>
+                    Assinar
+                  </Link>
                 ) : logado ? (
                   <button type="button" disabled className={`${classeBotao(p.destaque ? "primario" : "linha")} w-full`} aria-label={`Assinar o plano ${p.nome} (em breve)`}>
                     Assinar (em breve)
@@ -106,7 +134,7 @@ function Cartoes({ atual, origem, diasDeTeste, logado }: { atual: keyof typeof P
         })}
       </div>
       <p className="mt-6 text-sm leading-relaxed text-ink/60">
-        Os valores e a assinatura online abrem em breve. Nenhum projeto é apagado ao trocar de plano: se passar do limite, só não dá para criar ou restaurar projetos até liberar uma vaga ou assinar um plano maior.
+        A assinatura é online, com pagamento seguro pelo Stripe, e você cancela quando quiser. Nenhum projeto é apagado ao trocar de plano: se passar do limite, só não dá para criar ou restaurar projetos até liberar uma vaga ou assinar um plano maior.
       </p>
     </main>
   );

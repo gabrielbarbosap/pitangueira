@@ -1,11 +1,11 @@
 import type { PaginaDoc } from "../tipos";
-import { Aviso, Btn, H3, Lista, P, Tabela } from "../ui";
+import { Aviso, Btn, H3, Lista, P, Passos, Tabela } from "../ui";
 
 export const planos: PaginaDoc = {
   slug: "planos-e-assinatura",
   grupo: "Recursos gerais",
   titulo: "Planos e assinatura",
-  resumo: "Broto, Safra e Pomar: o que cada plano inclui, o teste grátis de 5 dias, os limites, os recibos e o cancelamento.",
+  resumo: "Broto, Safra e Pomar: o que cada plano inclui, o teste grátis de 5 dias, os limites, como assinar (mensal ou anual), os recibos e o cancelamento.",
   secoes: [
     {
       id: "planos",
@@ -73,13 +73,34 @@ export const planos: PaginaDoc = {
       ),
     },
     {
+      id: "assinar",
+      titulo: "Como assinar",
+      papel: "arquiteto",
+      corpo: (
+        <>
+          <P>
+            A assinatura é recorrente e processada pela <strong>Stripe</strong>. Você escolhe entre <strong>mensal</strong> e <strong>anual</strong> — no anual você <strong>paga 10 meses</strong> (2 meses de desconto).
+          </P>
+          <Passos>
+            <li>Na página <Btn>Planos</Btn>, use o botão <Btn>Mensal</Btn> ou <Btn>Anual · 2 meses grátis</Btn> para ver os valores.</li>
+            <li>Clique em <Btn>Assinar</Btn> no plano escolhido.</li>
+            <li>Preencha o cartão no <strong>formulário seguro</strong> da Stripe, que abre na própria página.</li>
+            <li>Pronto: você volta para a Pitangueira e o plano aparece em <Btn>Minha conta</Btn> em instantes.</li>
+          </Passos>
+          <Aviso tipo="nota" titulo="Pagamento seguro">
+            Os dados do cartão são digitados direto no formulário da Stripe; a Pitangueira não vê nem guarda o número do cartão.
+          </Aviso>
+        </>
+      ),
+    },
+    {
       id: "recibos",
-      titulo: "Pagamento, recibos e cancelamento",
+      titulo: "Gerenciar, recibos e cancelamento",
       papel: "arquiteto",
       corpo: (
         <>
           <Lista>
-            <li>A assinatura é recorrente (mensal ou anual) e processada pela Stripe. A assinatura online abre em breve.</li>
+            <li><strong>Gerenciar a assinatura:</strong> em <Btn>Minha conta</Btn> › <Btn>Gerenciar assinatura</Btn> abre o portal da Stripe para <strong>trocar de plano, mudar o cartão ou cancelar</strong>.</li>
             <li><strong>Recibos:</strong> em <Btn>Minha conta</Btn> › <Btn>Recibos de pagamento</Btn> aparece cada pagamento, com o botão <Btn>Abrir recibo</Btn>. Por enquanto <strong>não emitimos nota fiscal</strong>.</li>
             <li><strong>Cancelamento em até 7 dias com reembolso integral</strong> depois de contratar. Passado esse prazo, o acesso segue até o fim do período pago.</li>
             <li>Se um pagamento falhar, há um prazo de carência; depois a conta volta ao Broto, sem apagar nada.</li>
