@@ -8,6 +8,13 @@ import { emReais, PRECO_MENSAL, precoAnualPorMes, temPreco } from "@/lib/precos"
 export const metadata: Metadata = {
   title: "Largue a planilha da obra — Pitangueira",
   description: "Orçamento, andamento e cobrança num só lugar — e o cliente acompanha a obra por um código. Teste grátis por 5 dias.",
+  alternates: { canonical: "/campanha" },
+  openGraph: {
+    type: "website",
+    url: "/campanha",
+    title: "Largue a planilha da obra — Pitangueira",
+    description: "Gestão de obras para arquitetos e engenheiros. Teste grátis por 5 dias.",
+  },
 };
 
 /** Landing enxuta para tráfego pago: uma promessa, prova rápida, preços e um único caminho — começar o teste. */

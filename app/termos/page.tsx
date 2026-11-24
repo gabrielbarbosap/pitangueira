@@ -8,6 +8,7 @@ import { PLANOS, TESTE_DIAS } from "@/lib/planos";
 export const metadata: Metadata = {
   title: "Termos de uso — Pitangueira",
   description: "As regras de uso da Pitangueira: planos, pagamento, cancelamento com reembolso em 7 dias, dados e responsabilidades.",
+  alternates: { canonical: "/termos" },
 };
 
 function Secao({ n, titulo, children }: { n: number; titulo: string; children: ReactNode }) {

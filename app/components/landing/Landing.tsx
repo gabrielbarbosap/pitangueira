@@ -6,6 +6,7 @@ import { classeBotao } from "../ui/Botao";
 import { Logo, LogoMark } from "../Logo";
 import { LoginScreen } from "../LoginScreen";
 import { BarraComecar, MenuMovel } from "./NavegacaoMovel";
+import { PERGUNTAS } from "./perguntas";
 
 /* ───────────── pequenos blocos ───────────── */
 
@@ -159,15 +160,6 @@ const COMPARA: { tema: string; antes: string; agora: string }[] = [
   { tema: "Cliente", antes: "Pergunta no WhatsApp o tempo todo", agora: "Acompanha sozinho pela linha do tempo" },
   { tema: "Cobrança", antes: "Mensagem improvisada", agora: "PDF profissional com PIX e itens" },
   { tema: "Histórico", antes: "Perdido no papel e nas conversas", agora: "Tudo registrado, com data e autor" },
-];
-
-const PERGUNTAS: { p: string; r: string }[] = [
-  { p: "Preciso saber usar programa complicado?", r: "Não. Se você usa planilha, aprende em uma tarde. Dá para colar a planilha que já tem e começar a partir dela." },
-  { p: "Meu cliente precisa criar conta?", r: "Não. Ele entra só com o código do projeto e o próprio nome. Tudo o que ele fizer fica identificado na linha do tempo, com nome e horário." },
-  { p: "As mensagens saem sozinhas pelo WhatsApp?", r: "Nunca. O sistema monta a mensagem e abre o WhatsApp com o texto pronto. Você revisa e aperta enviar." },
-  { p: "Funciona no celular?", r: "Sim. O sistema foi pensado para tela pequena, para usar na obra, na visita e no carro." },
-  { p: "Meus dados e os do meu cliente ficam seguros?", r: "Cada projeto é isolado. Só você e as pessoas que você autoriza acessam os dados dele, e o cliente enxerga apenas o projeto dele." },
-  { p: "Serve para obra pequena?", r: "Foi feito justamente para quem toca reformas e obras de pequeno e médio porte, sem ter de contratar um sistema pesado de construtora." },
 ];
 
 /* ───────────── página ───────────── */

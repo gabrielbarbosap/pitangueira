@@ -1,5 +1,10 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { paginas } from "./paginas";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/docs" },
+};
 
 export default function DocsHome() {
   const grupos = [...new Set(paginas.map((p) => p.grupo))];

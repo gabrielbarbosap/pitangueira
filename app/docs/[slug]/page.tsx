@@ -12,7 +12,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const p = paginas.find((x) => x.slug === slug);
-  return p ? { title: `${p.titulo} — Documentação Pitangueira`, description: p.resumo } : {};
+  return p ? { title: `${p.titulo} — Documentação Pitangueira`, description: p.resumo, alternates: { canonical: `/docs/${slug}` } } : {};
 }
 
 export default function Page({ params }: { params: Promise<{ slug: string }> }) {
