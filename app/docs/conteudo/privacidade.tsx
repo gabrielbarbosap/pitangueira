@@ -5,7 +5,7 @@ export const privacidade: PaginaDoc = {
   slug: "privacidade-e-tutorial",
   grupo: "Recursos gerais",
   titulo: "Privacidade e tutorial",
-  resumo: "O olhinho que esconde os valores em dinheiro e o tutorial guiado da primeira visita.",
+  resumo: "O olhinho que esconde os valores em dinheiro, o aviso de cookies e o tutorial guiado da primeira visita.",
   secoes: [
     {
       id: "olhinho",
@@ -30,6 +30,28 @@ export const privacidade: PaginaDoc = {
               ["Os campos de edição (ex.: valor no formulário de item)", "Você precisa ver o que está digitando."],
             ]}
           />
+        </>
+      ),
+    },
+    {
+      id: "cookies",
+      titulo: "Cookies e análise de uso",
+      papel: "todos",
+      corpo: (
+        <>
+          <P>
+            Na primeira visita, um aviso no rodapé pergunta se você aceita os cookies de análise e divulgação. É você quem decide, e a escolha fica guardada no aparelho (em outro aparelho, você escolhe de novo).
+          </P>
+          <Tabela
+            colunas={["Botão", "O que acontece"]}
+            linhas={[
+              [<Btn key="1">Aceitar</Btn>, "Liga o Google Analytics e o Pixel da Meta, que ajudam a entender o uso do site e a medir a divulgação."],
+              [<Btn key="2">Recusar</Btn>, "Mantém só os cookies essenciais. Nenhuma ferramenta de terceiros é carregada."],
+            ]}
+          />
+          <Aviso tipo="nota">
+            Os cookies essenciais — os que fazem o login e as suas preferências (como o olhinho) funcionarem — são sempre usados, porque sem eles o app não funciona. A medição de uso interna nunca guarda nomes, e-mails nem valores em dinheiro.
+          </Aviso>
         </>
       ),
     },

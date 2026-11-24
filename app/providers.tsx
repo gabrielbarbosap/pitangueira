@@ -9,11 +9,18 @@ import { PrivacidadeProvider } from "@/lib/privacidade";
 import { ConfirmProvider } from "./components/ConfirmProvider";
 import { MuroAssinatura } from "./components/MuroAssinatura";
 import { Telemetria } from "./components/Telemetria";
+import { Analytics } from "./components/Analytics";
+import { Consentimento } from "./components/Consentimento";
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
     <AuthProvider>
       <Telemetria />
+      {/* usePathname é dinâmico: o Suspense deixa o prerender seguir e o Analytics decide no cliente. */}
+      <Suspense fallback={null}>
+        <Analytics />
+      </Suspense>
+      <Consentimento />
       <ObrasProvider>
         <PlanoProvider>
           <ArquitetoProvider>
