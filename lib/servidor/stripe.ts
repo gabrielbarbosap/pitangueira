@@ -2,7 +2,7 @@ import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { ErroServidor } from "./firebaseAdmin";
 import type { Ciclo } from "../precos";
-import type { PlanoId } from "../planos";
+import { TESTE_DIAS, type PlanoId } from "../planos";
 
 /**
  * Acesso ao Stripe SÓ NO SERVIDOR e SEM DEPENDÊNCIAS (mesmo estilo do `firebaseAdmin.ts`): fala com a REST API do Stripe
@@ -110,7 +110,7 @@ export async function criarSessaoCheckout(d: DadosCheckout): Promise<{ clientSec
     submit_type: "auto",
     saved_payment_method_options: { payment_method_save: "enabled" },
     integration_identifier: "custom_embedded_web_0001",
-    subscription_data: { metadata: { uid: d.uid, plano: d.plano, ciclo: d.ciclo } },
+    subscription_data: { trial_period_days: TESTE_DIAS, metadata: { uid: d.uid, plano: d.plano, ciclo: d.ciclo } },
     metadata: { uid: d.uid, plano: d.plano, ciclo: d.ciclo },
   };
   if (d.customerId) params.customer = d.customerId;

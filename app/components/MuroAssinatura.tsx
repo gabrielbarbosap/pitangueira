@@ -6,6 +6,7 @@ import { useEffect, type ReactNode } from "react";
 import { useAuth } from "@/lib/auth";
 import { track } from "@/lib/analytics";
 import { usePlano } from "@/lib/plano";
+import { TESTE_DIAS } from "@/lib/planos";
 import { Logo } from "./Logo";
 import { classeBotao } from "./ui/Botao";
 
@@ -42,9 +43,9 @@ function Paywall() {
       <main className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center px-4 py-10">
         <section className="prancha p-6 text-center sm:p-8">
           <p className="rotulo-tec text-pitanga">Assinatura necessária</p>
-          <h1 className="mt-1 text-2xl font-semibold text-ink">Seu teste grátis terminou</h1>
+          <h1 className="mt-1 text-2xl font-semibold text-ink">Assine para usar a Pitangueira</h1>
           <p className="mx-auto mt-3 max-w-md text-[15px] leading-relaxed text-ink/70">
-            Para continuar usando a Pitangueira, escolha um plano. <strong>Nada foi apagado</strong>: seus projetos, orçamentos e documentos voltam assim que você assinar.
+            Escolha um plano para liberar o app. Você começa com <strong>{TESTE_DIAS} dias grátis</strong> — o cartão fica cadastrado e a cobrança só começa depois; cancele quando quiser. <strong>Nada é apagado</strong>: seus projetos voltam assim que você assinar.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link href="/planos" onClick={() => track("upgrade_clicado", { origem: "muro_assinatura" })} className={classeBotao("primario")}>

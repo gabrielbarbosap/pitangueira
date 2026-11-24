@@ -37,7 +37,7 @@ export function PlanosTela() {
           <p className="rotulo-tec mt-6 text-white/85">Planos</p>
           <h1 className="mt-1 max-w-2xl text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">Escolha o plano do tamanho da sua operação</h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white">
-            Todo plano tem o orçamento completo e o acesso do cliente por código, sem limite de clientes. Comece com {TESTE_DIAS} dias de teste grátis do plano Safra, sem precisar de cartão.
+            Todo plano tem o orçamento completo e o acesso do cliente por código, sem limite de clientes. Comece com {TESTE_DIAS} dias grátis no plano que escolher — a cobrança só começa depois e você cancela quando quiser.
           </p>
         </div>
       </header>

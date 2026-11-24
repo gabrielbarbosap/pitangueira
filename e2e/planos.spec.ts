@@ -23,9 +23,9 @@ test.describe("regras dos planos (sem navegador)", () => {
     for (const r of Object.keys(MOTIVO_RECURSO)) expect(MOTIVO_RECURSO[r as keyof typeof MOTIVO_RECURSO].texto.length).toBeGreaterThan(20);
   });
 
-  test("teste de 5 dias na Safra, depois Broto; assinatura, cortesia e atraso", () => {
-    expect(planoEfetivo(null, agora, agora + 1000)).toMatchObject({ plano: "safra", origem: "teste", diasDeTeste: 5 });
-    expect(planoEfetivo(null, agora, agora + 4 * DIA + 1000)).toMatchObject({ plano: "safra", origem: "teste", diasDeTeste: 1 });
+  test("teste (trialing) com cartão, sem assinatura, assinatura, cortesia e atraso", () => {
+    expect(planoEfetivo({ plano: "safra", status: "ativa", emTeste: true, ate: agora + 5 * DIA }, null, agora)).toMatchObject({ plano: "safra", origem: "teste", diasDeTeste: 5 });
+    expect(planoEfetivo({ plano: "safra", status: "ativa", emTeste: true, ate: agora + DIA }, null, agora)).toMatchObject({ plano: "safra", origem: "teste", diasDeTeste: 1 });
     expect(planoEfetivo(null, agora, agora + 5 * DIA)).toMatchObject({ plano: "broto", origem: "sem-assinatura", semAcesso: true });
     expect(planoEfetivo({ plano: "pomar", status: "cortesia" }, agora - 99 * DIA, agora)).toMatchObject({ plano: "pomar", origem: "cortesia" });
     expect(planoEfetivo({ plano: "safra", status: "ativa", ate: agora + DIA }, agora - 99 * DIA, agora)).toMatchObject({ plano: "safra", origem: "assinatura" });
@@ -68,7 +68,7 @@ test.describe("planos no app", () => {
   test("conta nova: teste grátis da Safra, com os dias que faltam", async ({ page }) => {
     await entrarNoPlano(page, "teste");
     await expect(page.getByRole("note", { name: "Seu plano" })).toContainText("Teste grátis do plano Safra: faltam 5 dias");
-    await expect(page.getByRole("note", { name: "Seu plano" })).toContainText("é preciso assinar um plano para continuar");
+    await expect(page.getByRole("note", { name: "Seu plano" })).toContainText("a cobrança começa automaticamente");
   });
 
   test("Broto: 2 projetos em andamento; o terceiro é bloqueado com o motivo; arquivar libera; restaurar também respeita", async ({ page }) => {

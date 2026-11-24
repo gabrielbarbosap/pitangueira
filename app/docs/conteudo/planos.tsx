@@ -39,7 +39,7 @@ export const planos: PaginaDoc = {
       corpo: (
         <>
           <P>
-            Toda conta nova tem <strong>5 dias com os recursos da Safra</strong>, sem cobrança e sem cartão. Uma faixa na home mostra quantos dias faltam. Quando o teste acaba, é preciso <strong>assinar um plano para continuar</strong> — não há plano grátis. <strong>Nada é apagado</strong>: seus projetos voltam assim que você assinar.
+            Ao assinar, você começa com <strong>5 dias grátis</strong> do plano escolhido: o cartão fica cadastrado e a <strong>cobrança só começa ao fim do teste</strong> — se cancelar antes, não paga nada. Não há plano grátis: sem assinatura em vigor, o acesso fica suspenso (nada é apagado).
           </P>
         </>
       ),

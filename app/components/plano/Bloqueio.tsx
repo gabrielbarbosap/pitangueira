@@ -72,7 +72,7 @@ export function FaixaPlano() {
   if (efetivo.origem === "teste") {
     texto = (
       <>
-        <strong>Teste grátis do plano Safra: {efetivo.diasDeTeste === 1 ? "falta 1 dia" : `faltam ${efetivo.diasDeTeste} dias`}.</strong> Depois dele, é preciso assinar um plano para continuar usando.
+        <strong>Teste grátis do plano {def.nome}: {efetivo.diasDeTeste === 1 ? "falta 1 dia" : `faltam ${efetivo.diasDeTeste} dias`}.</strong> Depois disso, a cobrança começa automaticamente no cartão cadastrado — cancele antes, em Minha conta, se não quiser continuar.
       </>
     );
   } else if (efetivo.origem === "cortesia") {

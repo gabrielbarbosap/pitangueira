@@ -6,7 +6,7 @@ import { useAgora } from "@/app/components/acompanhar/useAgora";
 import { auth, db } from "./firebase";
 import { useAuth } from "./auth";
 import { useObras } from "./obras";
-import { bloqueioDeLimite, planoEfetivo, PLANOS, type Assinatura, type Bloqueio, type DefPlano, type LimiteDe, type PlanoEfetivo, type Recurso } from "./planos";
+import { bloqueioDeLimite, planoEfetivo, PLANOS, TESTE_DIAS, type Assinatura, type Bloqueio, type DefPlano, type LimiteDe, type PlanoEfetivo, type Recurso } from "./planos";
 
 interface PlanoContextValue {
   /** O plano que vale agora (teste, assinatura, cortesia ou sem assinatura). */
@@ -55,7 +55,7 @@ function primeiraVisitaDemo(uid: string): number {
 
 /**
  * Qual plano o arquiteto tem e o que ele permite. A assinatura vem de `assinaturas/{uid}` (só o servidor grava; aqui só
- * se lê). Sem ela, vale o teste grátis de 5 dias e depois o Broto. Clientes (acesso por código) não têm plano: o que
+ * se lê). Sem assinatura em vigor, não há acesso (muro de assinatura). Clientes (acesso por código) não têm plano: o que
  * limita é o plano do arquiteto, que cria os projetos.
  */
 export function PlanoProvider({ children }: { children: ReactNode }) {
@@ -81,7 +81,9 @@ export function PlanoProvider({ children }: { children: ReactNode }) {
     if (!uid) return null;
     if (nuvem) return daNuvem?.uid === uid ? daNuvem.assinatura : null;
     void versaoDemo; // recalcula quando o simulador troca o plano
-    return lerJson<Assinatura>(lsAssinatura(uid));
+    // Demo (sem Firebase, sem Stripe): para a vitrine e os testes, dá um teste grátis padrão (Safra) quando não há nada
+    // guardado. O simulador em Minha conta sobrescreve isto. Em produção, quem não assina não entra (muro de assinatura).
+    return lerJson<Assinatura>(lsAssinatura(uid)) ?? { plano: "safra", status: "ativa", emTeste: true, ate: primeiraVisitaDemo(uid) + TESTE_DIAS * 86_400_000 };
   }, [uid, nuvem, daNuvem, versaoDemo]);
 
   // Quando a conta nasceu: no Firebase vem da própria conta; no demo, do primeiro acesso neste navegador.

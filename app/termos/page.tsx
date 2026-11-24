@@ -75,7 +75,7 @@ export default function TermosPage() {
             <strong>Projeto em andamento</strong> é o que não está arquivado. Arquivar libera a vaga, e restaurar um projeto arquivado ocupa uma vaga. O acesso do cliente aos projetos não tem limite em nenhum plano.
           </p>
           <p>
-            <strong>Teste grátis:</strong> toda conta nova tem {TESTE_DIAS} dias com os recursos do plano {safra.nome}, sem cobrança e sem cartão. Terminado o teste, a conta passa a valer como plano {broto.nome} até você assinar um plano.
+            <strong>Teste grátis:</strong> ao assinar, você começa com {TESTE_DIAS} dias grátis do plano escolhido; o cartão fica cadastrado e a primeira cobrança só acontece ao fim do teste. Cancelando antes do fim do teste, nada é cobrado. Não há plano gratuito: sem uma assinatura em vigor, o acesso ao aplicativo fica suspenso (seus dados não são apagados).
           </p>
           <p>
             <strong>Limites:</strong> quando um limite é atingido, o aplicativo bloqueia a ação (por exemplo, criar um novo projeto) e explica o motivo e o que fazer. Nenhum dado é apagado por causa de limite, de troca de plano ou de cancelamento.
@@ -95,7 +95,7 @@ export default function TermosPage() {
             <li>Os pagamentos são processados pela Stripe, operadora de pagamentos. Não guardamos os dados completos do seu cartão.</li>
             <li>O preço e a periodicidade aparecem na página de planos antes da contratação. Reajustes são avisados com pelo menos 30 dias de antecedência e valem a partir da renovação seguinte.</li>
             <li>Cada pagamento gera um <strong>recibo</strong>, disponível em <em>Minha conta</em>, na seção de recibos. Por enquanto <strong>não emitimos nota fiscal</strong>; avisaremos quando passarmos a emitir.</li>
-            <li>Se um pagamento falhar, tentamos cobrar de novo e avisamos você. Persistindo a falha após um prazo de carência, a conta volta ao plano {broto.nome} (sem apagar nada) até o pagamento ser regularizado.</li>
+            <li>Se um pagamento falhar, tentamos cobrar de novo e avisamos você. Persistindo a falha após um prazo de carência, o acesso ao aplicativo fica suspenso (sem apagar nada) até o pagamento ser regularizado.</li>
           </Lista>
         </Secao>
 

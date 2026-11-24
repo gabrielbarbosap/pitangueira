@@ -70,6 +70,7 @@ async function gravarAssinatura(uid: string | undefined, s: AssinaturaStripe, ap
   else if (s.status === "active" || s.status === "trialing") status = "ativa";
   else if (s.status === "past_due" || s.status === "unpaid") status = "atrasada";
   else status = "cancelada"; // incomplete, incomplete_expired, paused: sem acesso
+  const emTeste = !apagada && s.status === "trialing";
 
   const doc: Record<string, string | number | boolean> = {
     plano,
@@ -80,6 +81,7 @@ async function gravarAssinatura(uid: string | undefined, s: AssinaturaStripe, ap
     stripeSubscriptionId: s.id,
   };
   if (status === "atrasada") doc.carenciaAte = fimMs;
+  if (emTeste) doc.emTeste = true;
   if (status === "cancelada" && !apagada && s.cancelarNoFim) doc.aviso = "Sua assinatura foi cancelada e vale até o fim do período já pago.";
   await gravarDocumento(`assinaturas/${uid}`, doc);
 }

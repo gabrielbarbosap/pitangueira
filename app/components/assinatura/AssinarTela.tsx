@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { auth } from "@/lib/firebase";
 import { useAuth } from "@/lib/auth";
 import { track } from "@/lib/analytics";
-import { ORDEM_PLANOS, PLANOS, type PlanoId } from "@/lib/planos";
+import { ORDEM_PLANOS, PLANOS, TESTE_DIAS, type PlanoId } from "@/lib/planos";
 import { emReais, precoAnualTotal, precoPorMes, temPreco, type Ciclo } from "@/lib/precos";
 import { IconeVoltar } from "../Icones";
 import { Logo } from "../Logo";
@@ -170,9 +170,8 @@ export function AssinarTela() {
           </h1>
           {planoOk && def && (
             <p className="mt-2 text-sm text-white">
-              {ciclo === "anual" ? "Plano anual" : "Plano mensal"} ·{" "}
-              <strong>{emReais(precoPorMes(planoOk, ciclo))}</strong>/mês
-              {ciclo === "anual" && <> · {emReais(precoAnualTotal(planoOk))} por ano (2 meses grátis)</>}
+              <strong>{TESTE_DIAS} dias grátis</strong> · depois{" "}
+              {ciclo === "anual" ? <>{emReais(precoAnualTotal(planoOk))} por ano (2 meses grátis)</> : <>{emReais(precoPorMes(planoOk, ciclo))}/mês</>}
             </p>
           )}
         </div>

@@ -63,7 +63,7 @@ export function PlanoConta() {
         <p className="mt-1 text-sm leading-snug text-ink/60">{def.frase}.</p>
         {efetivo.origem === "teste" && (
           <p className="mt-2 text-sm text-ink/75">
-            Teste grátis do plano Safra: <strong>{efetivo.diasDeTeste === 1 ? "falta 1 dia" : `faltam ${efetivo.diasDeTeste} dias`}</strong> (são {TESTE_DIAS} no total). Depois dele, é preciso assinar um plano para continuar.
+            Teste grátis do plano {def.nome}: <strong>{efetivo.diasDeTeste === 1 ? "falta 1 dia" : `faltam ${efetivo.diasDeTeste} dias`}</strong>. Depois disso, a cobrança começa automaticamente no cartão cadastrado; cancele antes em “Gerenciar assinatura” se não quiser continuar.
           </p>
         )}
         {efetivo.origem === "cortesia" && (

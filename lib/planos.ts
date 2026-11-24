@@ -118,7 +118,9 @@ export interface Assinatura {
    * (vale até `carenciaAte`) · cancelada: vale até o fim do período já pago (`ate`).
    */
   status: "ativa" | "cortesia" | "atrasada" | "cancelada";
-  /** Fim do período (ms). Vazio = sem data de fim. */
+  /** Em período de teste do Stripe (cartão já cadastrado, ainda sem cobrança). Vale junto com status "ativa". */
+  emTeste?: boolean;
+  /** Fim do período (ms). Vazio = sem data de fim. Durante o teste, é quando ele acaba (e começa a cobrança). */
   ate?: number;
   carenciaAte?: number;
   /** Texto mostrado ao usuário (ex.: aviso de que o plano de cortesia vai mudar). */
@@ -145,22 +147,24 @@ export interface PlanoEfetivo {
 }
 
 /**
- * Qual plano vale agora. Com assinatura em vigor, o da assinatura. Sem assinatura, os primeiros 5 dias são o teste da
- * Safra; depois disso, vale o Broto (com os limites dele) até a pessoa assinar. `criadoEm` é quando a conta nasceu.
+ * Qual plano vale agora. Tudo vem da assinatura (`assinaturas/{uid}`): NÃO há mais teste grátis sem cartão. Sem assinatura
+ * em vigor, não há acesso (`semAcesso`) — é preciso assinar. O teste grátis de 5 dias acontece DENTRO da assinatura do
+ * Stripe (status "trialing" → `emTeste`): o cartão já está cadastrado e a cobrança começa ao fim do teste. `criadoEm` não
+ * é mais usado (mantido no parâmetro só para não mexer em quem chama).
  */
-export function planoEfetivo(assinatura: Assinatura | null, criadoEm: number | null, agora: number): PlanoEfetivo {
-  if (assinatura) {
-    const emVigor = assinatura.ate === undefined || assinatura.ate > agora;
-    if (assinatura.status === "cortesia" && emVigor) return { plano: assinatura.plano, origem: "cortesia", aviso: assinatura.aviso };
-    if (assinatura.status === "ativa" && emVigor) return { plano: assinatura.plano, origem: "assinatura", aviso: assinatura.aviso };
-    if (assinatura.status === "atrasada" && (assinatura.carenciaAte ?? 0) > agora) return { plano: assinatura.plano, origem: "assinatura", atrasada: true, aviso: assinatura.aviso };
-    if (assinatura.status === "cancelada" && emVigor && assinatura.ate !== undefined) return { plano: assinatura.plano, origem: "assinatura", aviso: assinatura.aviso };
-    return { plano: "broto", origem: "sem-assinatura", semAcesso: true };
+export function planoEfetivo(assinatura: Assinatura | null, _criadoEm: number | null, agora: number): PlanoEfetivo {
+  if (!assinatura) return { plano: "broto", origem: "sem-assinatura", semAcesso: true };
+  const emVigor = assinatura.ate === undefined || assinatura.ate > agora;
+  if (assinatura.status === "cortesia" && emVigor) return { plano: assinatura.plano, origem: "cortesia", aviso: assinatura.aviso };
+  if (assinatura.status === "ativa" && emVigor) {
+    if (assinatura.emTeste) {
+      const testeAte = assinatura.ate;
+      return { plano: assinatura.plano, origem: "teste", aviso: assinatura.aviso, ...(testeAte !== undefined ? { testeAte, diasDeTeste: Math.max(1, Math.ceil((testeAte - agora) / DIA)) } : {}) };
+    }
+    return { plano: assinatura.plano, origem: "assinatura", aviso: assinatura.aviso };
   }
-  if (criadoEm !== null) {
-    const fim = criadoEm + TESTE_DIAS * DIA;
-    if (agora < fim) return { plano: PLANO_DO_TESTE, origem: "teste", testeAte: fim, diasDeTeste: Math.max(1, Math.ceil((fim - agora) / DIA)) };
-  }
+  if (assinatura.status === "atrasada" && (assinatura.carenciaAte ?? 0) > agora) return { plano: assinatura.plano, origem: "assinatura", atrasada: true, aviso: assinatura.aviso };
+  if (assinatura.status === "cancelada" && emVigor && assinatura.ate !== undefined) return { plano: assinatura.plano, origem: "assinatura", aviso: assinatura.aviso };
   return { plano: "broto", origem: "sem-assinatura", semAcesso: true };
 }
 

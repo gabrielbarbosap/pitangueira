@@ -489,7 +489,7 @@ export function Landing() {
               <Rotulo>Planos e preços</Rotulo>
               <Titulo>Teste 5 dias grátis. Depois, um preço que cabe no escritório.</Titulo>
               <p className="mt-4 text-lg leading-relaxed text-ink/70">
-                Experimente tudo por 5 dias, sem cartão. Para continuar, escolha um plano — mensal ou anual (com 2 meses grátis). Cancele quando quiser.
+                Comece com 5 dias grátis no plano que escolher. O cartão fica cadastrado e a cobrança só começa depois — mensal ou anual (com 2 meses grátis). Cancele quando quiser.
               </p>
             </div>
             <div className="mt-10 grid gap-4 lg:grid-cols-3">
