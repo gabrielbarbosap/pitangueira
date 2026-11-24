@@ -51,7 +51,7 @@ export default function TermosPage() {
         <Secao n={1} titulo="Quem somos e o que oferecemos">
           <p>
             A {EMPRESA.nome}
-            {EMPRESA.razaoSocial ? ` (${EMPRESA.razaoSocial}${EMPRESA.cnpj ? `, CNPJ ${EMPRESA.cnpj}` : ""})` : ""} oferece um aplicativo online para profissionais da construção (arquitetos, engenheiros, mestres de obra e equipes) organizarem orçamento, andamento, cobranças e a comunicação com seus clientes. Chamamos de <strong>profissional</strong> quem cria a conta e os projetos, e de <strong>cliente</strong> a pessoa que o profissional convida, por link e código, para acompanhar um projeto.
+            {EMPRESA.razaoSocial ? ` (${EMPRESA.razaoSocial}${EMPRESA.cnpj ? `, CNPJ ${EMPRESA.cnpj}` : EMPRESA.cpf ? `, CPF ${EMPRESA.cpf}` : ""})` : ""} oferece um aplicativo online para profissionais da construção (arquitetos, engenheiros, mestres de obra e equipes) organizarem orçamento, andamento, cobranças e a comunicação com seus clientes. Chamamos de <strong>profissional</strong> quem cria a conta e os projetos, e de <strong>cliente</strong> a pessoa que o profissional convida, por link e código, para acompanhar um projeto.
           </p>
           <p>O serviço é um software por assinatura, entregue pela internet. Não somos parte do contrato entre o profissional e o cliente dele.</p>
         </Secao>
