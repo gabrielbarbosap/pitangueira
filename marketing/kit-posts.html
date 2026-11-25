@@ -1,0 +1,173 @@
+<title>Kit de posts — Pitangueira</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+  /* Layout: página escura/clara neutra como "mesa de trabalho"; os slides são peças de marca em 1:1, cor fixa nos dois temas. */
+  :root {
+    --bg: #f6f4ef; --fg: #241f1b; --muted: #6b635b; --card: #ffffff; --linha: #e4ded4;
+    /* marca Pitangueira (fixa nos dois temas — são as peças) */
+    --pitanga: #d23a1f; --pitanga-escuro: #a82e18; --papel: #f3f1ec; --tinta: #2b2320; --branco: #ffffff; --creme: #fbf7f0;
+    --fdisplay: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+    --ftexto: "Inter", ui-sans-serif, system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    --bg: #15120f; --fg: #f0ebe4; --muted: #a79e93; --card: #211c18; --linha: #342c25; color-scheme: dark;
+  } }
+  :root[data-theme="dark"] {
+    --bg: #15120f; --fg: #f0ebe4; --muted: #a79e93; --card: #211c18; --linha: #342c25; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--fg); font-family: var(--ftexto); line-height: 1.5; margin: 0; }
+  .wrap { max-width: 980px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 2.5rem; }
+  header .eyebrow { font-family: var(--fdisplay); text-transform: uppercase; letter-spacing: .14em; font-size: .72rem; color: var(--pitanga); font-weight: 600; }
+  header h1 { font-family: var(--fdisplay); font-weight: 700; font-size: clamp(1.7rem, 5vw, 2.6rem); line-height: 1.05; text-wrap: balance; margin: .4rem 0 .6rem; }
+  header p { color: var(--muted); max-width: 60ch; margin: 0; }
+  .como { margin-top: 1rem; font-size: .9rem; color: var(--muted); background: var(--card); border: 1px solid var(--linha); border-radius: 14px; padding: .8rem 1rem; }
+  .como b { color: var(--fg); }
+
+  .carrossel { margin-top: 3rem; }
+  .carrossel > .tema { display: flex; align-items: baseline; gap: .6rem; flex-wrap: wrap; margin-bottom: .9rem; }
+  .carrossel .tema .n { font-family: var(--fdisplay); font-weight: 700; color: var(--pitanga); font-size: 1.1rem; }
+  .carrossel .tema h2 { font-family: var(--fdisplay); font-weight: 600; font-size: 1.25rem; margin: 0; }
+  .carrossel .tema .cnt { color: var(--muted); font-size: .82rem; }
+
+  .trilha { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 12px; -webkit-overflow-scrolling: touch; }
+  .trilha::-webkit-scrollbar { height: 8px; }
+  .trilha::-webkit-scrollbar-thumb { background: var(--linha); border-radius: 8px; }
+
+  .slide { scroll-snap-align: start; flex: 0 0 auto; width: min(80vw, 360px); aspect-ratio: 1 / 1; border-radius: 18px; overflow: hidden; position: relative; display: flex; flex-direction: column; padding: 26px; border: 1px solid rgba(0,0,0,.06); }
+  .slide .topo { display: flex; justify-content: space-between; align-items: center; font-family: var(--fdisplay); font-size: .66rem; letter-spacing: .14em; text-transform: uppercase; font-weight: 600; opacity: .85; }
+  .slide .corpo { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: .5rem; }
+  .slide .num { font-family: var(--fdisplay); font-weight: 700; font-size: 2.6rem; line-height: 1; }
+  .slide h3 { font-family: var(--fdisplay); font-weight: 700; font-size: clamp(1.3rem, 4.6vw, 1.7rem); line-height: 1.08; margin: 0; text-wrap: balance; }
+  .slide p { margin: 0; font-size: .98rem; line-height: 1.4; }
+  .slide .pe { font-family: var(--fdisplay); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; font-weight: 600; opacity: .85; }
+  .slide .marca { display: inline-flex; align-items: center; gap: 6px; }
+  .slide .marca svg { width: 16px; height: 16px; }
+
+  /* variações */
+  .capa { background: var(--pitanga); color: var(--branco); }
+  .capa h3 { font-size: clamp(1.5rem, 5.4vw, 2rem); }
+  .conteudo { background: var(--papel); color: var(--tinta); }
+  .conteudo .num { color: var(--pitanga); }
+  .cta { background: var(--tinta); color: var(--branco); }
+  .cta .badge { align-self: flex-start; background: var(--pitanga); color: #fff; font-family: var(--fdisplay); font-weight: 600; font-size: .78rem; padding: .3rem .7rem; border-radius: 999px; letter-spacing: .02em; }
+
+  .legenda { margin-top: 14px; background: var(--card); border: 1px solid var(--linha); border-radius: 14px; padding: 1rem 1.1rem; }
+  .legenda .lbl { font-family: var(--fdisplay); text-transform: uppercase; letter-spacing: .12em; font-size: .68rem; color: var(--muted); font-weight: 600; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+  .legenda .txt { margin: .5rem 0 0; white-space: pre-wrap; font-size: .92rem; }
+  .legenda .tags { margin: .6rem 0 0; color: var(--pitanga); font-size: .86rem; font-weight: 500; }
+  .copiar { font-family: var(--ftexto); font-size: .76rem; font-weight: 600; color: var(--fg); background: transparent; border: 1px solid var(--linha); border-radius: 8px; padding: .3rem .6rem; cursor: pointer; }
+  .copiar:hover { border-color: var(--pitanga); color: var(--pitanga); }
+  .copiar:focus-visible { outline: 2px solid var(--pitanga); outline-offset: 2px; }
+
+  footer { margin-top: 3rem; color: var(--muted); font-size: .82rem; border-top: 1px solid var(--linha); padding-top: 1rem; }
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Pitangueira · Kit de divulgação</p>
+    <h1>Kit de posts para Instagram</h1>
+    <p>Quatro carrosséis prontos para publicar, na identidade da Pitangueira, com a legenda e as hashtags de cada um. Seguem os temas das 4 primeiras semanas do plano.</p>
+    <div class="como"><b>Como usar:</b> arraste cada carrossel de lado para ver os slides. Cada slide é 1:1 (quadrado) — tire um print de cada um para postar, ou mande os textos que eu exporto como imagens. Toque em <b>Copiar</b> para levar a legenda pronta.</div>
+  </header>
+  <div id="app"></div>
+  <footer>Cores e textos seguem a marca Pitangueira (laranja pitanga, papel e tinta). Quer trocar um gancho, um tema ou o tom? É só pedir. · Troque “@pitangueira.app” pelo seu @ real antes de postar.</footer>
+</div>
+
+<script>
+  const MARCA = '<span class="marca"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>pitangueira.app</span>';
+
+  const carrosseis = [
+    {
+      tema: "Largue a planilha (a dor)",
+      legenda: "Planilha de obra funciona... até a obra crescer. Se você já passou por algum desses sinais, talvez seja hora de profissionalizar.\n\nNa Pitangueira, o orçamento vira o controle vivo da obra — e o seu cliente acompanha tudo por um código, sem cadastro.\n\n✅ 5 dias grátis para testar. Link na bio.",
+      tags: "#arquitetura #engenhariacivil #gestaodeobras #reforma #obra #arquiteto #mestredeobra #construcao",
+      slides: [
+        { tipo: "capa", topo: "Pitangueira", h: "5 sinais de que sua planilha de obra já era", pe: "arraste →" },
+        { tipo: "conteudo", num: "1", h: "Três versões, nenhuma certa", p: "Uma no notebook, outra no celular, outra no e-mail. Qual vale?" },
+        { tipo: "conteudo", num: "2", h: "“Quanto já gastei?”", p: "O cliente pergunta e você abre três arquivos para responder." },
+        { tipo: "conteudo", num: "3", h: "A aprovação sumiu", p: "Ficou perdida lá no alto do grupo de WhatsApp." },
+        { tipo: "conteudo", num: "4", h: "Todo fim de mês, retrabalho", p: "Você refaz a planilha inteira para fechar o mês." },
+        { tipo: "cta", badge: "5 dias grátis", h: "Largue a planilha", p: "Experimente a Pitangueira e organize a obra num lugar só." },
+      ],
+    },
+    {
+      tema: "O cliente acompanha a obra",
+      legenda: "E se o seu cliente parasse de te perguntar “como está a obra?” a cada dois dias?\n\nNa Pitangueira ele entra com um código — sem cadastro, sem senha — e acompanha tudo numa linha do tempo, como numa rede social.\n\nMenos WhatsApp, mais obra. ✅ 5 dias grátis. Link na bio.",
+      tags: "#arquitetura #arquiteturadeinteriores #obra #reforma #cliente #gestaodeobras #designdeinteriores #arquiteto",
+      slides: [
+        { tipo: "capa", topo: "Pitangueira", h: "E se o cliente parasse de perguntar “como está a obra?”", pe: "arraste →" },
+        { tipo: "conteudo", num: "→", h: "Ele entra com um código", p: "Sem cadastro, sem senha. Só o código do projeto e o nome." },
+        { tipo: "conteudo", num: "→", h: "Vê a linha do tempo", p: "Fotos, visitas, o que foi feito e o que foi pago — dia a dia." },
+        { tipo: "conteudo", num: "→", h: "Participa sozinho", p: "Aprova visitas e vê as cobranças, sem te encher a caixa." },
+        { tipo: "cta", badge: "5 dias grátis", h: "Menos WhatsApp, mais obra", p: "Deixe o cliente acompanhar sozinho. Teste a Pitangueira." },
+      ],
+    },
+    {
+      tema: "Dinheiro em dia",
+      legenda: "Cobrar obra por mensagem improvisada cansa — e atrasa o seu dinheiro.\n\nNa Pitangueira a cobrança sai em PDF, com os seus itens, a sua marca, o vencimento e a chave PIX. E você acompanha os honorários em parcelas, com o que há a receber.\n\n✅ Receba em dia. 5 dias grátis. Link na bio.",
+      tags: "#gestaodeobras #arquiteto #engenhariacivil #financas #obra #reforma #empreiteiro #construcao",
+      slides: [
+        { tipo: "capa", topo: "Pitangueira", h: "Pare de cobrar obra por mensagem improvisada", pe: "arraste →" },
+        { tipo: "conteudo", num: "✓", h: "Cobrança em PDF", p: "Com os seus itens e a sua marca. Cara de escritório grande." },
+        { tipo: "conteudo", num: "✓", h: "PIX e vencimento no documento", p: "O cliente vê como e até quando pagar, sem dúvida." },
+        { tipo: "conteudo", num: "✓", h: "Honorários sob controle", p: "Parcelas, vencimentos e o que há a receber, num lugar só." },
+        { tipo: "cta", badge: "5 dias grátis", h: "Receba em dia", p: "Cobre com profissionalismo. Teste a Pitangueira grátis." },
+      ],
+    },
+    {
+      tema: "Várias obras, um só lugar",
+      legenda: "Uma obra ou dez — o controle pode ser o mesmo.\n\nNa Pitangueira, um painel mostra todos os projetos (no prazo e atrasados), o orçamento vivo de cada um e os PDFs com a sua marca. Cara de escritório grande, sem sistema pesado de construtora.\n\n✅ 5 dias grátis. Link na bio.",
+      tags: "#arquitetura #engenhariacivil #gestaodeobras #escritoriodearquitetura #obra #reforma #arquiteto #produtividade",
+      slides: [
+        { tipo: "capa", topo: "Pitangueira", h: "Uma obra ou dez. O controle é o mesmo.", pe: "arraste →" },
+        { tipo: "conteudo", num: "◢", h: "Painel com todas as obras", p: "Quem está no prazo, quem atrasou e o que entrega primeiro." },
+        { tipo: "conteudo", num: "◢", h: "Orçamento vivo", p: "Total, saldo e avanço de cada etapa, sempre atualizados." },
+        { tipo: "conteudo", num: "◢", h: "PDF com a sua marca", p: "Orçamento, cobrança e relatório com a cara do seu escritório." },
+        { tipo: "cta", badge: "5 dias grátis", h: "Dê à obra o controle que ela merece", p: "Teste a Pitangueira e profissionalize a sua operação." },
+      ],
+    },
+  ];
+
+  function slideHTML(s, i, total) {
+    const cls = s.tipo === "capa" ? "capa" : s.tipo === "cta" ? "cta" : "conteudo";
+    const topoDir = s.tipo === "capa" ? (s.pe || "") : (i + 1) + "/" + total;
+    const topoEsq = s.topo ? s.topo : MARCA;
+    let corpo = "";
+    if (s.tipo === "conteudo") corpo = '<div class="num">' + s.num + '</div><h3>' + s.h + '</h3><p>' + s.p + '</p>';
+    else if (s.tipo === "cta") corpo = '<span class="badge">' + s.badge + '</span><h3>' + s.h + '</h3><p>' + s.p + '</p>';
+    else corpo = '<h3>' + s.h + '</h3>';
+    const pe = s.tipo === "capa" ? '<div class="pe">' + MARCA + '</div>'
+      : s.tipo === "cta" ? '<div class="pe">' + MARCA + '</div>'
+      : '<div class="pe">' + (i + 1) + '/' + total + '</div>';
+    return '<div class="slide ' + cls + '"><div class="topo"><span>' + topoEsq + '</span><span>' + topoDir + '</span></div><div class="corpo">' + corpo + '</div>' + (s.tipo === "capa" ? pe : (s.tipo === "cta" ? '<div class="pe">' + MARCA + '</div>' : '')) + '</div>';
+  }
+
+  const app = document.getElementById("app");
+  carrosseis.forEach((c, ci) => {
+    const total = c.slides.length;
+    const sec = document.createElement("section");
+    sec.className = "carrossel";
+    const slides = c.slides.map((s, i) => slideHTML(s, i, total)).join("");
+    const legendaId = "leg" + ci;
+    const texto = c.legenda + "\n\n" + c.tags;
+    sec.innerHTML =
+      '<div class="tema"><span class="n">' + (ci + 1) + '</span><h2>' + c.tema + '</h2><span class="cnt">' + total + ' slides</span></div>' +
+      '<div class="trilha">' + slides + '</div>' +
+      '<div class="legenda"><div class="lbl"><span>Legenda + hashtags</span><button class="copiar" data-txt="' + legendaId + '">Copiar</button></div>' +
+      '<p class="txt" id="' + legendaId + '">' + c.legenda.replace(/\n/g, "<br>") + '</p>' +
+      '<p class="tags">' + c.tags + '</p></div>';
+    app.appendChild(sec);
+    const btn = sec.querySelector(".copiar");
+    btn.addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText(texto); btn.textContent = "Copiado!"; }
+      catch (e) {
+        const r = document.createRange(); r.selectNodeContents(sec.querySelector("#" + legendaId));
+        const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r); btn.textContent = "Selecionado";
+      }
+      setTimeout(() => (btn.textContent = "Copiar"), 1800);
+    });
+  });
+</script>

@@ -1,0 +1,167 @@
+<title>Anúncios — Pitangueira</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+  /* Layout: "mesa de trabalho" neutra; criativos são peças de marca em 1:1 (cor fixa nos dois temas). */
+  :root {
+    --bg:#f6f4ef; --fg:#241f1b; --muted:#6b635b; --card:#fff; --linha:#e4ded4;
+    --pitanga:#d23a1f; --pitanga-escuro:#a82e18; --papel:#f3f1ec; --tinta:#2b2320; --branco:#fff;
+    --fdisplay:"Space Grotesk",ui-sans-serif,system-ui,sans-serif;
+    --ftexto:"Inter",ui-sans-serif,system-ui,sans-serif;
+  }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#15120f; --fg:#f0ebe4; --muted:#a79e93; --card:#211c18; --linha:#342c25; color-scheme:dark; } }
+  :root[data-theme="dark"]{ --bg:#15120f; --fg:#f0ebe4; --muted:#a79e93; --card:#211c18; --linha:#342c25; color-scheme:dark; }
+  *{box-sizing:border-box;}
+  body{background:var(--bg);color:var(--fg);font-family:var(--ftexto);line-height:1.5;margin:0;}
+  .wrap{max-width:980px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:2.5rem;}
+  .eyebrow{font-family:var(--fdisplay);text-transform:uppercase;letter-spacing:.14em;font-size:.72rem;color:var(--pitanga);font-weight:600;}
+  h1{font-family:var(--fdisplay);font-weight:700;font-size:clamp(1.7rem,5vw,2.6rem);line-height:1.05;margin:.4rem 0 .6rem;text-wrap:balance;}
+  .lead{color:var(--muted);max-width:62ch;margin:0;}
+  .destino{margin-top:1rem;font-size:.9rem;background:var(--card);border:1px solid var(--linha);border-radius:14px;padding:.8rem 1rem;}
+  .destino b{color:var(--fg);}
+  .destino code{font-family:var(--fdisplay);background:var(--papel);color:var(--tinta);padding:.1rem .4rem;border-radius:6px;font-size:.85em;}
+  h2{font-family:var(--fdisplay);font-weight:700;font-size:1.4rem;margin:3rem 0 .3rem;}
+  h2 .sub{display:block;font-size:.8rem;font-weight:500;color:var(--muted);letter-spacing:0;text-transform:none;margin-top:.2rem;}
+  h3{font-family:var(--fdisplay);font-weight:600;font-size:1rem;margin:1.6rem 0 .6rem;}
+
+  .criativos{display:flex;gap:14px;overflow-x:auto;padding-bottom:12px;}
+  .criativos::-webkit-scrollbar{height:8px;} .criativos::-webkit-scrollbar-thumb{background:var(--linha);border-radius:8px;}
+  .peca{flex:0 0 auto;width:min(80vw,320px);aspect-ratio:1/1;border-radius:18px;overflow:hidden;padding:26px;display:flex;flex-direction:column;border:1px solid rgba(0,0,0,.06);}
+  .peca .topo{font-family:var(--fdisplay);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;font-weight:600;opacity:.85;display:flex;align-items:center;gap:6px;}
+  .peca .topo svg{width:15px;height:15px;}
+  .peca .mid{flex:1;display:flex;flex-direction:column;justify-content:center;gap:.5rem;}
+  .peca h4{font-family:var(--fdisplay);font-weight:700;font-size:clamp(1.4rem,5vw,1.8rem);line-height:1.08;margin:0;text-wrap:balance;}
+  .peca p{margin:0;font-size:.95rem;}
+  .peca .selo{align-self:flex-start;font-family:var(--fdisplay);font-weight:600;font-size:.74rem;padding:.28rem .66rem;border-radius:999px;}
+  .laranja{background:var(--pitanga);color:#fff;} .laranja .selo{background:#fff;color:var(--pitanga);}
+  .creme{background:var(--papel);color:var(--tinta);} .creme .selo{background:var(--pitanga);color:#fff;}
+  .escuro{background:var(--tinta);color:#fff;} .escuro .selo{background:var(--pitanga);color:#fff;}
+
+  .copybox{background:var(--card);border:1px solid var(--linha);border-radius:14px;padding:1rem 1.1rem;margin-top:.7rem;}
+  .copybox .lbl{font-family:var(--fdisplay);text-transform:uppercase;letter-spacing:.12em;font-size:.66rem;color:var(--muted);font-weight:600;display:flex;justify-content:space-between;align-items:center;gap:1rem;}
+  .copybox .txt{margin:.45rem 0 0;white-space:pre-wrap;font-size:.92rem;}
+  .campo{display:flex;gap:.5rem;align-items:baseline;font-size:.86rem;margin-top:.5rem;}
+  .campo .k{font-family:var(--fdisplay);font-size:.64rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);min-width:5.5rem;}
+  .copiar{font-family:var(--ftexto);font-size:.74rem;font-weight:600;color:var(--fg);background:transparent;border:1px solid var(--linha);border-radius:8px;padding:.28rem .6rem;cursor:pointer;}
+  .copiar:hover{border-color:var(--pitanga);color:var(--pitanga);} .copiar:focus-visible{outline:2px solid var(--pitanga);outline-offset:2px;}
+  ul.lista{margin:.4rem 0 0;padding-left:1.1rem;} ul.lista li{margin:.25rem 0;font-size:.92rem;}
+  .grid2{display:grid;gap:14px;} @media(min-width:640px){.grid2{grid-template-columns:1fr 1fr;}}
+  .chip{display:inline-block;background:var(--papel);color:var(--tinta);border-radius:999px;padding:.2rem .6rem;font-size:.82rem;margin:.2rem .2rem 0 0;}
+  footer{margin-top:3rem;color:var(--muted);font-size:.82rem;border-top:1px solid var(--linha);padding-top:1rem;}
+</style>
+
+<div class="wrap">
+  <p class="eyebrow">Pitangueira · Kit de divulgação</p>
+  <h1>Anúncios — Meta e Google</h1>
+  <p class="lead">Criativos e textos prontos para rodar tráfego pago, apontando para a landing de campanha. Três ângulos: a dor (planilha), o cliente que acompanha, e o “tudo num lugar”.</p>
+  <div class="destino"><b>Destino de todos os anúncios:</b> <code>https://www.pitangueira.app/campanha?utm_source=meta&amp;utm_medium=cpc&amp;utm_campaign=largue-a-planilha</code> — troque <code>utm_source</code> por <code>google</code> nos anúncios do Google. Instale o <b>Pixel da Meta</b> e o <b>GA4</b> antes de subir.</div>
+
+  <h2>Meta Ads <span class="sub">Instagram + Facebook · feed 1:1 e Stories/Reels 9:16 (use os criativos do kit de posts como vídeo/story)</span></h2>
+
+  <h3>Criativos (imagem 1:1)</h3>
+  <div class="criativos">
+    <div class="peca laranja">
+      <div class="topo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden><path d="m5 12.5 4.5 4.5L19 7"/></svg>Pitangueira</div>
+      <div class="mid"><h4>Largue a planilha da obra.</h4><p>Orçamento, andamento e cobrança num só lugar.</p></div>
+      <span class="selo">Teste grátis 5 dias</span>
+    </div>
+    <div class="peca creme">
+      <div class="topo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden><path d="m5 12.5 4.5 4.5L19 7"/></svg>Pitangueira</div>
+      <div class="mid"><h4>Seu cliente acompanha a obra sozinho.</h4><p>Ele entra com um código, sem cadastro.</p></div>
+      <span class="selo">Teste grátis 5 dias</span>
+    </div>
+    <div class="peca escuro">
+      <div class="topo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden><path d="m5 12.5 4.5 4.5L19 7"/></svg>Pitangueira</div>
+      <div class="mid"><h4>Uma obra ou dez. O controle é o mesmo.</h4><p>Painel, cobrança em PDF e PIX.</p></div>
+      <span class="selo">Teste grátis 5 dias</span>
+    </div>
+  </div>
+
+  <h3>Texto do anúncio — Variação A (dor)</h3>
+  <div class="copybox">
+    <div class="lbl"><span>Texto principal</span><button class="copiar">Copiar</button></div>
+    <p class="txt">Sua planilha de obra tem três versões e nenhuma está certa? O cliente vive perguntando “como está a obra?”. A Pitangueira junta orçamento, andamento e cobrança num lugar só — e o cliente acompanha tudo por um código, sem cadastro. Teste grátis por 5 dias.</p>
+    <div class="campo"><span class="k">Título</span><span>Largue a planilha da obra</span></div>
+    <div class="campo"><span class="k">Descrição</span><span>Teste grátis por 5 dias</span></div>
+    <div class="campo"><span class="k">Botão</span><span>Saiba mais / Cadastre-se</span></div>
+  </div>
+
+  <h3>Texto do anúncio — Variação B (cliente acompanha)</h3>
+  <div class="copybox">
+    <div class="lbl"><span>Texto principal</span><button class="copiar">Copiar</button></div>
+    <p class="txt">E se o seu cliente parasse de te perguntar “como está a obra?” a cada dois dias? Na Pitangueira ele entra com um código e acompanha fotos, visitas, o que foi feito e o que foi pago — como numa rede social. Menos WhatsApp, mais obra. Experimente grátis por 5 dias.</p>
+    <div class="campo"><span class="k">Título</span><span>O cliente acompanha a obra sozinho</span></div>
+    <div class="campo"><span class="k">Descrição</span><span>Sem cadastro · teste grátis 5 dias</span></div>
+    <div class="campo"><span class="k">Botão</span><span>Saiba mais</span></div>
+  </div>
+
+  <h3>Público (Meta)</h3>
+  <div class="grid2">
+    <div class="copybox"><div class="lbl"><span>Interesses / detalhado</span></div>
+      <ul class="lista"><li>Arquitetura, Engenharia civil, Construção, Reforma</li><li>AutoCAD, SketchUp, Revit</li><li>Designer de interiores, Mestre de obras</li><li>Donos de pequenas empresas</li></ul>
+    </div>
+    <div class="copybox"><div class="lbl"><span>Configuração</span></div>
+      <ul class="lista"><li>Local: Brasil · Idade 25–55</li><li>Posicionamentos: Feed, Stories e Reels (automático)</li><li>Objetivo: tráfego ou cadastros (leads/vendas)</li><li>Retargeting: visitantes do site (Pixel) e quem iniciou o teste e não assinou</li></ul>
+    </div>
+  </div>
+
+  <h2>Google Ads <span class="sub">Rede de Pesquisa · anúncio responsivo (RSA) para quem já procura solução</span></h2>
+  <div class="grid2">
+    <div class="copybox"><div class="lbl"><span>Títulos (até 30 caracteres)</span><button class="copiar">Copiar</button></div>
+      <p class="txt">Largue a planilha da obra
+Gestão de obras simples
+Orçamento e obra num lugar
+Seu cliente acompanha tudo
+Teste grátis por 5 dias
+App de gestão de obras
+Controle de obra no celular
+Cobrança em PDF com PIX
+Para quem toca obra
+Orçamento vivo da obra
+App para arquitetos
+Pitangueira · gestão de obras</p>
+    </div>
+    <div class="copybox"><div class="lbl"><span>Descrições (até 90 caracteres)</span><button class="copiar">Copiar</button></div>
+      <p class="txt">Orçamento, andamento e cobrança num só lugar. O cliente acompanha por um código.
+Largue a planilha e o WhatsApp. Controle a obra e receba em dia. 5 dias grátis.
+Para arquitetos, engenheiros e mestres de obra. Funciona no celular. Teste grátis.
+PDF com a sua marca, cobrança com PIX e o cliente acompanhando sozinho.</p>
+    </div>
+  </div>
+  <h3>Palavras-chave e negativas</h3>
+  <div class="grid2">
+    <div class="copybox"><div class="lbl"><span>Palavras-chave</span></div>
+      <p><span class="chip">software gestão de obras</span><span class="chip">aplicativo controle de obra</span><span class="chip">programa orçamento de obra</span><span class="chip">planilha de obra</span><span class="chip">gestão de obra arquiteto</span><span class="chip">controle de reforma</span><span class="chip">app orçamento de obra</span></p>
+    </div>
+    <div class="copybox"><div class="lbl"><span>Negativas</span></div>
+      <p><span class="chip">grátis</span><span class="chip">download</span><span class="chip">excel</span><span class="chip">curso</span><span class="chip">modelo pronto</span><span class="chip">emprego</span><span class="chip">vaga</span></p>
+    </div>
+  </div>
+
+  <h2>Antes de subir <span class="sub">o mínimo para medir e não jogar dinheiro fora</span></h2>
+  <div class="copybox">
+    <ul class="lista">
+      <li><b>Pixel da Meta</b> e <b>GA4</b> instalados no site (eu configuro quando você quiser).</li>
+      <li>Destino sempre com <b>UTM</b> (o link acima) para saber o que converte.</li>
+      <li>Comece com <b>R$ 20–40/dia</b> dividido em 3–4 criativos; pause os fracos em 3–4 dias.</li>
+      <li>Meta de verdade: <b>custo por teste iniciado</b> e <b>teste → pagante</b>, não curtidas.</li>
+    </ul>
+  </div>
+
+  <footer>Criativos e textos na marca Pitangueira. Troque o @ real e ajuste qualquer gancho. Quer que eu exporte os criativos como imagem, ou gere mais variações de teste? É só pedir.</footer>
+</div>
+
+<script>
+  document.querySelectorAll(".copiar").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const box = btn.closest(".copybox");
+      const el = box && box.querySelector(".txt");
+      const texto = el ? el.innerText : "";
+      try { await navigator.clipboard.writeText(texto); btn.textContent = "Copiado!"; }
+      catch (e) {
+        if (el) { const r = document.createRange(); r.selectNodeContents(el); const s = window.getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = "Selecionado"; }
+      }
+      setTimeout(() => (btn.textContent = "Copiar"), 1800);
+    });
+  });
+</script>
