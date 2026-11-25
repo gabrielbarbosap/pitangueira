@@ -66,6 +66,7 @@ export const metadata: Metadata = {
     },
   },
   appleWebApp: { capable: true, title: SITE_NOME, statusBarStyle: "default" },
+  verification: { google: "qqbsJn6FjZXN1EVCXLQhU6xDA-DII8mWGOqsDfcIBOs" },
 };
 
 export const viewport: Viewport = {
