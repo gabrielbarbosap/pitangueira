@@ -25,8 +25,8 @@ export function Consentimento() {
     >
       <div className="prancha mx-auto flex max-w-3xl flex-col gap-3 p-4 shadow-[0_18px_40px_-20px_rgba(20,17,15,0.5)] sm:flex-row sm:items-center sm:justify-between sm:gap-6">
         <p className="text-sm leading-relaxed text-ink/75">
-          Usamos cookies para entender como o site é usado e melhorar a divulgação. Os cookies essenciais são sempre
-          usados.{" "}
+          Com o seu ok, usamos cookies para entender o que mais ajuda quem toca obra e deixar a Pitangueira melhor
+          pra você. Os essenciais, que fazem o site funcionar, estão sempre ligados.{" "}
           <Link href="/docs/privacidade-e-tutorial" className="font-semibold text-pitanga hover:underline">
             Saiba mais
           </Link>
@@ -34,7 +34,7 @@ export function Consentimento() {
         </p>
         <div className="flex shrink-0 gap-2 max-sm:w-full">
           <Botao variante="linha" tamanho="pequeno" onClick={recusar} className="max-sm:flex-1">
-            Recusar
+            Só os essenciais
           </Botao>
           <Botao variante="primario" tamanho="pequeno" onClick={aceitar} className="max-sm:flex-1">
             Aceitar

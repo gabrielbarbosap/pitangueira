@@ -46,7 +46,7 @@ export const privacidade: PaginaDoc = {
             colunas={["Botão", "O que acontece"]}
             linhas={[
               [<Btn key="1">Aceitar</Btn>, "Liga o Google Analytics e o Pixel da Meta, que ajudam a entender o uso do site e a medir a divulgação."],
-              [<Btn key="2">Recusar</Btn>, "Mantém só os cookies essenciais. Nenhuma ferramenta de terceiros é carregada."],
+              [<Btn key="2">Só os essenciais</Btn>, "Mantém só os cookies essenciais. Nenhuma ferramenta de terceiros é carregada."],
             ]}
           />
           <Aviso tipo="nota">
